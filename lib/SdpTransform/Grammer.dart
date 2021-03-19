@@ -1,6 +1,6 @@
 import 'dart:core';
 
-var grammar = {
+var grammer = {
   'v': [
     {'name': 'version', 'reg': r'^\d$'}
   ],
