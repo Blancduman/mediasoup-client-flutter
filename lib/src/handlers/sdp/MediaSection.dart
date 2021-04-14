@@ -131,12 +131,14 @@ class Ext {
   String direction;
   String uri;
   String config;
+  String encryptUri;
 
   Ext({
     this.value,
     this.direction,
     this.uri,
     this.config,
+    this.encryptUri,
   });
 
   Ext.fromMap(Map data) {
@@ -144,15 +146,20 @@ class Ext {
     direction = data['direction'];
     uri = data['uri'];
     config = data['config'];
+    encryptUri = data['encrypt-uri'];
   }
 
   Map<String, dynamic> toMap() {
-    return {
+    Map<String, dynamic> result = {
       'value': value,
       'direction': direction,
       'uri': uri,
       'config': config,
     };
+    if (encryptUri != null && encryptUri.isNotEmpty) {
+      result['encrypt-uri'] = encryptUri;
+    }
+    return result;
   }
 }
 
@@ -314,6 +321,7 @@ class MediaObject {
   int maxMessageSize;
   Sctpmap sctpmap;
   String xGoogleFlag;
+  Fingerprint fingerprint;
 
   MediaObject({
     this.candidates,
@@ -347,6 +355,7 @@ class MediaObject {
     this.maxMessageSize,
     this.sctpmap,
     this.xGoogleFlag,
+    this.fingerprint,
   });
 }
 
@@ -368,8 +377,6 @@ abstract class MediaSection {
     }
 
     if (iceParameters != null) {
-      _mediaObject.candidates = [];
-
       _mediaObject.candidates = List<IceCandidate>.of(iceCandidates);
     }
 
@@ -515,20 +522,7 @@ class AnswerMediaSection extends MediaSection {
                       (RtpCodecParameters c) =>
                           c.payloadType == codec.payloadType,
                       orElse: () => null);
-/*
-CodecParameters {
-  int spropStereo; // sprop-stereo;
-  int stereo;
-  int useinbandfec;
-  int usedtx;
-  int maxplaybackrate;
-  int maxaveragebitrate;
-  int ptime;
-  int xGoogleStartBitrate // x-google-start-bitrate;
-  int xGoogleMaxBitrate // x-google-max-bitrate;
-  int xGoogleMinBitrate // x-google-min-bitrate;
-}
-*/
+
               switch (codec.mimeType.toLowerCase()) {
                 case 'audio/opus':
                   {
