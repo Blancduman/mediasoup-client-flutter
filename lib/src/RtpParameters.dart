@@ -28,7 +28,7 @@ enum RtpHeaderDirection {
   Inactive,
 }
 
-extension MediaKind on RTCRtpMediaType {
+extension RTCRtpMediaTypeExtension on RTCRtpMediaType {
   static const Map<String, RTCRtpMediaType> types = {
     'audio': RTCRtpMediaType.RTCRtpMediaTypeAudio,
     'video': RTCRtpMediaType.RTCRtpMediaTypeVideo,
@@ -93,34 +93,34 @@ class RtpCodecCapability {
   /*
 	 * Media kind.
 	 */
-  final RTCRtpMediaType kind;
+  RTCRtpMediaType kind;
   /*
 	 * The codec MIME media type/subtype (e.g. 'audio/opus', 'video/VP8').
 	 */
-  final String mimeType;
+  String mimeType;
   /*
 	 * The preferred RTP payload type.
 	 */
-  final int preferredPayloadType;
+  int preferredPayloadType;
   /*
 	 * Codec clock rate expressed in Hertz.
 	 */
-  final int clockRate;
+  int clockRate;
   /*
 	 * The number of channels supported (e.g. two for stereo). Just for audio.
 	 * Default 1.
 	 */
-  final int channels;
+  int channels;
   /*
 	 * Codec specific parameters. Some parameters (such as 'packetization-mode'
 	 * and 'profile-level-id' in H264 or 'profile-id' in VP9) are critical for
 	 * codec matching.
 	 */
-  final Map<dynamic, dynamic> parameters;
+  Map<dynamic, dynamic> parameters;
   /*
 	 * Transport layer and codec-specific feedback messages for this codec.
 	 */
-  final List<RtcpFeedback> rtcpFeedback;
+  List<RtcpFeedback> rtcpFeedback;
 
   RtpCodecCapability({
     this.kind,
