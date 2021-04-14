@@ -1,14 +1,48 @@
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mediasoup_client_flutter/src/common/index.dart';
 
-/*
- * Direction of RTP header extension.
- */
+/// The RTP capabilities define what mediasoup or an endpoint can receive at
+/// media level.
+class RtpCapabilities {
+  /// Supported media and RTX codecs.
+  List<RtpCodecCapability> codecs;
+
+  /// Supported RTP header extensions.
+  List<RtpHeaderExtension> headerExtensions;
+
+  /// Supported FEC mechanisms.
+  List<String> fecMechanisms;
+
+  RtpCapabilities({
+    this.codecs,
+    this.headerExtensions,
+    this.fecMechanisms,
+  });
+}
+
+///Direction of RTP header extension.
 enum RtpHeaderDirection {
   SendRecv,
   SendOnly,
   RecvOnly,
   Inactive,
+}
+
+extension MediaKind on RTCRtpMediaType {
+  static const Map<String, RTCRtpMediaType> types = {
+    'audio': RTCRtpMediaType.RTCRtpMediaTypeAudio,
+    'video': RTCRtpMediaType.RTCRtpMediaTypeVideo,
+    'data': RTCRtpMediaType.RTCRtpMediaTypeData,
+  };
+
+  static const Map<RTCRtpMediaType, String> values = {
+    RTCRtpMediaType.RTCRtpMediaTypeAudio: 'audio',
+    RTCRtpMediaType.RTCRtpMediaTypeVideo: 'video',
+    RTCRtpMediaType.RTCRtpMediaTypeData: 'data',
+  };
+
+  static RTCRtpMediaType fromString(String type) => types[type];
+  String get value => values[this];
 }
 
 extension RtpHeaderExtensionDirection on RtpHeaderDirection {
@@ -26,7 +60,7 @@ extension RtpHeaderExtensionDirection on RtpHeaderDirection {
     RtpHeaderDirection.Inactive: 'inactive',
   };
 
-  RtpHeaderDirection get type => types[this];
+  static RtpHeaderDirection fromString(String type) => types[type];
   String get value => values[this];
 }
 
@@ -147,6 +181,33 @@ class RtxSsrc {
   }
 }
 
+/// Defines a RTP header extension within the RTP parameters. The list of RTP
+/// header extensions supported by mediasoup is defined in the
+/// supportedRtpCapabilities.ts file.
+///
+/// mediasoup does not currently support encrypted RTP header extensions and no
+/// parameters are currently considered.
+class RtpHeaderExtensionParameters {
+  /// The URI of the RTP header extension, as defined in RFC 5285.
+  String uri;
+
+  /// The numeric identifier that goes in the RTP packet. Must be unique.
+  int id;
+
+  /// If true, the value in the header is encrypted as per RFC 6904. Default false.
+  bool encrypt;
+
+  /// Configuration parameters for the header extension.
+  Map<dynamic, dynamic> parameters;
+
+  RtpHeaderExtensionParameters({
+    this.uri,
+    this.id,
+    this.encrypt,
+    this.parameters,
+  });
+}
+
 class RtpEncodingParameters extends RTCRtpEncoding {
   /*
 	 * Codec payload type this encoding affects. If unset, first media codec is
@@ -206,6 +267,196 @@ class RtpEncodingParameters extends RTCRtpEncoding {
         );
 }
 
+class CodecParameters {
+  int spropStereo; // sprop-stereo;
+  int useinbandfec;
+  int usedtx;
+  int maxplaybackrate;
+  int maxaveragebitrate;
+  int ptime;
+  int xGoogleStartBitrate; // x-google-start-bitrate;
+  int xGoogleMaxBitrate; // x-google-max-bitrate;
+  int xGoogleMinBitrate; // x-google-min-bitrate;
+
+  int get stereo => spropStereo;
+  set stereo(int value) => spropStereo = value;
+
+  CodecParameters({
+    this.spropStereo,
+    this.useinbandfec,
+    this.usedtx,
+    this.maxplaybackrate,
+    this.maxaveragebitrate,
+    this.ptime,
+    this.xGoogleStartBitrate,
+    this.xGoogleMaxBitrate,
+    this.xGoogleMinBitrate,
+  });
+
+  static CodecParameters copy(CodecParameters old) {
+    return CodecParameters(
+      spropStereo: old.spropStereo,
+      useinbandfec: old.useinbandfec,
+      usedtx: old.usedtx,
+      maxplaybackrate: old.maxplaybackrate,
+      maxaveragebitrate: old.maxaveragebitrate,
+      ptime: old.ptime,
+      xGoogleStartBitrate: old.xGoogleStartBitrate,
+      xGoogleMaxBitrate: old.xGoogleMaxBitrate,
+      xGoogleMinBitrate: old.xGoogleMinBitrate,
+    );
+  }
+
+  List<String> get keys  {
+    List<String> _keys = <String>[];
+
+    if (spropStereo != null) {
+      _keys.add('sprop-stereo');
+    }
+    if (stereo != null) {
+      _keys.add('stereo');
+    }
+    if (useinbandfec != null) {
+      _keys.add('useinbandfec');
+    }
+    if (usedtx != null) {
+      _keys.add('usedtx');
+    }
+    if (maxplaybackrate != null) {
+      _keys.add('maxplaybackrate');
+    }
+    if (maxaveragebitrate != null) {
+      _keys.add('maxaveragebitrate');
+    }
+    if (ptime != null) {
+      _keys.add('ptime');
+    }
+    if (xGoogleStartBitrate != null) {
+      _keys.add('x-google-start-bitrate');
+    }
+    if (xGoogleMaxBitrate != null) {
+      _keys.add('x-google-max-bitrate');
+    }
+    if (xGoogleMinBitrate != null) {
+      _keys.add('x-google-min-bitrate');
+    }
+
+    return _keys;
+  }
+
+  operator[] (String key) => toMap()[key];
+
+  Map<String, int> toMap([bool stereoInMap = false]) {
+    return {
+      stereoInMap ? 'stereo' : 'sprop-stereo': spropStereo,
+      'useinbandfec': useinbandfec,
+      'usedtx': usedtx,
+      'maxplaybackrate': maxplaybackrate,
+      'maxaveragebitrate': maxaveragebitrate,
+      'ptime': ptime,
+      'x-google-start-bitrate': xGoogleStartBitrate,
+      'x-google-max-bitrate': xGoogleMaxBitrate,
+      'x-google-min-bitrate': xGoogleMinBitrate,
+    };
+  }
+}
+
+/// Provides information on codec settings within the RTP parameters. The list
+/// of media codecs supported by mediasoup and their settings is defined in the
+/// supportedRtpCapabilities.ts file.
+class RtpCodecParameters {
+  /// The codec MIME media type/subtype (e.g. 'audio/opus', 'video/VP8').
+  String mimeType;
+
+  /// The value that goes in the RTP Payload Type Field. Must be unique.
+  int payloadType;
+
+  /// Codec clock rate expressed in Hertz.
+  int clockRate;
+
+  /// The number of channels supported (e.g. two for stereo). Just for audio.
+  /// Default 1.
+  int channels;
+
+  /// Codec-specific parameters available for signaling. Some parameters (such
+  /// as 'packetization-mode' and 'profile-level-id' in H264 or 'profile-id' in
+  /// VP9) are critical for codec matching.
+  CodecParameters parameters;
+
+  /// Transport layer and codec-specific feedback messages for this codec.
+  List<RtcpFeedback> rtcpFeedback;
+
+  RtpCodecParameters({
+    this.mimeType,
+    this.payloadType,
+    this.clockRate,
+    this.channels = 1,
+    this.parameters,
+    this.rtcpFeedback,
+  });
+}
+
+/// The RTP send parameters describe a media stream received by mediasoup from
+/// an endpoint through its corresponding mediasoup Producer. These parameters
+/// may include a mid value that the mediasoup transport will use to match
+/// received RTP packets based on their MID RTP extension value.
+///
+/// mediasoup allows RTP send parameters with a single encoding and with multiple
+/// encodings (simulcast). In the latter case, each entry in the encodings array
+/// must include a ssrc field or a rid field (the RID RTP extension value). Check
+/// the Simulcast and SVC sections for more information.
+///
+/// The RTP receive parameters describe a media stream as sent by mediasoup to
+/// an endpoint through its corresponding mediasoup Consumer. The mid value is
+/// unset (mediasoup does not include the MID RTP extension into RTP packets
+/// being sent to endpoints).
+///
+/// There is a single entry in the encodings array (even if the corresponding
+/// producer uses simulcast). The consumer sends a single and continuous RTP
+/// stream to the endpoint and spatial/temporal layer selection is possible via
+/// consumer.setPreferredLayers().
+///
+/// As an exception, previous bullet is not true when consuming a stream over a
+/// PipeTransport, in which all RTP streams from the associated producer are
+/// forwarded verbatim through the consumer.
+///
+/// The RTP receive parameters will always have their ssrc values randomly
+/// generated for all of its  encodings (and optional rtx: { ssrc: XXXX } if the
+/// endpoint supports RTX), regardless of the original RTP send parameters in
+/// the associated producer. This applies even if the producer's encodings have
+/// rid set.
+class RtpParameters {
+  /// The MID RTP extension value as defined in the BUNDLE specification.
+  String mid;
+
+  /// Media and RTX codecs in use.
+  List<RtpCodecParameters> codecs;
+
+  /// RTP header extensions in use.
+  List<RtpHeaderExtensionParameters> headerExtensions;
+
+  /// Transmitted RTP streams and their settings.
+  List<RtpEncodingParameters> encodings;
+
+  /// Parameters used for RTCP.
+  RtcpParapeters rtcp;
+
+  RtpParameters({
+    this.mid,
+    this.codecs,
+    this.headerExtensions,
+    this.encodings,
+    this.rtcp,
+  });
+}
+
+/// Provides information on RTCP settings within the RTP parameters.
+///
+/// If no cname is given in a producer's RTP parameters, the mediasoup transport
+/// will choose a random one that will be used into RTCP SDES messages sent to
+/// all its associated consumers.
+///
+/// mediasoup assumes reducedSize to always be true.
 class RtcpParapeters extends RTCRTCPParameters {
   /*
 	 * Whether RTCP-mux is used. Default true.
