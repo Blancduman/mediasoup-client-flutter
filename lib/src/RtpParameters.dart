@@ -28,24 +28,7 @@ enum RtpHeaderDirection {
   Inactive,
 }
 
-extension RTCRtpMediaTypeExtension on RTCRtpMediaType {
-  static const Map<String, RTCRtpMediaType> types = {
-    'audio': RTCRtpMediaType.RTCRtpMediaTypeAudio,
-    'video': RTCRtpMediaType.RTCRtpMediaTypeVideo,
-    'data': RTCRtpMediaType.RTCRtpMediaTypeData,
-  };
-
-  static const Map<RTCRtpMediaType, String> values = {
-    RTCRtpMediaType.RTCRtpMediaTypeAudio: 'audio',
-    RTCRtpMediaType.RTCRtpMediaTypeVideo: 'video',
-    RTCRtpMediaType.RTCRtpMediaTypeData: 'data',
-  };
-
-  static RTCRtpMediaType fromString(String type) => types[type];
-  String get value => values[this];
-}
-
-extension RtpHeaderExtensionDirection on RtpHeaderDirection {
+extension RtpHeaderDirectionExtension on RtpHeaderDirection {
   static const Map<String, RtpHeaderDirection> types = {
     'sendrecv': RtpHeaderDirection.SendRecv,
     'sendonly': RtpHeaderDirection.SendOnly,
@@ -63,6 +46,24 @@ extension RtpHeaderExtensionDirection on RtpHeaderDirection {
   static RtpHeaderDirection fromString(String type) => types[type];
   String get value => values[this];
 }
+
+extension RTCRtpMediaTypeExtension on RTCRtpMediaType {
+  static const Map<String, RTCRtpMediaType> types = {
+    'audio': RTCRtpMediaType.RTCRtpMediaTypeAudio,
+    'video': RTCRtpMediaType.RTCRtpMediaTypeVideo,
+    'data': RTCRtpMediaType.RTCRtpMediaTypeData,
+  };
+
+  static const Map<RTCRtpMediaType, String> values = {
+    RTCRtpMediaType.RTCRtpMediaTypeAudio: 'audio',
+    RTCRtpMediaType.RTCRtpMediaTypeVideo: 'video',
+    RTCRtpMediaType.RTCRtpMediaTypeData: 'data',
+  };
+
+  static RTCRtpMediaType fromString(String type) => types[type];
+  String get value => values[this];
+}
+
 
 /*
  * Provides information on RTCP feedback messages for a specific codec. Those
