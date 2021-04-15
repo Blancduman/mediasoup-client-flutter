@@ -1,15 +1,11 @@
 import 'package:mediasoup_client_flutter/SdpTransform/Parser.dart';
 import 'package:mediasoup_client_flutter/src/RtpParameters.dart';
+import 'package:mediasoup_client_flutter/src/SdpObject.dart';
 import 'package:mediasoup_client_flutter/src/handlers/sdp/MediaSection.dart';
 import 'package:mediasoup_client_flutter/src/Transport.dart';
 
-class SdpObject {
-  List<MediaObject> media;
-  Fingerprint fingerprint;
-}
-
 class CommonUtils {
-  static RtpCapabilities extractRtpCapabilities(Map sdpObject) {
+  static RtpCapabilities extractRtpCapabilities(SdpObject sdpObject) {
     // Map of RtpCodecParameters indexed by payload type.
     Map<int, RtpCodecCapability> codecsMap = <int, RtpCodecCapability>{};
     // Array of RtpHeaderExtensions.
@@ -18,7 +14,7 @@ class CommonUtils {
     bool gotAudio;
     bool gotVideo;
 
-    for (MediaObject m in sdpObject['media']) {
+    for (MediaObject m in sdpObject.media) {
       String kind = m.type;
 
       switch (kind) {
@@ -111,8 +107,8 @@ class CommonUtils {
     return rtpCapabilities;
   }
 
-  static DtlsParameters extractDtlsParameters(Map sdpObject) {
-    MediaObject mediaObject = (sdpObject['media'] ?? [])
+  static DtlsParameters extractDtlsParameters(SdpObject sdpObject) {
+    MediaObject mediaObject = (sdpObject.media ?? [])
       .firstWhere((m) =>
        m.iceUfrag != null && m.iceUfrag.isNotEmpty && m.port != null && m.port != 0,
        orElse: () => null,
@@ -121,7 +117,7 @@ class CommonUtils {
       throw('no active media section found');
     }
 
-    Fingerprint fingerprint = mediaObject.fingerprint ?? sdpObject['fingerprint'];
+    Fingerprint fingerprint = mediaObject.fingerprint ?? sdpObject.fingerprint;
 
     DtlsRole role;
 
