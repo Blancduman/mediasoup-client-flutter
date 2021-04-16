@@ -701,6 +701,142 @@ class MediaObject {
       description = data['description'];
     }
   }
+
+  Map<String, dynamic> toMap() {
+    Map<String, dynamic> result = <String, dynamic>{};
+    if (candidates != null) {
+      result['candidates'] = candidates.map((IceCandidate c) => c.toMap()).toList();
+    }
+    if (iceUfrag != null) {
+      result['iceUfrag'] = iceUfrag;
+    }
+    if (icePwd != null) {
+      result['icePwd'] = icePwd;
+    }
+    if (endOfCandidates != null) {
+      result['endOfCandidates'] = endOfCandidates;
+    }
+    if (iceOptions != null) {
+      result['iceOptions'] = iceOptions;
+    }
+    if (setup != null) {
+      result['setup'] = setup;
+    }
+    if (mid != null) {
+      result['mid'] = mid;
+    }
+    if (port != null) {
+      result['port'] = port;
+    }
+    if (direction != null) {
+      result['direction'] = direction.value;
+    }
+    if (rtp != null) {
+      result['rtp'] = rtp.map((Rtp r) => r.toMap()).toList();
+    }
+    if (fmtp != null) {
+      result['fmtp'] = fmtp.map((Fmtp f) => f.toMap()).toList();
+    }
+    if (type != null) {
+      result['type'] = type;
+    }
+    if (protocol != null) {
+      result['protocol'] = protocol;
+    }
+    if (payloads != null) {
+      result['payloads'] = payloads;
+    }
+    if (connection != null) {
+      result['connection'] = connection.toMap();
+    }
+    if (rtcp != null) {
+      result['rtcp'] = rtcp.toMap();
+    }
+    if (ext != null) {
+      result['ext'] = ext.map((Ext e) => e.toMap()).toList();
+    }
+    if (msid != null) {
+      result['msid'] = msid;
+    }
+    if (rtcpMux != null) {
+      result['rtcpMux'] = rtcpMux;
+    }
+    if (rtcpFb != null) {
+      result['rtcpFb'] = rtcpFb.map((RtcpFb rfb) => rfb.toMap()).toList();
+    }
+    if (ssrcs != null) {
+      result['ssrcs'] = ssrcs.map((Ssrc s) => s.toMap()).toList();
+    }
+    if (ssrcGroups != null) {
+      result['ssrcGroups'] = ssrcGroups.map((SsrcGroup sg) => sg.toMap()).toList();
+    }
+    if (simulcast != null) {
+      result['simulcast'] = simulcast.toMap();
+    }
+    if (simulcast_03 != null) {
+      result['simulcast_03'] = simulcast_03.toMap();
+    }
+    if (rids != null) {
+      result['rids'] = rids.map((Rid r) => r.toMap()).toList();
+    }
+    if (extmapAllowMixed != null) {
+      result['extmapAllowMixed'] = extmapAllowMixed;
+    }
+    if (rtcpRsize != null) {
+      result['rtcpRsize'] = rtcpRsize;
+    }
+    if (sctpPort != null) {
+      result['sctpPort'] = sctpPort;
+    }
+    if (maxMessageSize != null) {
+      result['maxMessageSize'] = maxMessageSize;
+    }
+    if (sctpmap != null) {
+      result['sctpmap'] = sctpmap.toMap();
+    }
+    if (xGoogleFlag != null) {
+      result['xGoogleFlag'] = xGoogleFlag;
+    }
+    if (fingerprint != null) {
+      result['fingerprint'] = fingerprint.toMap();
+    }
+    if (rtcpFbTrrInt != null) {
+      result['rtcpFbTrrInt'] = rtcpFbTrrInt.map((RtcpFbTrrInt rFTI) => rFTI.toMap()).toList();
+    }
+    if (crypto != null) {
+      result['crypto'] = crypto.map((Crypto c) => c.toMap()).toList();
+    }
+    if (invalid != null) {
+      result['invalid'] = invalid.map((Invalid i) => i.toMap()).toList();
+    }
+    if (ptime != null) {
+      result['ptime'] = ptime;
+    }
+    if (maxptime != null) {
+      result['maxptime'] = maxptime;
+    }
+    if (label != null) {
+      result['label'] = label;
+    }
+    if (bandwidth != null) {
+      result['bandwidth'] = bandwidth.map((Bandwidth bw) => bw.toMap()).toList();
+    }
+    if (framerate != null) {
+      result['framerate'] = framerate;
+    }
+    if (bundleOnly != null) {
+      result['bundleOnly'] = bundleOnly;
+    }
+    if (imageattrs != null) {
+      result['imageattrs'] = imageattrs.map((Imageattrs im) => im.toMap()).toList();
+    }
+    if (sourceFilter != null) {
+      result['sourceFilter'] = sourceFilter.toMap();
+    }
+    if (description != null) {
+      result['description'] = description;
+    }
+  }
 }
 
 abstract class MediaSection {
