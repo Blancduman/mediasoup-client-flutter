@@ -982,8 +982,10 @@ class AnswerMediaSection extends MediaSection {
 
             _mediaObject.rtp.add(rtp);
 
-            CodecParameters codecParameters =
-                CodecParameters.copy(codec.parameters);
+            // CodecParameters codecParameters =
+                // CodecParameters.copy(codec.parameters);
+            Map<dynamic, dynamic> codecParameters =
+                Map<dynamic, dynamic>.of(codec.parameters);
 
             if (codecOptions != null) {
               bool opusStereo = codecOptions.opusStereo;
@@ -1007,31 +1009,31 @@ class AnswerMediaSection extends MediaSection {
                 case 'audio/opus':
                   {
                     if (opusStereo != null) {
-                      offerCodec.parameters.spropStereo = opusStereo ? 1 : 0;
-                      codecParameters.stereo = opusStereo ? 1 : 0;
+                      offerCodec.parameters['sprop-stereo'] = opusStereo ? 1 : 0;
+                      codecParameters['stereo'] = opusStereo ? 1 : 0;
                     }
 
                     if (opusFec != null) {
-                      offerCodec.parameters.useinbandfec = opusFec ? 1 : 0;
-                      codecParameters.useinbandfec = opusFec ? 1 : 0;
+                      offerCodec.parameters['useinbandfec'] = opusFec ? 1 : 0;
+                      codecParameters['useinbandfec'] = opusFec ? 1 : 0;
                     }
 
                     if (opusDtx != null) {
-                      offerCodec.parameters.usedtx = opusDtx ? 1 : 0;
-                      codecParameters.usedtx = opusDtx ? 1 : 0;
+                      offerCodec.parameters['usedtx'] = opusDtx ? 1 : 0;
+                      codecParameters['usedtx'] = opusDtx ? 1 : 0;
                     }
 
                     if (opusMaxPlaybackRate != null) {
-                      codecParameters.maxplaybackrate = opusMaxPlaybackRate;
+                      codecParameters['maxplaybackrate'] = opusMaxPlaybackRate;
                     }
 
                     if (opusMaxAverageBitrate != null) {
-                      codecParameters.maxaveragebitrate = opusMaxAverageBitrate;
+                      codecParameters['maxaveragebitrate'] = opusMaxAverageBitrate;
                     }
 
                     if (opusPtime != null) {
-                      offerCodec.parameters.ptime = opusPtime;
-                      codecParameters.ptime = opusPtime;
+                      offerCodec.parameters['ptime'] = opusPtime;
+                      codecParameters['ptime'] = opusPtime;
                     }
 
                     break;
@@ -1043,16 +1045,16 @@ class AnswerMediaSection extends MediaSection {
                 case 'video/h265':
                   {
                     if (videoGoogleStartBitrate != null) {
-                      codecParameters.xGoogleStartBitrate =
+                      codecParameters['x-google-start-bitrate'] =
                           videoGoogleStartBitrate;
                     }
 
                     if (videoGoogleMaxBitrate != null) {
-                      codecParameters.xGoogleMaxBitrate = videoGoogleMaxBitrate;
+                      codecParameters['x-google-max-bitrate'] = videoGoogleMaxBitrate;
                     }
 
                     if (videoGoogleMinBitrate != null) {
-                      codecParameters.xGoogleMinBitrate = videoGoogleMinBitrate;
+                      codecParameters['x-google-min-bitrate'] = videoGoogleMinBitrate;
                     }
                     break;
                   }
