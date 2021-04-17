@@ -61,9 +61,8 @@ extension RTCRtpMediaTypeExtension on RTCRtpMediaType {
   };
 
   static RTCRtpMediaType fromString(String type) => types[type];
-  String get value => values[this];
+  static String value(RTCRtpMediaType type) => values[type];
 }
-
 
 /*
  * Provides information on RTCP feedback messages for a specific codec. Those
@@ -88,6 +87,51 @@ class RtcpFeedback {
       'parameter': this.parameter,
     };
   }
+}
+
+class ExtendedRtpCodec {
+  /*
+ * Media kind.
+ */
+  RTCRtpMediaType kind;
+/*
+ * The codec MIME media type/subtype (e.g. 'audio/opus', 'video/VP8').
+ */
+  String mimeType;
+/*
+ * Codec clock rate expressed in Hertz.
+ */
+  int clockRate;
+/*
+ * The number of channels supported (e.g. two for stereo). Just for audio.
+ * Default 1.
+ */
+  int channels;
+/*
+ * Transport layer and codec-specific feedback messages for this codec.
+ */
+  List<RtcpFeedback> rtcpFeedback;
+
+  int localPayloadType;
+  int localRtxPayloadType;
+  int remotePayloadType;
+  int remoteRtxPayloadType;
+  Map<dynamic, dynamic> localParameters;
+  Map<dynamic, dynamic> remoteParameters;
+
+  ExtendedRtpCodec({
+    this.kind,
+    this.mimeType,
+    this.clockRate,
+    this.channels = 1,
+    this.rtcpFeedback,
+    this.localPayloadType,
+    this.localRtxPayloadType,
+    this.remotePayloadType,
+    this.remoteRtxPayloadType,
+    this.localParameters,
+    this.remoteParameters,
+  });
 }
 
 class RtpCodecCapability {
@@ -134,32 +178,50 @@ class RtpCodecCapability {
   });
 }
 
+class ExtendedRtpHeaderExtension {
+  RTCRtpMediaType kind;
+  String uri;
+  int sendId;
+  int recvId;
+  bool encrypt;
+  RtpHeaderDirection  direction;
+
+  ExtendedRtpHeaderExtension({
+    this.kind,
+    this.uri,
+    this.sendId,
+    this.recvId,
+    this.encrypt,
+    this.direction,
+  });
+}
+
 class RtpHeaderExtension {
   /*
 	 * Media kind. If empty string, it's valid for all kinds.
 	 * Default any media kind.
 	 */
-  final RTCRtpMediaType kind;
+  RTCRtpMediaType kind;
   /*
   * The URI of the RTP header extension, as defined in RFC 5285.
   */
-  final String uri;
+  String uri;
   /*
   * The preferred numeric identifier that goes in the RTP packet. Must be
   * unique.
   */
-  final int preferredId;
+  int preferredId;
   /*
   * If true, it is preferred that the value in the header be encrypted as per
   * RFC 6904. Default false.
   */
-  final bool preferredEncrypt;
+  bool preferredEncrypt;
   /*
 	 * If 'sendrecv', mediasoup supports sending and receiving this RTP extension.
 	 * 'sendonly' means that mediasoup can send (but not receive) it. 'recvonly'
 	 * means that mediasoup can receive (but not send) it.
 	 */
-  final RtpHeaderDirection direction;
+  RtpHeaderDirection direction;
 
   RtpHeaderExtension({
     this.kind,
@@ -308,7 +370,7 @@ class CodecParameters {
     );
   }
 
-  List<String> get keys  {
+  List<String> get keys {
     List<String> _keys = <String>[];
 
     if (spropStereo != null) {
@@ -345,7 +407,7 @@ class CodecParameters {
     return _keys;
   }
 
-  operator[] (String key) => toMap()[key];
+  operator [](String key) => toMap()[key];
 
   Map<String, int> toMap([bool stereoInMap = false]) {
     return {
@@ -382,7 +444,8 @@ class RtpCodecParameters {
   /// Codec-specific parameters available for signaling. Some parameters (such
   /// as 'packetization-mode' and 'profile-level-id' in H264 or 'profile-id' in
   /// VP9) are critical for codec matching.
-  CodecParameters parameters;
+  // CodecParameters parameters;
+  Map<dynamic, dynamic> parameters;
 
   /// Transport layer and codec-specific feedback messages for this codec.
   List<RtcpFeedback> rtcpFeedback;
@@ -449,6 +512,16 @@ class RtpParameters {
     this.encodings,
     this.rtcp,
   });
+
+  static RtpParameters copy(RtpParameters old) {
+    return RtpParameters(
+      codecs: old.codecs,
+      encodings: old.encodings,
+      headerExtensions: old.headerExtensions,
+      mid: old.mid,
+      rtcp: old.rtcp,
+    );
+  }
 }
 
 /// Provides information on RTCP settings within the RTP parameters.
