@@ -157,7 +157,7 @@ class CommonUtils {
 
   /// Apply codec parameters in the given SDP m= section answer based on the
   /// given RTP parameters of an offer.
-  void applyCodecParameters(RtpParameters offerRtpParameters, MediaObject answerMediaObject,) {
+  static void applyCodecParameters(RtpParameters offerRtpParameters, MediaObject answerMediaObject,) {
     for (RtpCodecParameters codec in offerRtpParameters.codecs) {
       String mimeType = codec.mimeType.toLowerCase();
 
