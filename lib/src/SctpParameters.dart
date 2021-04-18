@@ -94,5 +94,15 @@ class SctpStreamParameters {
 	 * Name of the sub-protocol used by this DataChannel.
 	 */
   String protocol;
+
+  SctpStreamParameters({
+    this.streamId,
+    this.ordered,
+    this.maxPacketLifeTime,
+    this.maxRetransmits,
+    this.priority,
+    this.label,
+    this.protocol,
+  });
 }
 
