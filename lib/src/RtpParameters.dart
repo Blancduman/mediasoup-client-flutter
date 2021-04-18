@@ -328,6 +328,26 @@ class RtpEncodingParameters extends RTCRtpEncoding {
           scaleResolutionDownBy: scaleResolutionDownBy,
           ssrc: ssrc,
         );
+
+  static RtpEncodingParameters assign(RtpEncodingParameters prev, RtpEncodingParameters next) {
+    return RtpEncodingParameters(
+      codecPayloadType: next.codecPayloadType ?? prev.codecPayloadType,
+      rtx: next.rtx ?? prev.rtx,
+      dtx: next.dtx ?? prev.dtx,
+      scalabilityMode: next.scalabilityMode ?? prev.scalabilityMode,
+      adaptivePtime: next.adaptivePtime ?? prev.adaptivePtime,
+      priority: next.priority ?? prev.priority,
+      netoworkPriority: next.netoworkPriority ?? prev.netoworkPriority,
+      active: next.active ?? prev.active,
+      maxBitrate: next.maxBitrate ?? prev.maxBitrate,
+      maxFramerate: next.maxFramerate ?? prev.maxFramerate,
+      minBitrate: next.minBitrate ?? prev.minBitrate,
+      numTemporalLayers: next.numTemporalLayers ?? prev.numTemporalLayers,
+      rid: next.rid ?? prev.rid,
+      scaleResolutionDownBy: next.scaleResolutionDownBy ?? prev.scaleResolutionDownBy,
+      ssrc: next.ssrc ?? prev.ssrc,
+    );
+  }
 }
 
 class CodecParameters {
