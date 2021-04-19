@@ -142,12 +142,12 @@ class Native extends HandlerInterface {
   }
 
   @override
-  Future<List<StatsReport>> getReceiverStats({String localId}) {
+  Future<List<StatsReport>> getReceiverStats(String localId) {
     throw UnsupportedError('not implemented');
   }
 
   @override
-  Future<List<StatsReport>> getSenderStats({String localId}) {
+  Future<List<StatsReport>> getSenderStats(String localId) {
     throw UnsupportedError('not implemented');
   }
 
@@ -160,7 +160,7 @@ class Native extends HandlerInterface {
   String get name => 'Native';
 
   @override
-  Future<HandlerReceiveResult> receive({HandlerReceiveOptions options}) async {
+  Future<HandlerReceiveResult> receive(HandlerReceiveOptions options) async {
     _assertRecvDirection();
 
     logger.debug('receive() [trackId:${options.trackId}, kind:${RTCRtpMediaTypeExtension.value(options.kind)}]');
@@ -266,12 +266,12 @@ class Native extends HandlerInterface {
   }
 
   @override
-  Future<void> replaceTrack({String localId, MediaStreamTrack track}) {
+  Future<void> replaceTrack(ReplaceTrackOptions options) {
     throw UnsupportedError('not implemented');
   }
 
   @override
-  Future<void> restartIce({IceParameters iceParameters}) async {
+  Future<void> restartIce(IceParameters iceParameters) async {
     logger.debug('restartIce()');
 
     if (!_transportReady) {
@@ -331,7 +331,7 @@ class Native extends HandlerInterface {
     };
 
     _pc = await createPeerConnection({
-        'iceServers'         : options.iceServer != null ? [options.iceServer.toMap()] : [],
+        'iceServers'         : options.iceServers != null ? options.iceServers.map((RTCIceServer i) => i.toMap()).toList() : [],
 				'iceTransportPolicy' : options.iceTransportPolicy != null ? options.iceTransportPolicy.value : 'all',
 				'bundlePolicy'       : 'max-bundle',
 				'rtcpMuxPolicy'      : 'require',
@@ -370,7 +370,7 @@ class Native extends HandlerInterface {
   }
 
   @override
-  Future<HandlerSendResult> send({HandlerSendOptions options}) async {
+  Future<HandlerSendResult> send(HandlerSendOptions options) async {
     _assertSendRirection();
 
     logger.debug('send() [kind:${options.track.kind}, track.id:${options.track.id}]');
@@ -464,7 +464,7 @@ class Native extends HandlerInterface {
 
   @override
   Future<HandlerSendDataChannelResult> sendDataChannel(
-      {SctpStreamParameters options}) async {
+      SctpStreamParameters options) async {
     _assertSendRirection();
 
     RTCDataChannelInit initOptions = RTCDataChannelInit();
@@ -520,18 +520,18 @@ class Native extends HandlerInterface {
   }
 
   @override
-  Future<void> setMaxSpatialLayer({String localId, int spatialLayer}) {
+  Future<void> setMaxSpatialLayer(SetMaxSpatialLayerOptions options) {
     throw UnsupportedError('not implemented');
   }
 
   @override
   Future<void> setRtpEncodingParameters(
-      {String localId, RtpEncodingParameters params}) {
+      SetRtpEncodingParametersOptions options) {
     throw UnsupportedError('not implemented');
   }
 
   @override
-  Future<void> stopReceiving({String localId}) async {
+  Future<void> stopReceiving(String localId) async {
     _assertRecvDirection();
 
     logger.debug('stopReceiving() [localId:$localId]');
@@ -551,7 +551,7 @@ class Native extends HandlerInterface {
   }
 
   @override
-  Future<void> stopSending({String localId}) async {
+  Future<void> stopSending(String localId) async {
     _assertSendRirection();
 
     logger.debug('stopSending() [localId:$localId]');
@@ -597,7 +597,7 @@ class Native extends HandlerInterface {
   }
 
   @override
-  Future<void> updateIceServers({List<RTCIceServer> iceServers}) async {
+  Future<void> updateIceServers(List<RTCIceServer> iceServers) async {
     logger.debug('updateIceServers()');
 
     Map<String, dynamic> configuration = _pc.getConfiguration;

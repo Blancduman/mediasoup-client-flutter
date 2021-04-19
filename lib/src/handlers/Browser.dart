@@ -176,7 +176,7 @@ class Browser extends HandlerInterface {
   }
 
   @override
-  Future<List<StatsReport>> getReceiverStats({String localId}) async {
+  Future<List<StatsReport>> getReceiverStats(String localId) async {
     _assertRecvDirection();
 
     RTCRtpTransceiver transceiver = _mapMidTransceiver[localId];
@@ -189,7 +189,7 @@ class Browser extends HandlerInterface {
   }
 
   @override
-  Future<List<StatsReport>> getSenderStats({String localId}) async {
+  Future<List<StatsReport>> getSenderStats(String localId) async {
     _assertSendRirection();
 
     RTCRtpTransceiver transceiver = _mapMidTransceiver[localId];
@@ -210,7 +210,7 @@ class Browser extends HandlerInterface {
   String get name => 'Browser';
 
   @override
-  Future<HandlerReceiveResult> receive({HandlerReceiveOptions options}) async {
+  Future<HandlerReceiveResult> receive(HandlerReceiveOptions options) async {
     _assertRecvDirection();
 
     logger.debug('receive() [trackId:${options.trackId}, kind:${RTCRtpMediaTypeExtension.value(options.kind)}]');
@@ -325,26 +325,26 @@ class Browser extends HandlerInterface {
   }
 
   @override
-  Future<void> replaceTrack({String localId, MediaStreamTrack track}) async {
+  Future<void> replaceTrack(ReplaceTrackOptions options) async {
     _assertSendRirection();
 
-    if (track != null) {
-      logger.debug('replaceTrack() [localId:$localId, track.id${track.id}');
+    if (options.track != null) {
+      logger.debug('replaceTrack() [localId:${options.localId}, track.id${options.track.id}');
     } else {
-      logger.debug('replaceTrack() [localId:$localId, no track');
+      logger.debug('replaceTrack() [localId:${options.localId}, no track');
     }
 
-    RTCRtpTransceiver transceiver = _mapMidTransceiver[localId];
+    RTCRtpTransceiver transceiver = _mapMidTransceiver[options.localId];
 
     if (transceiver == null) {
       throw('associated RTCRtpTransceiver not found');
     }
 
-    await transceiver.sender.replaceTrack(track);
+    await transceiver.sender.replaceTrack(options.track);
   }
 
   @override
-  Future<void> restartIce({IceParameters iceParameters}) async {
+  Future<void> restartIce(IceParameters iceParameters) async {
     logger.debug('restartIce()');
 
     // Provide the remote SDP handler with new remote Ice parameters.
@@ -405,7 +405,7 @@ class Browser extends HandlerInterface {
     };
 
     _pc = await createPeerConnection({
-      'iceServers': options.iceServer != null ? [options.iceServer.toMap()] : [],
+      'iceServers': options.iceServers != null ? options.iceServers.map((RTCIceServer i) => i.toMap()).toList() : [],
       'iceTransportPolicy': options.iceTransportPolicy != null ? options.iceTransportPolicy.value : 'all',
       'bundlePolicy': 'max-bundle',
       'rtcpMuxPolicy': 'require',
@@ -444,7 +444,7 @@ class Browser extends HandlerInterface {
   }
 
   @override
-  Future<HandlerSendResult> send({HandlerSendOptions options}) async {
+  Future<HandlerSendResult> send(HandlerSendOptions options) async {
     _assertSendRirection();
 
     logger.debug('send() [kind:${options.track.kind}, tack.id:${options.track.id}');
@@ -586,7 +586,7 @@ class Browser extends HandlerInterface {
 
   @override
   Future<HandlerSendDataChannelResult> sendDataChannel(
-      {SctpStreamParameters options}) async {
+      SctpStreamParameters options) async {
     _assertSendRirection();
 
     RTCDataChannelInit initOptions = RTCDataChannelInit();
@@ -642,12 +642,12 @@ class Browser extends HandlerInterface {
   }
 
   @override
-  Future<void> setMaxSpatialLayer({String localId, int spatialLayer}) async {
+  Future<void> setMaxSpatialLayer(SetMaxSpatialLayerOptions options) async {
     _assertSendRirection();
 
-    logger.debug('setMaxSpatialLayer() [localId:$localId, spatialLayer:$spatialLayer');
+    logger.debug('setMaxSpatialLayer() [localId:${options.localId}, spatialLayer:${options.spatialLayer}');
 
-    RTCRtpTransceiver transceiver = _mapMidTransceiver[localId];
+    RTCRtpTransceiver transceiver = _mapMidTransceiver[options.localId];
 
     if (transceiver == null) {
       throw('associated RTCRtpTransceiver not found');
@@ -657,7 +657,7 @@ class Browser extends HandlerInterface {
 
     int idx = 0;
     parameters.encodings.forEach((RTCRtpEncoding encoding) {
-      if (idx <= spatialLayer) {
+      if (idx <= options.spatialLayer) {
         encoding.active = true;
       } else {
         encoding.active = false;
@@ -669,12 +669,12 @@ class Browser extends HandlerInterface {
   }
 
   @override
-  Future<void> setRtpEncodingParameters({String localId, RtpEncodingParameters params}) async {
+  Future<void> setRtpEncodingParameters(SetRtpEncodingParametersOptions options) async {
     _assertSendRirection();
 
-    logger.debug('setRtpEncodingParameters() [localId:$localId, params:$params]');
+    logger.debug('setRtpEncodingParameters() [localId:${options.localId}, params:${options.params}]');
 
-    RTCRtpTransceiver transceiver = _mapMidTransceiver[localId];
+    RTCRtpTransceiver transceiver = _mapMidTransceiver[options.localId];
 
     if (transceiver == null) {
       throw('associated RTCRtpTransceiver not found');
@@ -685,14 +685,14 @@ class Browser extends HandlerInterface {
     int idx = 0;
     parameters.encodings.forEach((RTCRtpEncoding encoding) {
       parameters.encodings[idx] = RTCRtpEncoding(
-        active: params.active != null ? params.active : encoding.active,
-        maxBitrate: params.maxBitrate ?? encoding.maxBitrate,
-        maxFramerate: params.maxFramerate ?? encoding.maxFramerate,
-        minBitrate: params.minBitrate ?? encoding.minBitrate,
-        numTemporalLayers: params.numTemporalLayers ?? encoding.numTemporalLayers,
-        rid: params.rid ?? encoding.rid,
-        scaleResolutionDownBy: params.scaleResolutionDownBy ?? encoding.scaleResolutionDownBy,
-        ssrc: params.ssrc ?? encoding.ssrc,
+        active: options.params.active != null ? options.params.active : encoding.active,
+        maxBitrate: options.params.maxBitrate ?? encoding.maxBitrate,
+        maxFramerate: options.params.maxFramerate ?? encoding.maxFramerate,
+        minBitrate: options.params.minBitrate ?? encoding.minBitrate,
+        numTemporalLayers: options.params.numTemporalLayers ?? encoding.numTemporalLayers,
+        rid: options.params.rid ?? encoding.rid,
+        scaleResolutionDownBy: options.params.scaleResolutionDownBy ?? encoding.scaleResolutionDownBy,
+        ssrc: options.params.ssrc ?? encoding.ssrc,
       );
       idx++;
     });
@@ -701,7 +701,7 @@ class Browser extends HandlerInterface {
   }
 
   @override
-  Future<void> stopReceiving({String localId}) async {
+  Future<void> stopReceiving(String localId) async {
     _assertRecvDirection();
 
     logger.debug('stopReceiving() [localId:$localId');
@@ -728,7 +728,7 @@ class Browser extends HandlerInterface {
   }
 
   @override
-  Future<void> stopSending({String localId}) async {
+  Future<void> stopSending(String localId) async {
     _assertSendRirection();
 
     logger.debug('stopSending() [localId:$localId]');
@@ -757,7 +757,7 @@ class Browser extends HandlerInterface {
   }
 
   @override
-  Future<void> updateIceServers({List<RTCIceServer> iceServers}) async {
+  Future<void> updateIceServers(List<RTCIceServer> iceServers) async {
     logger.debug('updateIceServers()');
 
     Map<String, dynamic> configuration = _pc.getConfiguration;

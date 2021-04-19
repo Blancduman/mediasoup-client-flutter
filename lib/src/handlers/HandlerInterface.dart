@@ -85,7 +85,7 @@ class HandlerRunOptions {
   List<IceCandidate> iceCandidates;
   DtlsParameters dtlsParameters;
   SctpParameters sctpParameters;
-  RTCIceServer iceServer;
+  List<RTCIceServer> iceServers;
   RTCIceTransportPolicy iceTransportPolicy;
   var additionalSettings;
   var proprietaryConstraints;
@@ -97,7 +97,7 @@ class HandlerRunOptions {
     this.iceCandidates,
     this.dtlsParameters,
     this.sctpParameters,
-    this.iceServer,
+    this.iceServers,
     this.iceTransportPolicy,
     this.additionalSettings,
     this.proprietaryConstraints,
@@ -170,10 +170,31 @@ class HandlerReceiveDataChannelOptions {
   });
 }
 
+class ReplaceTrackOptions {
+  final String localId;
+  final MediaStreamTrack track;
+
+  ReplaceTrackOptions({this.localId, this.track});
+}
+
 class HandlerReceiveDataChannelResult {
   RTCDataChannel dataChannel;
 
   HandlerReceiveDataChannelResult({this.dataChannel});
+}
+
+class SetMaxSpatialLayerOptions {
+  final String localId;
+  final int spatialLayer;
+
+  SetMaxSpatialLayerOptions({this.localId, this.spatialLayer});
+}
+
+class SetRtpEncodingParametersOptions {
+  final String localId;
+  final RtpEncodingParameters params;
+
+  SetRtpEncodingParametersOptions({this.localId, this.params});
 }
 
 abstract class HandlerInterface extends EnhancedEventEmitter {
@@ -198,34 +219,22 @@ abstract class HandlerInterface extends EnhancedEventEmitter {
   // Future<SctpCapabilities> getNativeSctpCapabilities();
   SctpCapabilities getNativeSctpCapabilities();
   void run({HandlerRunOptions options});
-  Future<void> updateIceServers({List<RTCIceServer> iceServers});
-  Future<void> restartIce({IceParameters iceParameters});
+  Future<void> updateIceServers(List<RTCIceServer> iceServers);
+  Future<void> restartIce(IceParameters iceParameters);
   // TODO: RTCStatsReport
   Future<List<StatsReport>> getTransportStats();
-  Future<HandlerSendResult> send({HandlerSendOptions options});
-  Future<void> stopSending({String localId});
-  Future<void> replaceTrack({
-    String localId, MediaStreamTrack track,
-  });
-  Future<void> setMaxSpatialLayer({
-    String localId, int spatialLayer,
-  });
-  Future<void> setRtpEncodingParameters({
-    String localId, RtpEncodingParameters params,
-  });
-  Future<List<StatsReport>> getSenderStats({String localId});
-  Future<HandlerSendDataChannelResult> sendDataChannel({
-    SctpStreamParameters options,
-  });
-  Future<HandlerReceiveResult> receive({
-    HandlerReceiveOptions options,
-  });
-  Future<void> stopReceiving({
+  Future<HandlerSendResult> send(HandlerSendOptions options);
+  Future<void> stopSending(String localId);
+  Future<void> replaceTrack(ReplaceTrackOptions options);
+  Future<void> setMaxSpatialLayer(SetMaxSpatialLayerOptions options);
+  Future<void> setRtpEncodingParameters(SetRtpEncodingParametersOptions options);
+  Future<List<StatsReport>> getSenderStats(String localId);
+  Future<HandlerSendDataChannelResult> sendDataChannel(SctpStreamParameters options);
+  Future<HandlerReceiveResult> receive(HandlerReceiveOptions options);
+  Future<void> stopReceiving(
     String localId,
-  });
-  Future<List<StatsReport>> getReceiverStats({
-    String localId,
-  });
+  );
+  Future<List<StatsReport>> getReceiverStats(String localId);
   Future<HandlerReceiveDataChannelResult> receiveDataChannel(
     HandlerReceiveDataChannelOptions options,
   );
