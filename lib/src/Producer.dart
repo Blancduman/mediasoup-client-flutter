@@ -76,7 +76,7 @@ class Producer extends EnhancedEventEmitter {
     bool disableTrackOnPause,
     bool zeroRtpOnPause,
     Map<String, dynamic> appData,
-  }) : this._appData = appData {
+  }) : this._appData = appData, super() {
     _logger.debug('constructor()');
 
     _id = id;

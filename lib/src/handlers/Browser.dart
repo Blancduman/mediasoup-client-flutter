@@ -38,6 +38,8 @@ class Browser extends HandlerInterface {
   // Got transport local and remote parameters.
   bool _transportReady = false;
 
+  Browser() : super();
+
   Future<void> _setupTransport({
     DtlsRole localDtlsRole,
     SdpObject localSdpObject,

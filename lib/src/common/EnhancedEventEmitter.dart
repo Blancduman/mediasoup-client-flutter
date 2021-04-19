@@ -6,6 +6,7 @@ import 'package:mediasoup_client_flutter/src/common/Logger.dart';
 Logger _logger = Logger('EnhancedEventEmitter');
 
 class EnhancedEventEmitter extends EventEmitter {
+  EnhancedEventEmitter() : super();
   void safeEmit(String event, [List<Object> args]) {
     try {
       emit(event, args);

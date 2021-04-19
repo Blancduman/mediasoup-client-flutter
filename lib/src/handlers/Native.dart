@@ -44,6 +44,8 @@ class Native extends HandlerInterface {
   // Got transport local and remote parameters.
   bool _transportReady = false;
 
+  Native() : super();
+
   void _assertSendRirection() {
     if (_direction != Direction.send) {
       throw ('method can just be called for handlers with "send" direction');
@@ -80,13 +82,13 @@ class Native extends HandlerInterface {
   }
 
   @override
-  void close() {
+  Future<void> close() async {
     logger.debug('close()');
 
     // Close RTCPeerConnection.
     if (_pc != null) {
       try {
-        _pc.close();
+        await _pc.close();
       } catch (error) {}
     }
   }

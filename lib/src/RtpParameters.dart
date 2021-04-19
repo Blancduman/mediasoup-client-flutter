@@ -18,6 +18,18 @@ class RtpCapabilities {
     this.headerExtensions,
     this.fecMechanisms,
   });
+
+  static RtpCapabilities copy(RtpCapabilities old, {
+    List<RtpCodecCapability> codecs,
+    List<RtpHeaderExtension> headerExtensions,
+    List<String> fecMechanisms,
+  }) {
+    return RtpCapabilities(
+      codecs: codecs != null ? codecs : old.codecs,
+      headerExtensions: headerExtensions != null ? headerExtensions : old.headerExtensions,
+      fecMechanisms: fecMechanisms != null ? fecMechanisms : old.fecMechanisms,
+    );
+  }
 }
 
 ///Direction of RTP header extension.

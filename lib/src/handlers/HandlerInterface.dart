@@ -1,9 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mediasoup_client_flutter/src/Producer.dart';
 import 'package:mediasoup_client_flutter/src/SctpParameters.dart';
 import 'package:mediasoup_client_flutter/src/Transport.dart';
 import 'package:mediasoup_client_flutter/src/common/EnhancedEventEmitter.dart';
 import 'package:mediasoup_client_flutter/src/RtpParameters.dart';
+import 'package:mediasoup_client_flutter/src/handlers/Browser.dart';
+import 'package:mediasoup_client_flutter/src/handlers/Native.dart';
 
 class SCTP_NUM_STREAMS {
   static const int OS = 1024;
@@ -174,6 +177,15 @@ class HandlerReceiveDataChannelResult {
 }
 
 abstract class HandlerInterface extends EnhancedEventEmitter {
+  HandlerInterface() : super();
+
+  static HandlerInterface handlerFactory() {
+    if (kIsWeb) {
+      return Browser();
+    } else {
+      return Native();
+    }
+  }
   ///@emits @connect - (
   ///    { dtlsParameters: DtlsParameters },
   ///    callback: Function,
@@ -181,7 +193,7 @@ abstract class HandlerInterface extends EnhancedEventEmitter {
   ///  )
   ///@emits @connectionstatechange - (connectionState: ConnectionState)
   String get name;
-  void close();
+  Future<void> close();
   Future<RtpCapabilities> getNativeRtpCapabilities();
   // Future<SctpCapabilities> getNativeSctpCapabilities();
   SctpCapabilities getNativeSctpCapabilities();

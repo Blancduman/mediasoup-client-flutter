@@ -41,7 +41,7 @@ class DataProducer extends EnhancedEventEmitter {
     RTCDataChannel dataChannel,
     SctpStreamParameters sctpStreamParameters,
     Map<String, dynamic> appData,
-  }) : _appData = appData {
+  }) : _appData = appData, super() {
     _logger.debug('constructor()');
 
     _id = id;
