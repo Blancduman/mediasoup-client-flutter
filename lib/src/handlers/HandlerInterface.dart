@@ -5,6 +5,11 @@ import 'package:mediasoup_client_flutter/src/Transport.dart';
 import 'package:mediasoup_client_flutter/src/common/EnhancedEventEmitter.dart';
 import 'package:mediasoup_client_flutter/src/RtpParameters.dart';
 
+class SCTP_NUM_STREAMS {
+  static const int OS = 1024;
+  static const int MIS = 1024;
+}
+
 class RTCOAuthCredential {
   String accessToken;
   String macKey;
@@ -56,6 +61,19 @@ class RTCIceServer {
   String username;
 
   RTCIceServer({this.credential, this.credentialType, this.urls, this.username,});
+
+  Map<String, dynamic> toMap() {
+    return {
+      if (credential != null)
+        'credential': credential,
+      if (credentialType != null)
+      'credentialType': credentialType.value,
+      if (urls != null)
+      'urls': urls,
+      if (username != null)
+      'username': username,
+    };
+  }
 }
 
 class HandlerRunOptions {

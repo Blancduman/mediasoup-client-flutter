@@ -6,7 +6,6 @@ import 'package:mediasoup_client_flutter/src/SdpObject.dart';
 import 'package:mediasoup_client_flutter/src/Transport.dart';
 import 'package:mediasoup_client_flutter/src/SctpParameters.dart';
 import 'package:mediasoup_client_flutter/src/RtpParameters.dart';
-import 'package:flutter_webrtc/src/interface/media_stream_track.dart';
 import 'package:mediasoup_client_flutter/src/common/Logger.dart';
 import 'package:mediasoup_client_flutter/src/handlers/HandlerInterface.dart';
 import 'package:mediasoup_client_flutter/src/handlers/sdp/CommonUtils.dart';
@@ -15,11 +14,6 @@ import 'package:mediasoup_client_flutter/src/handlers/sdp/RemoteSdp.dart';
 import 'package:mediasoup_client_flutter/src/handlers/sdp/UnifiedPlanUtils.dart';
 
 Logger logger = Logger('Browser');
-
-class SCTP_NUM_STREAMS {
-  static const int OS = 1024;
-  static const int MIS = 1024;
-}
 
 class Browser extends HandlerInterface {
   // Handler direction.
@@ -33,10 +27,10 @@ class Browser extends HandlerInterface {
   Map<RTCRtpMediaType, RtpParameters> _sendingRemoteRtpParametersByKind;
   // RTCPeerConnection instance.
   RTCPeerConnection _pc;
-  // Map of RTCTransceivers indexed by MID.
-  Map<String, RTCRtpTransceiver> _mapMidTransceiver = {};
   // Local stream for sending.
   MediaStream _sendStream;
+  // Map of RTCTransceivers indexed by MID.
+  Map<String, RTCRtpTransceiver> _mapMidTransceiver = {};
   // Whether a DataChannel m=application section has been created.
   bool _hasDataChannelMediaSection = false;
   // Sending DataChannel id value counter. Incremented for each new DataChannel.
@@ -293,7 +287,7 @@ class Browser extends HandlerInterface {
     initOptions.ordered = options.sctpStreamParameters.ordered;
     initOptions.maxRetransmitTime = options.sctpStreamParameters.maxPacketLifeTime;
     initOptions.maxRetransmits = options.sctpStreamParameters.maxRetransmits;
-    initOptions.protocol = options.sctpStreamParameters.protocol;
+    initOptions.protocol = options.protocol;
 
     logger.debug('receiveDataChannel() [options:${initOptions.toMap()}]');
 
@@ -409,8 +403,8 @@ class Browser extends HandlerInterface {
     };
 
     _pc = await createPeerConnection({
-      'iceServers': options.iceServer ?? [],
-      'iceTransportPolicy': options.iceTransportPolicy ?? 'all',
+      'iceServers': options.iceServer != null ? [options.iceServer.toMap()] : [],
+      'iceTransportPolicy': options.iceTransportPolicy != null ? options.iceTransportPolicy.value : 'all',
       'bundlePolicy': 'max-bundle',
       'rtcpMuxPolicy': 'require',
       'sdpSemantics': 'unified-plan',
@@ -636,10 +630,10 @@ class Browser extends HandlerInterface {
     }
 
     SctpStreamParameters sctpStreamParameters = SctpStreamParameters(
-      streamId: options.streamId,
-      ordered: options.ordered,
-      maxPacketLifeTime: options.maxPacketLifeTime,
-      maxRetransmits: options.maxRetransmits,
+      streamId: initOptions.id,
+      ordered: initOptions.ordered,
+      maxPacketLifeTime: initOptions.maxRetransmitTime,
+      maxRetransmits: initOptions.maxRetransmits,
     );
 
     return HandlerSendDataChannelResult(dataChannel: dataChannel, sctpStreamParameters: sctpStreamParameters,);
@@ -766,7 +760,7 @@ class Browser extends HandlerInterface {
 
     Map<String, dynamic> configuration = _pc.getConfiguration;
 
-    configuration['iceServers'] = iceServers;
+    configuration['iceServers'] = iceServers.map((RTCIceServer ice) => ice.toMap()).toList();
 
     await _pc.setConfiguration(configuration);
   }

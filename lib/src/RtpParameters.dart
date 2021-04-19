@@ -533,13 +533,19 @@ class RtpParameters {
     this.rtcp,
   });
 
-  static RtpParameters copy(RtpParameters old) {
+  static RtpParameters copy(RtpParameters old, {
+    String mid,
+    List<RtpCodecParameters> codecs,
+    List<RtpHeaderExtensionParameters> headerExtensions,
+    List<RtpEncodingParameters> encodings,
+    RtcpParapeters rtcp,
+  }) {
     return RtpParameters(
-      codecs: old.codecs,
-      encodings: old.encodings,
-      headerExtensions: old.headerExtensions,
-      mid: old.mid,
-      rtcp: old.rtcp,
+      codecs: mid ?? old.codecs,
+      encodings: codecs != null ? codecs : old.encodings,
+      headerExtensions: headerExtensions != null ? headerExtensions : old.headerExtensions,
+      mid: encodings != null ? encodings : old.mid,
+      rtcp: rtcp ?? old.rtcp,
     );
   }
 }
