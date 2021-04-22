@@ -43,7 +43,7 @@ class Producer extends EnhancedEventEmitter {
   // Producer kind.
   String _kind;
   // RTP parameters.
-  RTCRtpParameters _rtpParameters;
+  RtpParameters _rtpParameters;
   // Paused flag.
   bool _paused;
   // Video max spatial layer.
@@ -71,7 +71,7 @@ class Producer extends EnhancedEventEmitter {
     String localId,
     RTCRtpSender rtpSender,
     MediaStreamTrack track,
-    RTCRtpParameters rtpParameters,
+    RtpParameters rtpParameters,
     bool stopTracks,
     bool disableTrackOnPause,
     bool zeroRtpOnPause,
@@ -107,7 +107,7 @@ class Producer extends EnhancedEventEmitter {
   /// The associated track.
   MediaStreamTrack get track => _track;
   /// RTP parameters.
-  RTCRtpParameters get rtpParameters => _rtpParameters;
+  RtpParameters get rtpParameters => _rtpParameters;
   /// Whether the Producer is paused.
   bool get paused => _paused;
   /// Max spatial layer.

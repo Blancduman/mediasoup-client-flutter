@@ -159,6 +159,10 @@ class Device {
     Map<dynamic, dynamic> additionalSettings,
     Map<dynamic, dynamic> proprietaryConstraints,
     Map<dynamic, dynamic> appData,
+    Function producerCallback,
+    Function consumerCallback,
+    Function dataProducerCallback,
+    Function dataConsumerCallback,
   }) {
     if (!_loaded) {
 			throw('not loaded');
@@ -187,6 +191,10 @@ class Device {
       appData: appData,
       extendedRtpCapabilities: _extendedRtpCapabilities,
       canProduceByKind: _canProduceByKind,
+      producerCallback: producerCallback,
+      dataProducerCallback: dataProducerCallback,
+      consumerCallback: consumerCallback,
+      dataConsumerCallback: dataConsumerCallback,
     );
 
     // Emit observer event.
@@ -211,6 +219,8 @@ class Device {
     Map<dynamic, dynamic> additionalSettings,
     Map<dynamic, dynamic> proprietaryConstraints,
     Map<dynamic, dynamic> appData,
+    Function producerCallback,
+    Function dataProducerCallback,
   }) {
     logger.debug('createSendTransport()');
 
@@ -226,6 +236,8 @@ class Device {
       additionalSettings: additionalSettings,
       proprietaryConstraints: proprietaryConstraints,
       appData: appData,
+      producerCallback: producerCallback,
+      dataProducerCallback: dataProducerCallback,
     );
   }
 
@@ -244,6 +256,8 @@ class Device {
     Map<dynamic, dynamic> additionalSettings,
     Map<dynamic, dynamic> proprietaryConstraints,
     Map<dynamic, dynamic> appData,
+    Function consumerCallback,
+    Function dataConsumerCallback,
   }) {
     logger.debug('createRecvTransport()');
 
@@ -259,6 +273,8 @@ class Device {
       additionalSettings: additionalSettings,
       proprietaryConstraints: proprietaryConstraints,
       appData: appData,
+      consumerCallback: consumerCallback,
+      dataConsumerCallback: dataConsumerCallback,
     );
   }
 }

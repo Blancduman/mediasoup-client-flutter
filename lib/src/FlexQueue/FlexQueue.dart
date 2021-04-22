@@ -1,20 +1,55 @@
-
 abstract class FlexTask {
   final String id;
   final Function execFun;
   final Function callbackFun;
+  final Function errorCallbackFun;
   final Object argument;
+  final String message;
 
-  FlexTask({this.id, this.execFun, this.argument, this.callbackFun,});
+  FlexTask({
+    this.id,
+    this.execFun,
+    this.argument,
+    this.callbackFun,
+    this.errorCallbackFun,
+    this.message,
+  });
 }
 
 class FlexTaskAdd extends FlexTask {
-  FlexTaskAdd({String id, Function execFun, Object argument, Function callbackFun}) : super(id: id, execFun: execFun, argument: argument, callbackFun: callbackFun,);
+  FlexTaskAdd({
+    String id,
+    Function execFun,
+    Object argument,
+    Function callbackFun,
+    Function errorCallbackFun,
+    String message,
+  }) : super(
+          id: id,
+          execFun: execFun,
+          argument: argument,
+          callbackFun: callbackFun,
+          errorCallbackFun: errorCallbackFun,
+          message: message,
+        );
 }
 
 class FlexTaskRemove extends FlexTask {
-
-  FlexTaskRemove({String id, Function execFun, Object argument, Function callbackFun}) : super(id: id, execFun: execFun, argument: argument, callbackFun: callbackFun,);
+  FlexTaskRemove({
+    String id,
+    Function execFun,
+    Object argument,
+    Function callbackFun,
+    Function errorCallbackFun,
+    String message,
+  }) : super(
+          id: id,
+          execFun: execFun,
+          argument: argument,
+          callbackFun: callbackFun,
+          errorCallbackFun: errorCallbackFun,
+          message: message,
+        );
 }
 
 class FlexQueue {
@@ -25,6 +60,7 @@ class FlexQueue {
     if (task is FlexTaskRemove) {
       int index = taskQueue.indexWhere((FlexTask qTask) => qTask.id == task.id);
       if (index != -1) {
+        print(task?.message);
         taskQueue.removeAt(index);
         return;
       } else {
@@ -42,7 +78,16 @@ class FlexQueue {
       if (taskQueue.isNotEmpty) {
         isBusy = true;
         FlexTask task = taskQueue.removeAt(0);
-        task?.callbackFun((await task.execFun(task.argument)));
+        print(task?.message);
+        try {
+          if (task.argument == null) {
+            task?.callbackFun((await task.execFun()));
+          } else {
+            task?.callbackFun((await task.execFun(task.argument)));
+          }
+        } catch (error) {
+          task?.errorCallbackFun(error);
+        }
         isBusy = false;
         _runTask();
       }

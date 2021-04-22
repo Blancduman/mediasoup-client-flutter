@@ -1,4 +1,6 @@
-import 'package:flutter/scheduler.dart';
+
+
+import 'package:mediasoup_client_flutter/src/common/index.dart';
 
 class NumSctpStreams {
   /*
@@ -104,5 +106,17 @@ class SctpStreamParameters {
     this.label,
     this.protocol,
   });
+
+  static SctpStreamParameters copy(SctpStreamParameters old) {
+    SctpStreamParameters(
+      streamId: old.streamId,
+      ordered: old.ordered,
+      maxPacketLifeTime: old.maxPacketLifeTime,
+      maxRetransmits: old.maxRetransmits,
+      priority: old.priority,
+      label: old.label,
+      protocol: old.protocol,
+    );
+  }
 }
 
