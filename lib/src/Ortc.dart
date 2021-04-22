@@ -97,8 +97,8 @@ class Ortc {
       }
 
       // rtcpFeedback is optional. If unset, set it to an empty array.
-      if (codec.rtcpFeedback == null ||
-          codec.rtcpFeedback is! List<RtcpFeedback>) {
+      // || codec.rtcpFeedback is! List<RtcpFeedback>
+      if (codec.rtcpFeedback == null) {
         codec.rtcpFeedback = <RtcpFeedback>[];
       }
 
@@ -156,9 +156,10 @@ class Ortc {
     }
 
     // codecs is optional. If unset, fill with an empty array.
-    if (caps.codecs != null && caps.codecs is! List<RtpCodecCapability>) {
-      throw ('caps.codecs is not an array');
-    } else if (caps.codecs == null) {
+    // if (caps.codecs != null && caps.codecs is! List<RtpCodecCapability>) {
+    //   throw ('caps.codecs is not an array');
+    // } else
+     if (caps.codecs == null) {
       caps.codecs = <RtpCodecCapability>[];
     }
 
@@ -167,10 +168,11 @@ class Ortc {
     }
 
     // headerExtensions is optional. If unset, fill with an empty array.
-    if (caps.headerExtensions == null &&
-        caps.headerExtensions is! List<RtpHeaderExtension>) {
-      throw ('caps.headerExtensions is not an array');
-    } else if (caps.headerExtensions == null) {
+    // if (caps.headerExtensions == null &&
+    //     caps.headerExtensions is! List<RtpHeaderExtension>) {
+    //   throw ('caps.headerExtensions is not an array');
+    // } else 
+    if (caps.headerExtensions == null) {
       caps.headerExtensions = <RtpHeaderExtension>[];
     }
 

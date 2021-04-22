@@ -6,14 +6,10 @@ import 'package:mediasoup_client_flutter/src/Transport.dart';
 import 'package:mediasoup_client_flutter/src/common/EnhancedEventEmitter.dart';
 import 'package:mediasoup_client_flutter/src/common/Logger.dart';
 import 'package:mediasoup_client_flutter/src/handlers/HandlerInterface.dart';
-import 'package:mediasoup_client_flutter/src/handlers/Native.dart'
-  if (dart.library.html) 'package:mediasoup_client_flutter/src/handlers/Browser.dart';
 
 Logger logger = Logger('Device');
 
 class Device {
-  // RTC handler factory.
-  HandlerInterface _handlerInterface;
   // Loaded flag.
   bool _loaded = false;
   // Extended RTP capabilities.
