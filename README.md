@@ -1,6 +1,6 @@
 # mediasoup_client_flutter
 
-A new Flutter package project.
+This project is untested.
 
 ## Getting Started
 
