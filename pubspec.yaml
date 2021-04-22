@@ -1,8 +1,8 @@
 name: mediasoup_client_flutter
 description: A new Flutter package project.
 version: 0.0.1
-author:
-homepage:
+author: Blancduman
+homepage: https://github.com/Blancduman/mediasoup-client-flutter
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
