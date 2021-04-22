@@ -1,6 +1,6 @@
-# mediasoup_client_flutter
+# WIP: mediasoup_client_flutter
 
-This project is untested.
+Be carefull: WORK IN PROGRESS. This project is untested. 
 
 ## Getting Started
 
