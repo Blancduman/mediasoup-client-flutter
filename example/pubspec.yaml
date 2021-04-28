@@ -23,6 +23,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  mediasoup_client_flutter:
+    path: ../
+  socket_io_client: ^0.9.12
+  random_words: ^1.0.2
+  random_string: ^2.1.0
+  flutter_webrtc: ^0.6.3
 
 
   # The following adds the Cupertino Icons font to your application.
