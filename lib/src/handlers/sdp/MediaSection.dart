@@ -988,9 +988,9 @@ class AnswerMediaSection extends MediaSection {
                 Map<dynamic, dynamic>.of(codec.parameters);
 
             if (codecOptions != null) {
-              bool opusStereo = codecOptions.opusStereo;
-              bool opusFec = codecOptions.opusFec;
-              bool opusDtx = codecOptions.opusDtx;
+              int opusStereo = codecOptions.opusStereo;
+              int opusFec = codecOptions.opusFec;
+              int opusDtx = codecOptions.opusDtx;
               int opusMaxPlaybackRate = codecOptions.opusMaxPlaybackRate;
               int opusMaxAverageBitrate = codecOptions.opusMaxAverageBitrate;
               int opusPtime = codecOptions.opusPtime;
@@ -1009,18 +1009,24 @@ class AnswerMediaSection extends MediaSection {
                 case 'audio/opus':
                   {
                     if (opusStereo != null) {
-                      offerCodec.parameters['sprop-stereo'] = opusStereo ? 1 : 0;
-                      codecParameters['stereo'] = opusStereo ? 1 : 0;
+                      // offerCodec.parameters['sprop-stereo'] = opusStereo ? 1 : 0;
+                      offerCodec.parameters['sprop-stereo'] = opusStereo != null ? opusStereo : 0;
+                      // codecParameters['stereo'] = opusStereo ? 1 : 0;
+                      codecParameters['stereo'] = opusStereo != null ? opusStereo : 0;
                     }
 
                     if (opusFec != null) {
-                      offerCodec.parameters['useinbandfec'] = opusFec ? 1 : 0;
-                      codecParameters['useinbandfec'] = opusFec ? 1 : 0;
+                      // offerCodec.parameters['useinbandfec'] = opusFec ? 1 : 0;
+                      offerCodec.parameters['useinbandfec'] = opusFec != null ? opusFec : 0;
+                      // codecParameters['useinbandfec'] = opusFec ? 1 : 0;
+                      codecParameters['useinbandfec'] = opusFec != null ? opusFec : 0;
                     }
 
                     if (opusDtx != null) {
-                      offerCodec.parameters['usedtx'] = opusDtx ? 1 : 0;
-                      codecParameters['usedtx'] = opusDtx ? 1 : 0;
+                      // offerCodec.parameters['usedtx'] = opusDtx ? 1 : 0;
+                      offerCodec.parameters['usedtx'] = opusDtx != null ? opusDtx : 0;
+                      // codecParameters['usedtx'] = opusDtx ? 1 : 0;
+                      codecParameters['usedtx'] = opusDtx != null ? opusDtx : 0;
                     }
 
                     if (opusMaxPlaybackRate != null) {

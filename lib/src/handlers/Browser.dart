@@ -56,7 +56,9 @@ class Browser extends HandlerInterface {
       );
 
       // Need to tell the remote transport about our parameters.
-      await safeEmitAsFuture('@connect', [dtlsParameters]);
+      await safeEmitAsFuture('@connect', {
+        'dtlsParameters': dtlsParameters,
+      });
 
       _transportReady = true;
     }

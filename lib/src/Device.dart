@@ -7,7 +7,7 @@ import 'package:mediasoup_client_flutter/src/common/EnhancedEventEmitter.dart';
 import 'package:mediasoup_client_flutter/src/common/Logger.dart';
 import 'package:mediasoup_client_flutter/src/handlers/HandlerInterface.dart';
 
-Logger logger = Logger('Device');
+Logger _logger = Logger('Device');
 
 class Device {
   // Loaded flag.
@@ -55,7 +55,7 @@ class Device {
   Future<void> load({
     RtpCapabilities routerRtpCapabilities,
   }) async {
-    logger.debug('load() [routerRtpCapabilities:${routerRtpCapabilities}]');
+    _logger.debug('load() [routerRtpCapabilities:${routerRtpCapabilities}]');
 
     routerRtpCapabilities = RtpCapabilities.copy(routerRtpCapabilities);
 
@@ -74,7 +74,7 @@ class Device {
 
       RtpCapabilities nativeRtpCapabilities = await handler.getNativeRtpCapabilities();
 
-      logger.debug('load() | got native RTP capabilities:$nativeRtpCapabilities');
+      _logger.debug('load() | got native RTP capabilities:$nativeRtpCapabilities');
 
       // This may throw.
       Ortc.validateRtpCapabilities(nativeRtpCapabilities);
@@ -82,7 +82,7 @@ class Device {
       // Get extended RTP capabilities.
       _extendedRtpCapabilities = Ortc.getExtendedRtpCapabilities(nativeRtpCapabilities, routerRtpCapabilities);
 
-      logger.debug('load() | got extended RTP capabilities:$_extendedRtpCapabilities');
+      _logger.debug('load() | got extended RTP capabilities:$_extendedRtpCapabilities');
 
       // Check wether we can produce audio/video.
       _canProduceByKind = CanProduceByKind(
@@ -96,17 +96,17 @@ class Device {
       // This may throw.
       Ortc.validateRtpCapabilities(_recvRtpCapabilities);
 
-      logger.debug('load() | got receiving RTP capabilities:$_recvRtpCapabilities');
+      _logger.debug('load() | got receiving RTP capabilities:$_recvRtpCapabilities');
 
       // Generate our SCTP capabilities.
       _sctpCapabilities = handler.getNativeSctpCapabilities();
 
-      logger.debug('load() | got native SCTP capabilities:$_sctpCapabilities');
+      _logger.debug('load() | got native SCTP capabilities:$_sctpCapabilities');
 
       // This may throw.
       Ortc.validateSctpCapabilities(_sctpCapabilities);
 
-      logger.debug('load() successed');
+      _logger.debug('load() successed');
 
       _loaded = true;
 
@@ -194,10 +194,13 @@ class Device {
     );
 
     // Emit observer event.
-    _observer.safeEmit('newtransport', [transport]);  
+    _observer.safeEmit('newtransport', {
+      'transport': transport,
+    });
 
     return transport;
   }
+
 
 
   /// Creates a Transport for sending media.
@@ -218,7 +221,7 @@ class Device {
     Function producerCallback,
     Function dataProducerCallback,
   }) {
-    logger.debug('createSendTransport()');
+    _logger.debug('createSendTransport()');
 
     return _createTransport(
       direction: Direction.send,
@@ -237,6 +240,34 @@ class Device {
     );
   }
 
+  Transport createSendTransportFromMap(
+      Map data, {
+        Function producerCallback,
+        Function dataProducerCallback,
+      }) {
+    return createSendTransport(
+      id: data['id'],
+      iceParameters: IceParameters.fromMap(data['iceParameters']),
+      iceCandidates: data['iceCandidates']
+          .map((iceCandidate) => IceCandidate.fromMap(iceCandidate))
+          .toList(),
+      dtlsParameters: DtlsParameters.fromMap(data['dtlsParameters']),
+      sctpParameters: SctpParameters.fromMap(data['sctpParameters']),
+      iceServers: [],
+      proprietaryConstraints: {
+        'optional': [
+          {
+            'googDscp': true,
+          }
+        ]
+      },
+      additionalSettings: {
+        'encodedInsertableStreams': false,
+      },
+      producerCallback: producerCallback,
+      dataProducerCallback: dataProducerCallback,
+    );
+  }
   /// Creates a Transport for receiving media.
   /// 
   /// @throws {InvalidStateError} if not loaded.
@@ -255,7 +286,7 @@ class Device {
     Function consumerCallback,
     Function dataConsumerCallback,
   }) {
-    logger.debug('createRecvTransport()');
+    _logger.debug('createRecvTransport()');
 
     return _createTransport(
       direction: Direction.recv,
@@ -269,6 +300,35 @@ class Device {
       additionalSettings: additionalSettings,
       proprietaryConstraints: proprietaryConstraints,
       appData: appData,
+      consumerCallback: consumerCallback,
+      dataConsumerCallback: dataConsumerCallback,
+    );
+  }
+
+  Transport createRecvTransportFromMap(
+      Map data, {
+        Function consumerCallback,
+        Function dataConsumerCallback,
+      }) {
+    return createRecvTransport(
+      id: data['id'],
+      iceParameters: IceParameters.fromMap(data['iceParameters']),
+      iceCandidates: data['iceCandidates']
+          .map((iceCandidate) => IceCandidate.fromMap(iceCandidate))
+          .toList(),
+      dtlsParameters: DtlsParameters.fromMap(data['dtlsParameters']),
+      sctpParameters: SctpParameters.fromMap(data['sctpParameters']),
+      iceServers: [],
+      proprietaryConstraints: {
+        'optional': [
+          {
+            'googDscp': true,
+          }
+        ]
+      },
+      additionalSettings: {
+        'encodedInsertableStreams': false,
+      },
       consumerCallback: consumerCallback,
       dataConsumerCallback: dataConsumerCallback,
     );
