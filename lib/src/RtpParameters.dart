@@ -21,10 +21,11 @@ class RtpCapabilities {
 
   RtpCapabilities.fromMap(Map data) {
     codecs = data['codecs']
-        .map((codec) => RtpCodecCapability.fromMap(codec))
+        .map<RtpCodecCapability>((codec) => RtpCodecCapability.fromMap(codec))
         .toList();
-    headerExtensions = data['headerExtensions']
-        .map((headExt) => RtpHeaderExtension.fromMap(headExt))
+    headerExtensions = (data['headerExtensions'] as List<dynamic>)
+        .map<RtpHeaderExtension>(
+            (headExt) => RtpHeaderExtension.fromMap(headExt))
         .toList();
     fecMechanisms = data['fecMechanisms'];
   }
@@ -105,8 +106,8 @@ class RtcpFeedback {
   RtcpFeedback({this.type, this.parameter});
 
   RtcpFeedback.fromMap(Map<String, dynamic> map) {
-    type = map['type'];
-    parameter = map['parameter'] ?? '';
+    this.type = ''; // map['type'] ?? '';
+    this.parameter = ''; // map['parameter'] ?? '';
   }
 
   Map<String, String> toMap() {
@@ -206,7 +207,6 @@ class RtpCodecCapability {
   });
 
   RtpCodecCapability.fromMap(Map<String, dynamic> data) {
-    print(data);
     kind = RTCRtpMediaTypeExtension.fromString(data['kind']);
     mimeType = data['mimeType'];
     preferredPayloadType = data['preferredPayloadType'];
@@ -214,7 +214,7 @@ class RtpCodecCapability {
     channels = data['channels'];
     parameters = data['parameters'];
     rtcpFeedback = data['rtcpFeedback']
-        .map((rtcpFb) => RtcpFeedback.fromMap(rtcpFb))
+        .map<RtcpFeedback>((rtcpFb) => RtcpFeedback.fromMap(rtcpFb))
         .toList();
   }
 
