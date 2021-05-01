@@ -12,7 +12,7 @@ class RoomClient {
 
   bool _closed = false;
 
-  Web_Socket _web_socket;
+  WebSocket _webSocket;
   Device _mediasoupDevice;
   Transport _sendTransport;
   Transport _recvTransport;
@@ -27,14 +27,19 @@ class RoomClient {
   bool _produce = false;
   bool _consume = true;
 
-  RoomClient({this.roomId, this.peerId, this.url, this.displayName,});
+  RoomClient({
+    this.roomId,
+    this.peerId,
+    this.url,
+    this.displayName,
+  });
 
   void close() {
     if (_closed) {
       return;
     }
 
-    _web_socket.close();
+    _webSocket.close();
     _sendTransport?.close();
     _recvTransport?.close();
   }
@@ -47,16 +52,14 @@ class RoomClient {
     _micProducer.close();
 
     try {
-      await _web_socket.sendRequest({
+      await _webSocket.sendRequest({
         'method': 'closeProducer',
         'data': {
           'producerId': _micProducer.id,
         }
       });
-    } catch (error) {
-
-    }
-      _micProducer = null;
+    } catch (error) {}
+    _micProducer = null;
   }
 
   void _producerCallback(Producer producer) {
@@ -74,16 +77,15 @@ class RoomClient {
     }
   }
 
-  void _consumerCallback(Consumer consumer) {
-
-  }
+  void _consumerCallback(Consumer consumer) {}
 
   Future<MediaStream> createAudioStream() async {
     Map<String, dynamic> mediaConstraints = {
       'audio': true,
     };
 
-    MediaStream stream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+    MediaStream stream =
+        await navigator.mediaDevices.getUserMedia(mediaConstraints);
 
     return stream;
   }
@@ -101,36 +103,36 @@ class RoomClient {
       },
     };
 
-    MediaStream stream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+    MediaStream stream =
+        await navigator.mediaDevices.getUserMedia(mediaConstraints);
 
     return stream;
   }
 
-  void enableChatDataProducer() {
+  void enableChatDataProducer() {}
 
-  }
-
-  void enableBotDataProducer() {
-
-  }
+  void enableBotDataProducer() {}
 
   Future<void> _joinRoom() async {
     try {
       _mediasoupDevice = Device();
 
-      Map routerRtpCapabilities = await _web_socket.sendRequestWithResponse({
+      dynamic routerRtpCapabilities = await _webSocket.sendRequestWithResponse({
         'method': 'getRouterRtpCapabilities',
       });
 
-      RtpCapabilities rtpCapabilities = RtpCapabilities.fromMap(routerRtpCapabilities);
+      print(routerRtpCapabilities);
+
+      final rtpCapabilities = RtpCapabilities.fromMap(routerRtpCapabilities);
       _mediasoupDevice.load(routerRtpCapabilities: rtpCapabilities);
 
-      if (_mediasoupDevice.canProduce(RTCRtpMediaType.RTCRtpMediaTypeAudio) || _mediasoupDevice.canProduce(RTCRtpMediaType.RTCRtpMediaTypeVideo)) {
+      if (_mediasoupDevice.canProduce(RTCRtpMediaType.RTCRtpMediaTypeAudio) ||
+          _mediasoupDevice.canProduce(RTCRtpMediaType.RTCRtpMediaTypeVideo)) {
         _produce = true;
       }
 
       if (_produce) {
-        Map transportInfo = await _web_socket.sendRequestWithResponse({
+        Map transportInfo = await _webSocket.sendRequestWithResponse({
           'method': 'createWebRtcTransport',
           'data': {
             'forceTcp': false,
@@ -145,19 +147,24 @@ class RoomClient {
           producerCallback: _producerCallback,
         );
 
-        _sendTransport.on('connect', (DtlsParameters dtlsParameters, callback, errback) {
-          _web_socket.sendRequest({
-            'method': 'connectWebRtcTransport',
-            'data': {
-              'transportId': _recvTransport.id,
-              'dtlsParameters': dtlsParameters.toMap(),
-            }
-          }).then(callback).catchError(errback);
+        _sendTransport.on('connect',
+            (DtlsParameters dtlsParameters, callback, errback) {
+          _webSocket
+              .sendRequest({
+                'method': 'connectWebRtcTransport',
+                'data': {
+                  'transportId': _recvTransport.id,
+                  'dtlsParameters': dtlsParameters.toMap(),
+                }
+              })
+              .then(callback)
+              .catchError(errback);
         });
 
-        _sendTransport.on('produce', (Map<String, dynamic> data, callback, errback) async {
+        _sendTransport.on('produce',
+            (Map<String, dynamic> data, callback, errback) async {
           try {
-            Map response = await _web_socket.sendRequestWithResponse({
+            Map response = await _webSocket.sendRequestWithResponse({
               'method': 'produce',
               'data': {
                 'transportId': _sendTransport.id,
@@ -175,9 +182,10 @@ class RoomClient {
           }
         });
 
-        _sendTransport.on('producedata', (Map<String, dynamic> data, callback, errback) async {
+        _sendTransport.on('producedata',
+            (Map<String, dynamic> data, callback, errback) async {
           try {
-            Map response = await _web_socket.sendRequestWithResponse({
+            Map response = await _webSocket.sendRequestWithResponse({
               'method': 'produceData',
               'data': {
                 'transportId': _sendTransport.id,
@@ -198,7 +206,7 @@ class RoomClient {
       }
 
       if (_consume) {
-        Map transportInfo = await _web_socket.sendRequestWithResponse({
+        Map transportInfo = await _webSocket.sendRequestWithResponse({
           'method': 'createWebRtcTransport',
           'data': {
             'forceTcp': false,
@@ -216,18 +224,21 @@ class RoomClient {
         _recvTransport.on(
           'connect',
           (Map<String, dynamic> data, callback, errback) {
-            _web_socket.sendRequest({
-              'method': 'connectWebRtcTransport',
-              'data': {
-                'transportId': _recvTransport.id,
-                'dtlsParameters': data['dtlsParameters'].toMap(),
-              },
-            }).then(callback).catchError(errback);
+            _webSocket
+                .sendRequest({
+                  'method': 'connectWebRtcTransport',
+                  'data': {
+                    'transportId': _recvTransport.id,
+                    'dtlsParameters': data['dtlsParameters'].toMap(),
+                  },
+                })
+                .then(callback)
+                .catchError(errback);
           },
         );
       }
 
-      Map peers = await _web_socket.sendRequestWithResponse({
+      Map peers = await _webSocket.sendRequestWithResponse({
         'method': 'join',
         'data': {
           'displayName': displayName,
@@ -268,22 +279,23 @@ class RoomClient {
         }
       }
     } catch (error) {
+      print(error);
       close();
     }
   }
 
   Future<void> join() {
-    _web_socket = Web_Socket(
+    _webSocket = WebSocket(
       peerId: peerId,
       roomId: roomId,
       url: url,
     );
 
-    _web_socket.onOpen = _joinRoom;
-    _web_socket.onFail = () {
+    _webSocket.onOpen = _joinRoom;
+    _webSocket.onFail = () {
       print('WebSocket connection failed');
     };
-    _web_socket.onDisconnected = () {
+    _webSocket.onDisconnected = () {
       if (_sendTransport != null) {
         _sendTransport.close();
         _sendTransport = null;
@@ -293,24 +305,23 @@ class RoomClient {
         _recvTransport = null;
       }
     };
-    _web_socket.onClose = () {
-      if (_closed)
-        return;
+    _webSocket.onClose = () {
+      if (_closed) return;
 
       close();
     };
 
-    _web_socket.onRequest = (data) {
-      switch(data['method']) {
-        case 'newConsumer': {
-
-
+    _webSocket.onRequest = (data) {
+      switch (data['method']) {
+        case 'newConsumer':
+          {
+            break;
+          }
+        default:
           break;
-        }
-        default: break;
       }
     };
 
-    _web_socket.open();
+    _webSocket.open();
   }
 }
