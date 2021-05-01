@@ -1,0 +1,4 @@
+[submodule "dart-protoo-client"]
+	path = example/dependencies/dart-protoo-client
+	url = https://github.com/ZackMitkin/dart-protoo-client
+	branch = master
