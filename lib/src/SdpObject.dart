@@ -41,7 +41,9 @@ class Origin {
 class Invalid {
   String value;
 
-  Invalid({this.value,});
+  Invalid({
+    this.value,
+  });
 
   Invalid.fromMap(Map data) {
     value = data['value'];
@@ -58,7 +60,10 @@ class Timing {
   int start;
   int stop;
 
-  Timing({this.start, this.stop,});
+  Timing({
+    this.start,
+    this.stop,
+  });
 
   Timing.fromMap(Map data) {
     start = data['start'];
@@ -99,7 +104,10 @@ class MsidSemantic {
   String semantic;
   String token;
 
-  MsidSemantic({this.semantic, this.token,});
+  MsidSemantic({
+    this.semantic,
+    this.token,
+  });
 
   MsidSemantic.fromMap(Map data) {
     semantic = data['semantic'];
@@ -147,11 +155,13 @@ class SdpObject {
     this.icelite,
   });
 
-  SdpObject.fromMap(Map data) {
+  SdpObject.fromMap(Map<String, dynamic> data) {
     version = data['version'];
     origin = Origin.fromMap(data['origin']);
     name = data['name'];
-    invalid = (data['invalid'] ?? []).map((Map inval) => Invalid.fromMap(inval)).toList();
+    invalid = (data['invalid'] ?? [])
+        .map((Map inval) => Invalid.fromMap(inval))
+        .toList();
     if (data['timing'] != null) {
       timing = Timing.fromMap(data['timing']);
     }
@@ -163,7 +173,8 @@ class SdpObject {
     if (data['fingerprint']) {
       fingerprint = Fingerprint.fromMap(data['fingerprint']);
     }
-    media = (data['media'] ?? []).map((Map m) => MediaObject.fromMap(m)).toList();
+    media =
+        (data['media'] ?? []).map((Map m) => MediaObject.fromMap(m)).toList();
     groups = (data['groups'] ?? []).map((Map g) => Group.fromMap(g)).toList();
     if (data['msidSemantic'] != null) {
       msidSemantic = MsidSemantic.fromMap(data['msidSemantic']);
@@ -216,7 +227,7 @@ class SdpObject {
     if (icelite != null) {
       result['icelite'] = icelite;
     }
-    
+
     return result;
   }
 }

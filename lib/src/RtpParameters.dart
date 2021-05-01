@@ -106,8 +106,8 @@ class RtcpFeedback {
   RtcpFeedback({this.type, this.parameter});
 
   RtcpFeedback.fromMap(Map<String, dynamic> map) {
-    this.type = ''; // map['type'] ?? '';
-    this.parameter = ''; // map['parameter'] ?? '';
+    this.type = map['type'];
+    this.parameter = map['parameter'];
   }
 
   Map<String, String> toMap() {
