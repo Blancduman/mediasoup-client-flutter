@@ -116,6 +116,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.8.0"
+  protoo_client:
+    dependency: "direct main"
+    description:
+      path: "dependencies/dart-protoo-client"
+      relative: true
+    source: path
+    version: "0.3.0"
   random_string:
     dependency: "direct main"
     description:

@@ -1,6 +1,7 @@
-const String APP_NAME = 'mediasoup-cleint';
+const String APP_NAME = 'mediasoup-client';
 
 typedef void LoggerDebug(dynamic message);
+
 class Logger {
   final String _prefix;
 

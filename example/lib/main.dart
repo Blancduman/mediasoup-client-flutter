@@ -40,11 +40,10 @@ class _EnterPageState extends State<EnterPage> {
     });
 
     roomClient = RoomClient(
-      roomId: 'asdasdds',
-      url: 'wss://v3demo.mediasoup.org:4443',
-      displayName: nouns.take(1).first,
-      peerId: 'zxcvvczx'
-    );
+        roomId: 'asdasdds',
+        url: 'wss://v3demo.mediasoup.org:4443',
+        displayName: nouns.take(1).first,
+        peerId: 'zxcvvczx');
     roomClient.join();
   }
 
@@ -69,7 +68,6 @@ class _EnterPageState extends State<EnterPage> {
                 hintText: 'Room url',
               ),
             ),
-            
           ],
         ),
       ),
@@ -88,4 +86,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

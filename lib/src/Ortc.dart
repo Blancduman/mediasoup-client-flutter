@@ -159,7 +159,7 @@ class Ortc {
     // if (caps.codecs != null && caps.codecs is! List<RtpCodecCapability>) {
     //   throw ('caps.codecs is not an array');
     // } else
-     if (caps.codecs == null) {
+    if (caps.codecs == null) {
       caps.codecs = <RtpCodecCapability>[];
     }
 
@@ -171,7 +171,7 @@ class Ortc {
     // if (caps.headerExtensions == null &&
     //     caps.headerExtensions is! List<RtpHeaderExtension>) {
     //   throw ('caps.headerExtensions is not an array');
-    // } else 
+    // } else
     if (caps.headerExtensions == null) {
       caps.headerExtensions = <RtpHeaderExtension>[];
     }

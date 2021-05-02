@@ -1,15 +1,13 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
-import 'package:socket_io_client/socket_io_client.dart';
+import 'package:protoo_client/protoo_client.dart' as ProtooClient;
 
-class Web_Socket {
+class WebSocket {
   final String peerId;
   final String roomId;
   final String url;
-  IO.Socket _socket;
+  ProtooClient.Peer _protoo;
   Function() onOpen;
   Function() onFail;
   Function() onDisconnected;
@@ -17,49 +15,37 @@ class Web_Socket {
   Function(dynamic data) onRequest; // request, accept, reject
   Function(dynamic notification) onNotification;
 
-  IO.Socket get socket => _socket;
+  ProtooClient.Peer get socket => _protoo;
 
-  Web_Socket({this.peerId, this.roomId, this.url}) {
+  WebSocket({this.peerId, this.roomId, this.url}) {
     if (url != null) {
-      _socket = IO.io(
-          '$url/?roomId=$roomId&peerId=$peerId',
-          OptionBuilder()
-              .setTransports(['websocket']) // for Flutter or Dart VM
-              .disableAutoConnect() // disable auto-connection
-              .build(),
-      );
-    } else {
-      _socket = IO.io(
-        'https://v3demo.mediasoup.org/?roomId=$roomId',
-        OptionBuilder()
-            .setTransports(['websocket']) // for Flutter or Dart VM
-            .disableAutoConnect() // disable auto-connection
-            .build(),
-      );
+      _protoo = ProtooClient.Peer('$url/?roomId=$roomId&peerId=$peerId');
     }
-
-    _socket.onConnect((data) => this?.onOpen());
-    _socket.onConnectError((data) => this?.onFail());
-    _socket.onError((data) => this?.onFail());
-    _socket.onDisconnect((data) => this?.onClose());
-    _socket.on('request', (data) => this?.onRequest(data));
-    _socket.on('notification', (notification) => this?.onNotification(notification));
+    _protoo.on('open', () => this?.onOpen());
+    _protoo.on('failed', () => this?.onFail());
+    _protoo.on('disconnected', () => this?.onClose());
+    _protoo.on('close', () => this?.onClose());
+    _protoo.on(
+        'request', (request, accept, reject) => this?.onRequest(request));
+    _protoo.on('notification',
+        (request, accept, reject) => this?.onNotification(request));
   }
 
   void close() {
     if (!kIsWeb && Platform.isIOS) {
-      _socket.dispose();
-    } else _socket.close();
+      _protoo.close();
+    } else
+      _protoo.close();
   }
 
   void open() {
-    _socket.connect();
+    _protoo.connect();
   }
 
   Future<dynamic> sendRequestWithResponse(dynamic data) async {
     Completer promise = Completer();
-    
-    _socket.emitWithAck('request', data, ack: (response) {
+
+    _protoo.send(data['method'], data['data']).then((response) {
       promise.complete(response);
     });
 
@@ -67,6 +53,6 @@ class Web_Socket {
   }
 
   Future<dynamic> sendRequest(dynamic data) {
-    _socket.emit('request', data);
+    _protoo.send(data['method'], data['data']);
   }
 }
