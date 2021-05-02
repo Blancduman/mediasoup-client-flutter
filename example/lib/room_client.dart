@@ -52,11 +52,8 @@ class RoomClient {
     _micProducer.close();
 
     try {
-      await _webSocket.sendRequest({
-        'method': 'closeProducer',
-        'data': {
-          'producerId': _micProducer.id,
-        }
+      await _webSocket.socket.request('closeProducer', {
+        'producerId': _micProducer.id,
       });
     } catch (error) {}
     _micProducer = null;
@@ -117,14 +114,12 @@ class RoomClient {
     try {
       _mediasoupDevice = Device();
 
-      dynamic routerRtpCapabilities = await _webSocket.sendRequestWithResponse({
-        'method': 'getRouterRtpCapabilities',
-      });
+      dynamic routerRtpCapabilities = await _webSocket.socket.request('getRouterRtpCapabilities', {});
 
       print(routerRtpCapabilities);
 
       final rtpCapabilities = RtpCapabilities.fromMap(routerRtpCapabilities);
-      _mediasoupDevice.load(routerRtpCapabilities: rtpCapabilities);
+      await _mediasoupDevice.load(routerRtpCapabilities: rtpCapabilities);
 
       if (_mediasoupDevice.canProduce(RTCRtpMediaType.RTCRtpMediaTypeAudio) ||
           _mediasoupDevice.canProduce(RTCRtpMediaType.RTCRtpMediaTypeVideo)) {
@@ -132,15 +127,15 @@ class RoomClient {
       }
 
       if (_produce) {
-        Map transportInfo = await _webSocket.sendRequestWithResponse({
-          'method': 'createWebRtcTransport',
-          'data': {
+        Map transportInfo = await _webSocket.socket.request(
+          'createWebRtcTransport',
+           {
             'forceTcp': false,
             'producing': true,
             'consuming': false,
             'sctpCapabilities': _mediasoupDevice.sctpCapabilities.toMap(),
           }
-        });
+        );
 
         _sendTransport = _mediasoupDevice.createSendTransportFromMap(
           transportInfo,
@@ -150,29 +145,29 @@ class RoomClient {
         _sendTransport.on('connect',
             (DtlsParameters dtlsParameters, callback, errback) {
           _webSocket
-              .sendRequest({
-                'method': 'connectWebRtcTransport',
-                'data': {
+              .socket.request(
+                'connectWebRtcTransport',
+                {
                   'transportId': _recvTransport.id,
                   'dtlsParameters': dtlsParameters.toMap(),
                 }
-              })
+              )
               .then(callback)
               .catchError(errback);
         });
 
         _sendTransport.on('produce',
-            (Map<String, dynamic> data, callback, errback) async {
+            (data, callback, errback) async {
           try {
-            Map response = await _webSocket.sendRequestWithResponse({
-              'method': 'produce',
-              'data': {
+            Map response = await _webSocket.socket.request(
+              'produce',
+              {
                 'transportId': _sendTransport.id,
                 'kind': RTCRtpMediaTypeExtension.value(data['kind']),
                 'rtpParameters': data['rtpParameters'].toMap(),
                 'appData': data['appData']
               },
-            });
+            );
 
             callback({
               'id': response['id'],
@@ -183,18 +178,18 @@ class RoomClient {
         });
 
         _sendTransport.on('producedata',
-            (Map<String, dynamic> data, callback, errback) async {
+            (data, callback, errback) async {
           try {
-            Map response = await _webSocket.sendRequestWithResponse({
-              'method': 'produceData',
-              'data': {
+            Map response = await _webSocket.socket.request(
+              'produceData',
+              {
                 'transportId': _sendTransport.id,
                 'sctpStreamParameters': data['sctpStreamParameters'].toMap(),
                 'label': data['label'],
                 'protocol': data['protocol'],
                 'appData': data['appData'],
               }
-            });
+            );
 
             callback({
               'id': response['id'],
@@ -206,15 +201,15 @@ class RoomClient {
       }
 
       if (_consume) {
-        Map transportInfo = await _webSocket.sendRequestWithResponse({
-          'method': 'createWebRtcTransport',
-          'data': {
+        Map transportInfo = await _webSocket.socket.request(
+          'createWebRtcTransport',
+          {
             'forceTcp': false,
             'producing': false,
             'consuming': true,
             'sctpCapabilities': _mediasoupDevice.sctpCapabilities.toMap(),
           },
-        });
+        );
 
         _recvTransport = _mediasoupDevice.createRecvTransportFromMap(
           transportInfo,
@@ -223,30 +218,30 @@ class RoomClient {
 
         _recvTransport.on(
           'connect',
-          (Map<String, dynamic> data, callback, errback) {
+          (data, callback, errback) {
             _webSocket
-                .sendRequest({
-                  'method': 'connectWebRtcTransport',
-                  'data': {
+                .socket.request(
+                  'connectWebRtcTransport',
+                  {
                     'transportId': _recvTransport.id,
                     'dtlsParameters': data['dtlsParameters'].toMap(),
                   },
-                })
+                )
                 .then(callback)
                 .catchError(errback);
           },
         );
       }
 
-      Map peers = await _webSocket.sendRequestWithResponse({
-        'method': 'join',
-        'data': {
+      Map peers = await _webSocket.socket.request(
+        'join',
+        {
           'displayName': displayName,
           'device': "It's flutter boy",
           'rtpCapabilities': _mediasoupDevice.rtpCapabilities.toMap(),
           'sctpCapabilities': _mediasoupDevice.sctpCapabilities.toMap(),
         }
-      });
+      );
 
       if (_produce) {
         if (_mediasoupDevice.canProduce(RTCRtpMediaType.RTCRtpMediaTypeAudio)) {
@@ -321,7 +316,5 @@ class RoomClient {
           break;
       }
     };
-
-    _webSocket.open();
   }
 }

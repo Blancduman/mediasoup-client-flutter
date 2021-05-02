@@ -28,7 +28,7 @@ class SctpCapabilities {
 
   Map<String, dynamic> toMap() {
     return {
-      'numStreams': numStreams,
+      'numStreams': numStreams.toMap(),
     };
   }
 }

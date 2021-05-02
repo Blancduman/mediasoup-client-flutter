@@ -455,28 +455,28 @@ class Browser extends HandlerInterface {
       switch (_pc.iceConnectionState) {
         case RTCIceConnectionState.RTCIceConnectionStateChecking:
           {
-            emit('@connectionstatechange', ['connecting']);
+            emit('@connectionstatechange', {'state': 'connecting'});
             break;
           }
         case RTCIceConnectionState.RTCIceConnectionStateConnected:
         case RTCIceConnectionState.RTCIceConnectionStateCompleted:
           {
-            emit('@connectionstatechange', ['connected']);
+            emit('@connectionstatechange', {'state':'connected'});
             break;
           }
         case RTCIceConnectionState.RTCIceConnectionStateFailed:
           {
-            emit('@connectionstatechange', ['failed']);
+            emit('@connectionstatechange', {'state':'failed'});
             break;
           }
         case RTCIceConnectionState.RTCIceConnectionStateDisconnected:
           {
-            emit('@connectionstatechange', ['disconnected']);
+            emit('@connectionstatechange', {'state':'disconnected'});
             break;
           }
         case RTCIceConnectionState.RTCIceConnectionStateClosed:
           {
-            emit('@connectionstatechange', ['closed']);
+            emit('@connectionstatechange', {'state':'closed'});
             break;
           }
 

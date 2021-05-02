@@ -41,7 +41,7 @@ class Device {
   /// SCTP capabilities of the Device.
   /// @throws {InvalidStateError} if not loaded.
   SctpCapabilities get sctpCapabilities {
-    if (_loaded) {
+    if (!_loaded) {
       throw ('not loaded');
     }
 
@@ -256,9 +256,9 @@ class Device {
     return createSendTransport(
       id: data['id'],
       iceParameters: IceParameters.fromMap(data['iceParameters']),
-      iceCandidates: data['iceCandidates']
+      iceCandidates: List<IceCandidate>.from(data['iceCandidates']
           .map((iceCandidate) => IceCandidate.fromMap(iceCandidate))
-          .toList(),
+          .toList()),
       dtlsParameters: DtlsParameters.fromMap(data['dtlsParameters']),
       sctpParameters: SctpParameters.fromMap(data['sctpParameters']),
       iceServers: [],
@@ -322,9 +322,9 @@ class Device {
     return createRecvTransport(
       id: data['id'],
       iceParameters: IceParameters.fromMap(data['iceParameters']),
-      iceCandidates: data['iceCandidates']
+      iceCandidates: List<IceCandidate>.from(data['iceCandidates']
           .map((iceCandidate) => IceCandidate.fromMap(iceCandidate))
-          .toList(),
+          .toList()),
       dtlsParameters: DtlsParameters.fromMap(data['dtlsParameters']),
       sctpParameters: SctpParameters.fromMap(data['sctpParameters']),
       iceServers: [],

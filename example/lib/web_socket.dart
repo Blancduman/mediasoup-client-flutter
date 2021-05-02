@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:protoo_client/protoo_client.dart' as ProtooClient;
@@ -37,23 +36,5 @@ class WebSocket {
       _protoo.close();
     } else
       _protoo.close();
-  }
-
-  void open() {
-    //_protoo.connect();
-  }
-
-  Future<dynamic> sendRequestWithResponse(dynamic data) async {
-    Completer promise = Completer();
-
-    _protoo.request(data['method'], data['data']).then((response) {
-      promise.complete(response);
-    });
-
-    return promise.future;
-  }
-
-  Future<dynamic> sendRequest(dynamic data) {
-    _protoo.request(data['method'], data['data']);
   }
 }

@@ -162,7 +162,7 @@ class IceCandidate {
     ip = data['ip'];
     port = data['port'];
     priority = data['priority'];
-    if (data['protocol']) {
+    if (data['protocol'] != null) {
       protocol = ProtocolExtension.fromString(data['protocol']);
     }
     if (data['type'] != null) {
@@ -295,9 +295,9 @@ class DtlsParameters {
 
   DtlsParameters.fromMap(Map data) {
     role = DtlsRoleExtension.fromString(data['role']);
-    fingerprints = data['fingerprints']
+    fingerprints = List<DtlsFingerprint>.from(data['fingerprints']
         .map((fingerP) => DtlsFingerprint.fromMap(fingerP))
-        .toList();
+        .toList());
   }
 
   Map<String, dynamic> toMap() {
@@ -496,8 +496,8 @@ class Transport extends EnhancedEventEmitter {
 
     handler.on(
       '@connectionstatechange',
-      (List<Object> data) {
-        String connectionState = data[0];
+      (Map data) {
+        String connectionState = data['state'];
 
         if (connectionState == _connectionState) {
           return;
