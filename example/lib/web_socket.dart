@@ -19,7 +19,8 @@ class WebSocket {
 
   WebSocket({this.peerId, this.roomId, this.url}) {
     if (url != null) {
-      _protoo = ProtooClient.Peer('$url/?roomId=$roomId&peerId=$peerId');
+      _protoo = ProtooClient.Peer(
+          ProtooClient.WebTransport('$url/?roomId=$roomId&peerId=$peerId'));
     }
     _protoo.on('open', () => this?.onOpen());
     _protoo.on('failed', () => this?.onFail());
@@ -39,13 +40,13 @@ class WebSocket {
   }
 
   void open() {
-    _protoo.connect();
+    //_protoo.connect();
   }
 
   Future<dynamic> sendRequestWithResponse(dynamic data) async {
     Completer promise = Completer();
 
-    _protoo.send(data['method'], data['data']).then((response) {
+    _protoo.request(data['method'], data['data']).then((response) {
       promise.complete(response);
     });
 
@@ -53,6 +54,6 @@ class WebSocket {
   }
 
   Future<dynamic> sendRequest(dynamic data) {
-    _protoo.send(data['method'], data['data']);
+    _protoo.request(data['method'], data['data']);
   }
 }
