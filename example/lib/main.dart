@@ -1,13 +1,9 @@
-import 'dart:io';
-
 import 'package:random_words/random_words.dart';
 
 import 'package:example/room_client.dart';
-import 'package:example/socket_io_troubleshooting.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  HttpOverrides.global = new MyHttpOverrides(); // socket.io-client flexes
   runApp(MyApp());
 }
 

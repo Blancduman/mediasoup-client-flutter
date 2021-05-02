@@ -89,7 +89,7 @@ class Group {
 
   Group.fromMap(Map data) {
     type = data['type'];
-    mids = data['mids'];
+    mids = data['mids'].toString();
   }
 
   Map<String, String> toMap() {
@@ -159,9 +159,9 @@ class SdpObject {
     version = data['version'];
     origin = Origin.fromMap(data['origin']);
     name = data['name'];
-    invalid = (data['invalid'] ?? [])
-        .map((Map inval) => Invalid.fromMap(inval))
-        .toList();
+    invalid = List<Invalid>.from((data['invalid'] ?? [])
+        .map((inval) => Invalid.fromMap(inval))
+        .toList());
     if (data['timing'] != null) {
       timing = Timing.fromMap(data['timing']);
     }
@@ -170,12 +170,12 @@ class SdpObject {
     }
     iceUfrag = data['iceUfrag'];
     icePwd = data['icePwd'];
-    if (data['fingerprint']) {
+    if (data['fingerprint'] != null) {
       fingerprint = Fingerprint.fromMap(data['fingerprint']);
     }
     media =
-        (data['media'] ?? []).map((Map m) => MediaObject.fromMap(m)).toList();
-    groups = (data['groups'] ?? []).map((Map g) => Group.fromMap(g)).toList();
+        List<MediaObject>.from((data['media'] ?? []).map((m) => MediaObject.fromMap(m)).toList());
+    groups = List<Group>.from((data['groups'] ?? []).map((g) => Group.fromMap(g)).toList());
     if (data['msidSemantic'] != null) {
       msidSemantic = MsidSemantic.fromMap(data['msidSemantic']);
     }

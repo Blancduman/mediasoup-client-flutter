@@ -569,7 +569,7 @@ class MediaObject {
 
   MediaObject.fromMap(Map data) {
     if (data['candidates'] != null) {
-      candidates = (data['candidates'] ?? []).map((Map candidate) => IceCandidate.fromMap(candidate)).toList();
+      candidates = (data['candidates'] ?? []).map((candidate) => IceCandidate.fromMap(candidate)).toList();
     }
     if (data['iceUfrag'] != null) {
       iceUfrag = data['iceUfrag'];
@@ -587,7 +587,7 @@ class MediaObject {
       setup = data['setup'];
     }
     if (data['mid'] != null) {
-      mid = data['mid'];
+      mid = data['mid'].toString();
     }
     if (data['port'] != null) {
       port = data['port'];
@@ -596,10 +596,10 @@ class MediaObject {
       direction = RtpHeaderDirectionExtension.fromString(data['direction']);
     }
     if (data['rtp'] != null) {
-      rtp = (data['rtp'] ?? []).map((Map r) => Rtp.fromMap(r)).toList();
+      rtp = List<Rtp>.from((data['rtp'] ?? <Rtp>[]).map((r) => Rtp.fromMap(r)).toList());
     }
     if (data['fmtp'] != null) {
-      fmtp = (data['fmtp'] ?? []).map((Map f) => Fmtp.fromMap(f)).toList();
+      fmtp = List<Fmtp>.from((data['fmtp'] ?? []).map((f) => Fmtp.fromMap(f)).toList());
     }
     if (data['type'] != null) {
       type = data['type'];
@@ -617,7 +617,7 @@ class MediaObject {
       rtcp = Rtcp.fromMap(data['rtcp']);
     }
     if (data['ext'] != null) {
-      ext = (data['ext'] ?? []).map((Map e) => Ext.fromMap(e)).toList();
+      ext = List<Ext>.from((data['ext'] ?? []).map((e) => Ext.fromMap(e)).toList());
     }
     if (data['msid'] != null) {
       msid = data['msid'];
@@ -626,13 +626,13 @@ class MediaObject {
       rtcpMux = data['rtcpMux'];
     }
     if (data['rtcpFb'] != null) {
-      rtcpFb = (data['rtcpFb'] ?? []).map((Map r) => RtcpFb.fromMap(r)).toList();
+      rtcpFb = List<RtcpFb>.from((data['rtcpFb'] ?? []).map((r) => RtcpFb.fromMap(r)).toList());
     }
     if (data['ssrcs'] != null) {
-      ssrcs = (data['ssrcs'] ?? []).map((Map ssrc) => Ssrc.fromMap(ssrc)).toList();
+      ssrcs = List<Ssrc>.from((data['ssrcs'] ?? []).map((ssrc) => Ssrc.fromMap(ssrc)).toList());
     }
     if (data['ssrcGroups'] != null) {
-      ssrcGroups = (data['ssrcGroups'] ?? []).map((Map ssrcGroup) => SsrcGroup.fromMap(ssrcGroup)).toList();
+      ssrcGroups = List<SsrcGroup>.from((data['ssrcGroups'] ?? []).map((ssrcGroup) => SsrcGroup.fromMap(ssrcGroup)).toList());
     }
     if (data['simulcast'] != null) {
       simulcast = Simulcast.fromMap(data['simulcast']);
@@ -641,7 +641,7 @@ class MediaObject {
       simulcast_03 = Simulcast_03.fromMap(data['simulcast_03']);
     }
     if (data['rids'] != null) {
-      rids = (data['rids'] ?? []).map((Map r) => Rid.fromMap(r)).toList();
+      rids = List<Rid>.from((data['rids'] ?? []).map((r) => Rid.fromMap(r)).toList());
     }
     if (data['extmapAllowMixed'] != null) {
       extmapAllowMixed = data['extmapAllowMixed'];
@@ -665,13 +665,13 @@ class MediaObject {
       fingerprint = Fingerprint.fromMap(data['fingerprint']);
     }
     if (data['rtcpFbTrrInt'] != null) {
-      rtcpFbTrrInt = (data['rtcpFbTrrInt'] ?? []).map((Map rFTI) => RtcpFbTrrInt.fromMap(data['rtcpFbTrrInt'])).toList();
+      rtcpFbTrrInt = List<RtcpFbTrrInt>.from((data['rtcpFbTrrInt'] ?? []).map((rFTI) => RtcpFbTrrInt.fromMap(data['rtcpFbTrrInt'])).toList());
     }
     if (data['crypto'] != null) {
-      crypto = (data['crypto'] ?? []).map((Map c) => Crypto.fromMap(c)).toList();
+      crypto = List<Crypto>.from((data['crypto'] ?? []).map((c) => Crypto.fromMap(c)).toList());
     }
     if (data['invalid'] != null) {
-      invalid = (data['invalid'] ?? []).map((Map i) => Invalid.fromMap(i)).toList();
+      invalid = List<Invalid>.from((data['invalid'] ?? []).map((i) => Invalid.fromMap(i)).toList());
     }
     if (data['ptime'] != null) {
       ptime = data['ptime'];
@@ -683,7 +683,7 @@ class MediaObject {
       label = data['label'];
     }
     if (data['bandwidth'] != null) {
-      bandwidth = (data['bandwidth'] ?? []).map((Map b) => Bandwidth.fromMap(b)).toList();
+      bandwidth = List<Bandwidth>.from((data['bandwidth'] ?? []).map((b) => Bandwidth.fromMap(b)).toList());
     }
     if (data['framerate'] != null) {
       framerate = data['framerate'];
@@ -692,7 +692,7 @@ class MediaObject {
       bundleOnly = data['bundleOnly'];
     }
     if (data['imageattrs'] != null) {
-      imageattrs = (data['imageattrs'] ?? []).map((Map ia) => Imageattrs.fromMap(ia)).toList();
+      imageattrs = List<Imageattrs>.from((data['imageattrs'] ?? []).map((ia) => Imageattrs.fromMap(ia)).toList());
     }
     if (data['sourceFilter'] != null) {
       sourceFilter = SourceFilter.fromMap(data['sourceFilter']);
