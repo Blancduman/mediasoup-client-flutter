@@ -328,7 +328,7 @@ class Device {
       dtlsParameters: DtlsParameters.fromMap(data['dtlsParameters']),
       sctpParameters: SctpParameters.fromMap(data['sctpParameters']),
       iceServers: [],
-      proprietaryConstraints: {
+      proprietaryConstraints: <String, dynamic>{
         'optional': [
           {
             'googDscp': true,

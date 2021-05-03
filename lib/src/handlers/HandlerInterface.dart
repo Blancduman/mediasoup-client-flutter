@@ -118,12 +118,14 @@ class HandlerSendOptions {
   List<RtpEncodingParameters> encodings;
   ProducerCodecOptions codecOptions;
   RtpCodecCapability codec;
+  MediaStream stream;
 
   HandlerSendOptions({
     this.track,
     this.encodings,
     this.codecOptions,
     this.codec,
+    this.stream,
   });
 }
 

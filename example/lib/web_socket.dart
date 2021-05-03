@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:protoo_client/protoo_client.dart' as ProtooClient;
 
 class WebSocket {
@@ -11,24 +11,26 @@ class WebSocket {
   Function() onFail;
   Function() onDisconnected;
   Function() onClose;
-  Function(dynamic data) onRequest; // request, accept, reject
+  Function(dynamic request, dynamic accept, dynamic reject)
+      onRequest; // request, accept, reject
   Function(dynamic notification) onNotification;
 
   ProtooClient.Peer get socket => _protoo;
 
   WebSocket({this.peerId, this.roomId, this.url}) {
     if (url != null) {
-      _protoo = ProtooClient.Peer(
-          ProtooClient.NativeTransport('$url/?roomId=$roomId&peerId=$peerId'));
+      _protoo = ProtooClient.Peer(kIsWeb
+          ? ProtooClient.Transport('$url/?roomId=$roomId&peerId=$peerId')
+          : ProtooClient.Transport('$url/?roomId=$roomId&peerId=$peerId'));
     }
     _protoo.on('open', () => this?.onOpen());
     _protoo.on('failed', () => this?.onFail());
     _protoo.on('disconnected', () => this?.onClose());
     _protoo.on('close', () => this?.onClose());
-    _protoo.on(
-        'request', (request, accept, reject) => this?.onRequest(request));
+    _protoo.on('request',
+        (request, accept, reject) => this?.onRequest(request, accept, reject));
     _protoo.on('notification',
-        (request, accept, reject) => this?.onNotification(request));
+        (request, accept, reject) => onNotification?.call(request));
   }
 
   void close() {

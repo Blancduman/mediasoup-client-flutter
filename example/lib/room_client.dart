@@ -74,7 +74,17 @@ class RoomClient {
     }
   }
 
-  void _consumerCallback(Consumer consumer) {}
+  void _consumerCallback(Consumer consumer, Function accept) {
+    _consumers[consumer.id] = consumer;
+
+    consumer.on('transportclose', () {
+      _consumers.remove(consumer.id);
+    });
+
+    ScalabilityMode scalabilityMode = ScalabilityMode.parse(consumer.rtpParameters.encodings.first.scalabilityMode);
+
+    accept();
+  }
 
   Future<MediaStream> createAudioStream() async {
     Map<String, dynamic> mediaConstraints = {
@@ -257,6 +267,9 @@ class RoomClient {
                 opusDtx: 1,
               ),
               stream: audioStream,
+              appData: {
+                'source': 'mic',
+              },
               source: 'mic',
             );
           } catch (error) {
@@ -306,10 +319,26 @@ class RoomClient {
       close();
     };
 
-    _webSocket.onRequest = (data) {
-      switch (data['method']) {
+    _webSocket.onRequest = (request, accept, reject) async {
+      switch (request['method']) {
         case 'newConsumer':
           {
+            if (!_consume) {
+              reject(403, 'I do not want to consume');
+              break;
+            }
+            try {
+              _recvTransport.consume(
+                id: request['id'],
+                producerId: request['producerId'],
+                kind: RTCRtpMediaTypeExtension.fromString(request['kind']),
+                rtpParameters: RtpParameters.fromMap(request['rtpParameters']),
+                appData: Map<dynamic, dynamic>.from(request['appData']),
+              );
+            } catch (error) {
+              print('newConsumer request failed: $error');
+              throw (error);
+            }
             break;
           }
         default:
