@@ -19,7 +19,7 @@ class WebSocket {
   WebSocket({this.peerId, this.roomId, this.url}) {
     if (url != null) {
       _protoo = ProtooClient.Peer(
-          ProtooClient.WebTransport('$url/?roomId=$roomId&peerId=$peerId'));
+          ProtooClient.NativeTransport('$url/?roomId=$roomId&peerId=$peerId'));
     }
     _protoo.on('open', () => this?.onOpen());
     _protoo.on('failed', () => this?.onFail());

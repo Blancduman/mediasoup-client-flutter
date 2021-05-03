@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:random_words/random_words.dart';
 
 import 'package:example/room_client.dart';
@@ -18,6 +21,7 @@ class _EnterPageState extends State<EnterPage> {
   final TextEditingController _textEditingController = TextEditingController();
   bool join = false;
   RoomClient roomClient;
+  RTCVideoRenderer _localRenderer = RTCVideoRenderer();
 
   @override
   void initState() {
@@ -43,6 +47,12 @@ class _EnterPageState extends State<EnterPage> {
     roomClient.join();
   }
 
+  initRenderers() async {
+    await _localRenderer.initialize();
+    final stream = await roomClient.createVideoStream();
+    _localRenderer.srcObject = stream;
+  }
+
   @override
   void dispose() {
     _textEditingController.dispose();
@@ -62,6 +72,14 @@ class _EnterPageState extends State<EnterPage> {
                 border: OutlineInputBorder(),
                 floatingLabelBehavior: FloatingLabelBehavior.always,
                 hintText: 'Room url',
+              ),
+            ),
+            SizedBox(
+              child: Container(
+                width: 120.0,
+                height: 90.0,
+                child: RTCVideoView(_localRenderer, mirror: true),
+                decoration: BoxDecoration(color: Colors.black54),
               ),
             ),
           ],

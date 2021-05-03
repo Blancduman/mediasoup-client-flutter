@@ -159,9 +159,9 @@ class SdpObject {
     version = data['version'];
     origin = Origin.fromMap(data['origin']);
     name = data['name'];
-    invalid = List<Invalid>.from((data['invalid'] ?? [])
-        .map((inval) => Invalid.fromMap(inval))
-        .toList());
+    invalid = (data['invalid'] ?? [])
+        .map<Invalid>((inval) => Invalid.fromMap(inval))
+        .toList();
     if (data['timing'] != null) {
       timing = Timing.fromMap(data['timing']);
     }
@@ -173,9 +173,11 @@ class SdpObject {
     if (data['fingerprint'] != null) {
       fingerprint = Fingerprint.fromMap(data['fingerprint']);
     }
-    media =
-        List<MediaObject>.from((data['media'] ?? []).map((m) => MediaObject.fromMap(m)).toList());
-    groups = List<Group>.from((data['groups'] ?? []).map((g) => Group.fromMap(g)).toList());
+    media = (data['media'] ?? [])
+        .map<MediaObject>((m) => MediaObject.fromMap(m))
+        .toList();
+    groups =
+        (data['groups'] ?? []).map<Group>((g) => Group.fromMap(g)).toList();
     if (data['msidSemantic'] != null) {
       msidSemantic = MsidSemantic.fromMap(data['msidSemantic']);
     }
