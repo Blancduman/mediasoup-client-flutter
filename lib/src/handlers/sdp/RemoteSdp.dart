@@ -213,7 +213,7 @@ class RemoteSdp {
       offerRtpParameters: offerRtpParameters,
       answerRtpParameters: answerRtpParameters,
       codecOptions: codecOptions,
-      extmapAllowMixed: extmapAllowMixed,
+      extmapAllowMixed: extmapAllowMixed ?? false,
     );
 
     // Unified-Plan with closed media section replacement.

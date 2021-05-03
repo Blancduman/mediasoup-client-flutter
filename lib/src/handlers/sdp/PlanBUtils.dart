@@ -13,7 +13,7 @@ class PlanBUtils {
 
     for (Ssrc line in offerMediaObject.ssrcs ?? []) {
       if (line.attribute != 'msid') {
-        continue;
+        //continue;
       }
 
       String trackId = line.value.split(' ').first;

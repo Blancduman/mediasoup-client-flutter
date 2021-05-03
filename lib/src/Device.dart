@@ -12,15 +12,20 @@ Logger _logger = Logger('Device');
 class Device {
   // Loaded flag.
   bool _loaded = false;
+
   // Extended RTP capabilities.
   ExtendedRtpCapabilities _extendedRtpCapabilities;
+
   // Local RTP capabilities for receiving media.
   RtpCapabilities _recvRtpCapabilities;
+
   // Whether we can produce audio/video based on computed extended RTP
   // capabilities.
   CanProduceByKind _canProduceByKind;
+
   // Local SCTP capabilities.
   SctpCapabilities _sctpCapabilities;
+
   // Observer instance.
   EnhancedEventEmitter _observer = EnhancedEventEmitter();
 
@@ -256,8 +261,9 @@ class Device {
     return createSendTransport(
       id: data['id'],
       iceParameters: IceParameters.fromMap(data['iceParameters']),
-      iceCandidates: List<IceCandidate>.from(data['iceCandidates']
-          .map((iceCandidate) => IceCandidate.fromMap(iceCandidate))
+      iceCandidates: List.from(data['iceCandidates']
+          .map<IceCandidate>(
+              (iceCandidate) => IceCandidate.fromMap(iceCandidate))
           .toList()),
       dtlsParameters: DtlsParameters.fromMap(data['dtlsParameters']),
       sctpParameters: SctpParameters.fromMap(data['sctpParameters']),

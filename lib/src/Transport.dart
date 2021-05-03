@@ -53,6 +53,7 @@ extension IceCandidateTypeExtension on IceCandidateType {
   };
 
   static IceCandidateType fromString(String type) => types[type];
+
   String get value => values[this];
 }
 
@@ -99,6 +100,7 @@ extension TcpTypeExtension on TcpType {
   };
 
   static TcpType fromString(String type) => types[type];
+
   String get value => values[this];
 }
 
@@ -157,8 +159,9 @@ class IceCandidate {
   });
 
   IceCandidate.fromMap(Map data) {
+    print(data);
     component = data['component'] ?? 1;
-    foundation = data['foundation'];
+    foundation = data['foundation']?.toString();
     ip = data['ip'];
     port = data['port'];
     priority = data['priority'];
@@ -265,6 +268,7 @@ extension DtlsRoleExtension on DtlsRole {
   };
 
   static DtlsRole fromString(String type) => types[type];
+
   String get value => values[this];
 }
 
@@ -315,6 +319,7 @@ class PlainRtpParameters {
   int port;
 
   int get ipVersion => _ipVersion;
+
   set ipVersion(int ip) {
     if (ip != 4 || ip != 6) {
       throw 'only 4 or 6';
@@ -346,12 +351,14 @@ extension DirectionExtension on Direction {
   };
 
   static Direction fromString(String type) => types[type];
+
   String get value => values[this];
 }
 
 class CanProduceByKind {
   bool audio;
   bool video;
+
   // TODO: what is that?
   Map<String, bool> tmp;
 
@@ -369,36 +376,51 @@ class CanProduceByKind {
 class Transport extends EnhancedEventEmitter {
   // Id.
   String _id;
+
   // Closed flag.
   bool _closed = false;
+
   // Direction
   Direction _direction;
+
   // Extended RTP capabilities.
   // TODO: make class ExtendedRtpCapabilities;
   var _extendedRtpCapabilities;
+
   // Whether we can produce audio/video based on computed extended RTP
   // capabilities.
   CanProduceByKind _canProduceByKind;
+
   // SCTP max message size if enabled, null otherwise.
   int _maxSctpMessageSize;
+
   // RTC handler instance.
   HandlerInterface _handler;
+
   // Transport connection state.
   String _connectionState = 'new';
+
   // App custom data.
   Map<String, dynamic> _appData;
+
   // Map of Producers indexed by id.
   Map<String, Producer> _producers = <String, Producer>{};
+
   // Map of Consumers indexed by id.
   Map<String, Consumer> _consumers = <String, Consumer>{};
+
   // Map of DataProducers indexed by id.
   Map<String, DataProducer> _dataProducers = <String, DataProducer>{};
+
   // Map of DataConsumers indexed by id.
   Map<String, DataConsumer> _dataConsumers = <String, DataConsumer>{};
+
   // Whether the Consumer for RTP probation has been created.
   bool _probatorConsumerCreated = false;
+
   // FlexQueue instance to make async tasks happen sequentially.
   FlexQueue _flexQueue = FlexQueue();
+
   // Observer instance.
   EnhancedEventEmitter _observer = EnhancedEventEmitter();
 
@@ -459,8 +481,9 @@ class Transport extends EnhancedEventEmitter {
         sctpParameters: sctpParameters,
         iceServers: iceServers,
         iceTransportPolicy: iceTransportPolicy,
-        additionalSettings: additionalSettings,
-        proprietaryConstraints: proprietaryConstraints,
+        additionalSettings: Map<String, dynamic>.from(additionalSettings),
+        proprietaryConstraints:
+            Map<String, dynamic>.from(proprietaryConstraints),
         extendedRtpCapabilities: extendedRtpCapabilities,
       ),
     );
@@ -518,8 +541,10 @@ class Transport extends EnhancedEventEmitter {
 
   /// Transport id.
   String get id => _id;
+
   // Whether the Transport is closed.
   bool get closed => _closed;
+
   // Transport direction.
   Direction get direction => _direction;
 

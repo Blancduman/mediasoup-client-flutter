@@ -174,6 +174,7 @@ class RtcpFb {
     this.type,
     this.subtype,
   });
+
   RtcpFb.fromMap(Map data) {
     payload = data['payload'];
     type = data['type'];
@@ -199,6 +200,7 @@ class Ssrc {
     this.attribute,
     this.value,
   });
+
   Ssrc.fromMap(Map data) {
     id = data['id'];
     attribute = data['attribute'];
@@ -390,7 +392,10 @@ class Bandwidth {
   String type;
   int limit;
 
-  Bandwidth({this.type, this.limit,});
+  Bandwidth({
+    this.type,
+    this.limit,
+  });
 
   Bandwidth.fromMap(Map data) {
     type = data['type'];
@@ -569,7 +574,9 @@ class MediaObject {
 
   MediaObject.fromMap(Map data) {
     if (data['candidates'] != null) {
-      candidates = (data['candidates'] ?? []).map((candidate) => IceCandidate.fromMap(candidate)).toList();
+      candidates = (data['candidates'] ?? [])
+          .map<IceCandidate>((candidate) => IceCandidate.fromMap(candidate))
+          .toList();
     }
     if (data['iceUfrag'] != null) {
       iceUfrag = data['iceUfrag'];
@@ -596,10 +603,12 @@ class MediaObject {
       direction = RtpHeaderDirectionExtension.fromString(data['direction']);
     }
     if (data['rtp'] != null) {
-      rtp = List<Rtp>.from((data['rtp'] ?? <Rtp>[]).map((r) => Rtp.fromMap(r)).toList());
+      rtp = List<Rtp>.from(
+          (data['rtp'] ?? <Rtp>[]).map((r) => Rtp.fromMap(r)).toList());
     }
     if (data['fmtp'] != null) {
-      fmtp = List<Fmtp>.from((data['fmtp'] ?? []).map((f) => Fmtp.fromMap(f)).toList());
+      fmtp = List<Fmtp>.from(
+          (data['fmtp'] ?? []).map((f) => Fmtp.fromMap(f)).toList());
     }
     if (data['type'] != null) {
       type = data['type'];
@@ -617,7 +626,8 @@ class MediaObject {
       rtcp = Rtcp.fromMap(data['rtcp']);
     }
     if (data['ext'] != null) {
-      ext = List<Ext>.from((data['ext'] ?? []).map((e) => Ext.fromMap(e)).toList());
+      ext = List<Ext>.from(
+          (data['ext'] ?? []).map((e) => Ext.fromMap(e)).toList());
     }
     if (data['msid'] != null) {
       msid = data['msid'];
@@ -626,13 +636,17 @@ class MediaObject {
       rtcpMux = data['rtcpMux'];
     }
     if (data['rtcpFb'] != null) {
-      rtcpFb = List<RtcpFb>.from((data['rtcpFb'] ?? []).map((r) => RtcpFb.fromMap(r)).toList());
+      rtcpFb = List<RtcpFb>.from(
+          (data['rtcpFb'] ?? []).map((r) => RtcpFb.fromMap(r)).toList());
     }
     if (data['ssrcs'] != null) {
-      ssrcs = List<Ssrc>.from((data['ssrcs'] ?? []).map((ssrc) => Ssrc.fromMap(ssrc)).toList());
+      ssrcs = List<Ssrc>.from(
+          (data['ssrcs'] ?? []).map((ssrc) => Ssrc.fromMap(ssrc)).toList());
     }
     if (data['ssrcGroups'] != null) {
-      ssrcGroups = List<SsrcGroup>.from((data['ssrcGroups'] ?? []).map((ssrcGroup) => SsrcGroup.fromMap(ssrcGroup)).toList());
+      ssrcGroups = List<SsrcGroup>.from((data['ssrcGroups'] ?? [])
+          .map((ssrcGroup) => SsrcGroup.fromMap(ssrcGroup))
+          .toList());
     }
     if (data['simulcast'] != null) {
       simulcast = Simulcast.fromMap(data['simulcast']);
@@ -641,7 +655,8 @@ class MediaObject {
       simulcast_03 = Simulcast_03.fromMap(data['simulcast_03']);
     }
     if (data['rids'] != null) {
-      rids = List<Rid>.from((data['rids'] ?? []).map((r) => Rid.fromMap(r)).toList());
+      rids = List<Rid>.from(
+          (data['rids'] ?? []).map((r) => Rid.fromMap(r)).toList());
     }
     if (data['extmapAllowMixed'] != null) {
       extmapAllowMixed = data['extmapAllowMixed'];
@@ -665,13 +680,17 @@ class MediaObject {
       fingerprint = Fingerprint.fromMap(data['fingerprint']);
     }
     if (data['rtcpFbTrrInt'] != null) {
-      rtcpFbTrrInt = List<RtcpFbTrrInt>.from((data['rtcpFbTrrInt'] ?? []).map((rFTI) => RtcpFbTrrInt.fromMap(data['rtcpFbTrrInt'])).toList());
+      rtcpFbTrrInt = List<RtcpFbTrrInt>.from((data['rtcpFbTrrInt'] ?? [])
+          .map((rFTI) => RtcpFbTrrInt.fromMap(data['rtcpFbTrrInt']))
+          .toList());
     }
     if (data['crypto'] != null) {
-      crypto = List<Crypto>.from((data['crypto'] ?? []).map((c) => Crypto.fromMap(c)).toList());
+      crypto = List<Crypto>.from(
+          (data['crypto'] ?? []).map((c) => Crypto.fromMap(c)).toList());
     }
     if (data['invalid'] != null) {
-      invalid = List<Invalid>.from((data['invalid'] ?? []).map((i) => Invalid.fromMap(i)).toList());
+      invalid = List<Invalid>.from(
+          (data['invalid'] ?? []).map((i) => Invalid.fromMap(i)).toList());
     }
     if (data['ptime'] != null) {
       ptime = data['ptime'];
@@ -683,7 +702,8 @@ class MediaObject {
       label = data['label'];
     }
     if (data['bandwidth'] != null) {
-      bandwidth = List<Bandwidth>.from((data['bandwidth'] ?? []).map((b) => Bandwidth.fromMap(b)).toList());
+      bandwidth = List<Bandwidth>.from(
+          (data['bandwidth'] ?? []).map((b) => Bandwidth.fromMap(b)).toList());
     }
     if (data['framerate'] != null) {
       framerate = data['framerate'];
@@ -692,7 +712,9 @@ class MediaObject {
       bundleOnly = data['bundleOnly'];
     }
     if (data['imageattrs'] != null) {
-      imageattrs = List<Imageattrs>.from((data['imageattrs'] ?? []).map((ia) => Imageattrs.fromMap(ia)).toList());
+      imageattrs = List<Imageattrs>.from((data['imageattrs'] ?? [])
+          .map((ia) => Imageattrs.fromMap(ia))
+          .toList());
     }
     if (data['sourceFilter'] != null) {
       sourceFilter = SourceFilter.fromMap(data['sourceFilter']);
@@ -705,7 +727,8 @@ class MediaObject {
   Map<String, dynamic> toMap() {
     Map<String, dynamic> result = <String, dynamic>{};
     if (candidates != null) {
-      result['candidates'] = candidates.map((IceCandidate c) => c.toMap()).toList();
+      result['candidates'] =
+          candidates.map((IceCandidate c) => c.toMap()).toList();
     }
     if (iceUfrag != null) {
       result['iceUfrag'] = iceUfrag;
@@ -768,7 +791,8 @@ class MediaObject {
       result['ssrcs'] = ssrcs.map((Ssrc s) => s.toMap()).toList();
     }
     if (ssrcGroups != null) {
-      result['ssrcGroups'] = ssrcGroups.map((SsrcGroup sg) => sg.toMap()).toList();
+      result['ssrcGroups'] =
+          ssrcGroups.map((SsrcGroup sg) => sg.toMap()).toList();
     }
     if (simulcast != null) {
       result['simulcast'] = simulcast.toMap();
@@ -801,7 +825,8 @@ class MediaObject {
       result['fingerprint'] = fingerprint.toMap();
     }
     if (rtcpFbTrrInt != null) {
-      result['rtcpFbTrrInt'] = rtcpFbTrrInt.map((RtcpFbTrrInt rFTI) => rFTI.toMap()).toList();
+      result['rtcpFbTrrInt'] =
+          rtcpFbTrrInt.map((RtcpFbTrrInt rFTI) => rFTI.toMap()).toList();
     }
     if (crypto != null) {
       result['crypto'] = crypto.map((Crypto c) => c.toMap()).toList();
@@ -819,7 +844,8 @@ class MediaObject {
       result['label'] = label;
     }
     if (bandwidth != null) {
-      result['bandwidth'] = bandwidth.map((Bandwidth bw) => bw.toMap()).toList();
+      result['bandwidth'] =
+          bandwidth.map((Bandwidth bw) => bw.toMap()).toList();
     }
     if (framerate != null) {
       result['framerate'] = framerate;
@@ -828,7 +854,8 @@ class MediaObject {
       result['bundleOnly'] = bundleOnly;
     }
     if (imageattrs != null) {
-      result['imageattrs'] = imageattrs.map((Imageattrs im) => im.toMap()).toList();
+      result['imageattrs'] =
+          imageattrs.map((Imageattrs im) => im.toMap()).toList();
     }
     if (sourceFilter != null) {
       result['sourceFilter'] = sourceFilter.toMap();
@@ -836,6 +863,7 @@ class MediaObject {
     if (description != null) {
       result['description'] = description;
     }
+    return result;
   }
 }
 
@@ -983,7 +1011,7 @@ class AnswerMediaSection extends MediaSection {
             _mediaObject.rtp.add(rtp);
 
             // CodecParameters codecParameters =
-                // CodecParameters.copy(codec.parameters);
+            // CodecParameters.copy(codec.parameters);
             Map<dynamic, dynamic> codecParameters =
                 Map<dynamic, dynamic>.of(codec.parameters);
 
@@ -1010,21 +1038,26 @@ class AnswerMediaSection extends MediaSection {
                   {
                     if (opusStereo != null) {
                       // offerCodec.parameters['sprop-stereo'] = opusStereo ? 1 : 0;
-                      offerCodec.parameters['sprop-stereo'] = opusStereo != null ? opusStereo : 0;
+                      offerCodec.parameters['sprop-stereo'] =
+                          opusStereo != null ? opusStereo : 0;
                       // codecParameters['stereo'] = opusStereo ? 1 : 0;
-                      codecParameters['stereo'] = opusStereo != null ? opusStereo : 0;
+                      codecParameters['stereo'] =
+                          opusStereo != null ? opusStereo : 0;
                     }
 
                     if (opusFec != null) {
                       // offerCodec.parameters['useinbandfec'] = opusFec ? 1 : 0;
-                      offerCodec.parameters['useinbandfec'] = opusFec != null ? opusFec : 0;
+                      offerCodec.parameters['useinbandfec'] =
+                          opusFec != null ? opusFec : 0;
                       // codecParameters['useinbandfec'] = opusFec ? 1 : 0;
-                      codecParameters['useinbandfec'] = opusFec != null ? opusFec : 0;
+                      codecParameters['useinbandfec'] =
+                          opusFec != null ? opusFec : 0;
                     }
 
                     if (opusDtx != null) {
                       // offerCodec.parameters['usedtx'] = opusDtx ? 1 : 0;
-                      offerCodec.parameters['usedtx'] = opusDtx != null ? opusDtx : 0;
+                      offerCodec.parameters['usedtx'] =
+                          opusDtx != null ? opusDtx : 0;
                       // codecParameters['usedtx'] = opusDtx ? 1 : 0;
                       codecParameters['usedtx'] = opusDtx != null ? opusDtx : 0;
                     }
@@ -1034,7 +1067,8 @@ class AnswerMediaSection extends MediaSection {
                     }
 
                     if (opusMaxAverageBitrate != null) {
-                      codecParameters['maxaveragebitrate'] = opusMaxAverageBitrate;
+                      codecParameters['maxaveragebitrate'] =
+                          opusMaxAverageBitrate;
                     }
 
                     if (opusPtime != null) {
@@ -1056,11 +1090,13 @@ class AnswerMediaSection extends MediaSection {
                     }
 
                     if (videoGoogleMaxBitrate != null) {
-                      codecParameters['x-google-max-bitrate'] = videoGoogleMaxBitrate;
+                      codecParameters['x-google-max-bitrate'] =
+                          videoGoogleMaxBitrate;
                     }
 
                     if (videoGoogleMinBitrate != null) {
-                      codecParameters['x-google-min-bitrate'] = videoGoogleMinBitrate;
+                      codecParameters['x-google-min-bitrate'] =
+                          videoGoogleMinBitrate;
                     }
                     break;
                   }

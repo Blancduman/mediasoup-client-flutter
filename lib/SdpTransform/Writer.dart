@@ -22,7 +22,7 @@ makeLine(type, obj, location) {
     }
   } else {
     try {
-      str = location[obj['name']];
+      str = location[obj['name']].toString();
     } catch (e) {
       print('SdpTransform: makeLine() error: ${e.toString()}');
     }
@@ -82,6 +82,9 @@ String write(Map<String, dynamic> session, Map<String, dynamic> opts) {
   }
 
   session['media'].forEach((mLine) {
+    if (mLine == null ) {
+      mLine = {};
+    }
     if (mLine['payloads'] == null) {
       mLine['payloads'] = '';
     }

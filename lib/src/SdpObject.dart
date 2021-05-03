@@ -185,8 +185,8 @@ class SdpObject {
     description = data['description'];
   }
 
-  Map<dynamic, dynamic> toMap() {
-    Map<dynamic, dynamic> result = <dynamic, dynamic>{};
+  Map<String, dynamic> toMap() {
+    Map<String, dynamic> result = <String, dynamic>{};
     if (version != null) {
       result['version'] = version;
     }
