@@ -5,7 +5,7 @@ enum Priority {
   High,
 }
 
-extension PriorityToString on Priority {
+extension PriorityExtension on Priority {
   static const Map<String, Priority> types = {
     'very-low': Priority.VeryLow,
     'low': Priority.Low,
@@ -20,6 +20,6 @@ extension PriorityToString on Priority {
     Priority.High: 'high',
   };
 
-  operator [](String i) => types[i];
+  static Priority fromString(String i) => types[i];
   String get value => values[this];
 }

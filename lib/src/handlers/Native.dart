@@ -99,22 +99,33 @@ class Native extends HandlerInterface {
   Future<RtpCapabilities> getNativeRtpCapabilities() async {
     logger.debug('getNativeRtpCapabilities()');
 
-    RTCPeerConnection pc = await createPeerConnection({
-      'iceServers': [],
-      'iceTransportPolicy': 'all',
-      'bundlePolicy': 'max-bundle',
-      'rtcpMuxPolicy': 'require',
-      'sdpSemantics': 'plan-b'
-    });
+    Map<String, dynamic> config = {
+      'iceServers'         : [{"url": "stun:stun.l.google.com:19302"},],
+      'iceTransportPolicy' : 'all',
+      'bundlePolicy'       : 'max-bundle',
+      'rtcpMuxPolicy'      : 'require',
+      'sdpSemantics'       : 'plan-b',
+      'startAudioSession'  : false
+    };
+
+    final Map<String, dynamic> constraints = {
+      'mandatory': {
+        'OfferToReceiveAudio': true,
+        'OfferToReceiveVideo': true,
+      },
+      'optional': [
+        {'`DtlsSrtpKeyAgreement`': true},
+      ],
+    };
+
+    RTCPeerConnection pc = await createPeerConnection(config, constraints);
 
     try {
-      RTCSessionDescription offer = await pc.createOffer({
-        'offerToReceiveAudio': true,
-        'offerToReceiveVideo': true,
-      });
+      RTCSessionDescription offer = await pc.createOffer(constraints);
 
       try {
         await pc.close();
+        await pc.dispose();
       } catch (error) {}
 
       SdpObject sdpObject = SdpObject.fromMap(parse(offer.sdp));
@@ -377,8 +388,8 @@ class Native extends HandlerInterface {
 
     logger.debug('send() [kind:${options.track.kind}, track.id:${options.track.id}]');
 
-    _sendStream.addTrack(options.track);
-    _pc.addStream(_sendStream);
+    await options.stream.addTrack(options.track);
+    await _pc.addStream(_sendStream);
 
     RTCSessionDescription offer = await _pc.createOffer();
     SdpObject localSdpObject = SdpObject.fromMap(parse(offer.sdp));

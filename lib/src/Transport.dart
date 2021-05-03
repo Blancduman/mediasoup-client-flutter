@@ -819,6 +819,7 @@ class Transport extends EnhancedEventEmitter {
             encodings: normalizedEncodings,
             codecOptions: codecOptions,
             codec: codec,
+            stream: stream,
           ));
 
           try {
@@ -881,6 +882,7 @@ class Transport extends EnhancedEventEmitter {
     RTCRtpMediaType kind,
     RtpParameters rtpParameters,
     Map<dynamic, dynamic> appData,
+    Function accept,
   }) {
     _logger.debug('consume()');
 
@@ -960,7 +962,7 @@ class Transport extends EnhancedEventEmitter {
           // Emit observer event.
           _observer.safeEmit('newconsumer', {'consumer': consumer});
 
-          consumerCallback(consumer);
+          consumerCallback(consumer, accept);
         }));
   }
 

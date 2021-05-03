@@ -45,7 +45,7 @@ class RtpCapabilities {
   }
 
   Map<String, dynamic> toMap() {
-    return {'codecs': codecs.map((RtpCodecCapability codec) => codec)};
+    return <String, dynamic>{'codecs': codecs.map((RtpCodecCapability codec) => codec.toMap()).toList()};
   }
 }
 
@@ -332,6 +332,13 @@ class RtpHeaderExtensionParameters {
     this.parameters,
   });
 
+  RtpHeaderExtensionParameters.fromMap(Map data) {
+    uri = data['uri'];
+    id = data['id'];
+    encrypt = data['encrypt'];
+    parameters = Map<dynamic, dynamic>.from(data['parameters']);
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'uri': uri,
@@ -399,6 +406,26 @@ class RtpEncodingParameters extends RTCRtpEncoding {
           scaleResolutionDownBy: scaleResolutionDownBy,
           ssrc: ssrc,
         );
+
+  static RtpEncodingParameters fromMap(Map data) {
+    return RtpEncodingParameters(
+      codecPayloadType: data['codecPayloadType'],
+      rtx: RtxSsrc(data['rtx']),
+      dtx: data['dtx'],
+      scalabilityMode: data['scalabilityMode'],
+      adaptivePtime: data['adaptivePtime'],
+      priority: data['priority'] != null ? PriorityExtension.fromString(data['priority']) : null,
+      networkPriority: data['networkPriority'] != null ? PriorityExtension.fromString(data['networkPriority']) : null,
+      active: data['active'],
+      maxBitrate: data['maxBitrate'],
+      maxFramerate: data['maxFramerate'],
+      minBitrate: data['minBitrate'],
+      numTemporalLayers: data['numTemporalLayers'],
+      rid: data['rid'],
+      scaleResolutionDownBy: data['scaleResolutionDownBy'],
+      ssrc: data['ssrc'],
+    );
+  }
 
   static RtpEncodingParameters assign(
       RtpEncodingParameters prev, RtpEncodingParameters next) {
@@ -552,6 +579,14 @@ class RtpCodecParameters {
     this.rtcpFeedback,
   });
 
+  RtpCodecParameters.fromMap(Map data) {
+    mimeType = data['mimeType'];
+    payloadType = data['payloadType'];
+    clockRate = data['clockRate'];
+    channels = data['channels'];
+    parameters = Map<dynamic, dynamic>.from(data['parameters']);
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'mimeType': mimeType,
@@ -617,6 +652,13 @@ class RtpParameters {
     this.encodings,
     this.rtcp,
   });
+
+  RtpParameters.fromMap(Map data) {
+    mid = data['mid'];
+    codecs = List<RtpCodecParameters>.from(data['codecs'].map((codec) => RtpCodecParameters.fromMap(codec)).toList());
+    headerExtensions = List<RtpHeaderExtensionParameters>.from(data['headerExtensions'].map((headerExtension) => RtpHeaderExtensionParameters.fromMap(headerExtension)).toList());
+    encodings = List<RtpEncodingParameters>.from(data['encodings'].map((encoding) => RtpEncodingParameters.fromMap(encoding)).toList());
+  }
 
   static RtpParameters copy(
     RtpParameters old, {
