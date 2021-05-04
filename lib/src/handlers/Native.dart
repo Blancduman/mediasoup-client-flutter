@@ -90,9 +90,11 @@ class Native extends HandlerInterface {
         localDtlsRole == DtlsRole.client ? DtlsRole.server : DtlsRole.client);
 
     // Need to tell the remote transport about our parameters.
-    await safeEmitAsFuture('@connect', {
-      'dtlsParameters': dtlsParameters,
-    });
+    await safeEmitAsFuture(
+        '@connect',
+        Map<String, dynamic>.from({
+          'dtlsParameters': dtlsParameters,
+        }));
 
     _transportReady = true;
   }
@@ -453,14 +455,16 @@ class Native extends HandlerInterface {
     RTCSessionDescription offer = await _pc.createOffer();
     SdpObject localSdpObject = SdpObject.fromMap(parse(offer.sdp));
     MediaObject offerMediaObject;
-    RtpParameters sendingRtpParameters =
-        RtpParameters.copy(_sendingRtpParametersByKind[typeStringToRTCRtpMediaType[options.track.kind]]);
+    RtpParameters sendingRtpParameters = RtpParameters.copy(
+        _sendingRtpParametersByKind[
+            typeStringToRTCRtpMediaType[options.track.kind]]);
 
     sendingRtpParameters.codecs =
         Ortc.reduceCodecs(sendingRtpParameters.codecs, null);
 
     RtpParameters sendingRemoteRtpParameters = RtpParameters.copy(
-        _sendingRemoteRtpParametersByKind[typeStringToRTCRtpMediaType[options.track.kind]]);
+        _sendingRemoteRtpParametersByKind[
+            typeStringToRTCRtpMediaType[options.track.kind]]);
 
     sendingRemoteRtpParameters.codecs =
         Ortc.reduceCodecs(sendingRemoteRtpParameters.codecs, null);

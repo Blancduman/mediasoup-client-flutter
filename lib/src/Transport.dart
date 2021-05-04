@@ -226,6 +226,7 @@ class IceCandidate {
     if (networkCost != null) {
       result['networkCost'] = networkCost;
     }
+    return result;
   }
 
   static IceCandidate copy(IceCandidate old) {
