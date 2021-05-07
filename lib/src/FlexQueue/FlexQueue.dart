@@ -86,7 +86,8 @@ class FlexQueue {
             task?.callbackFun((await task.execFun(task.argument)));
           }
         } catch (error) {
-          task?.errorCallbackFun(error);
+          print(error);
+          task.errorCallbackFun?.call(error);
         }
         isBusy = false;
         _runTask();

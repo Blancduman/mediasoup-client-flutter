@@ -569,7 +569,7 @@ class MediaObject {
 
   MediaObject.fromMap(Map data) {
     if (data['candidates'] != null) {
-      candidates = (data['candidates'] ?? []).map((candidate) => IceCandidate.fromMap(candidate)).toList();
+      candidates = List<IceCandidate>.from((data['candidates'] ?? []).map((candidate) => IceCandidate.fromMap(candidate)).toList());
     }
     if (data['iceUfrag'] != null) {
       iceUfrag = data['iceUfrag'];
@@ -836,6 +836,8 @@ class MediaObject {
     if (description != null) {
       result['description'] = description;
     }
+
+    return result;
   }
 }
 
@@ -892,7 +894,7 @@ abstract class MediaSection {
 
   void setDtlsRole(DtlsRole role);
 
-  String get mid => _mediaObject.mid.toString();
+  String get mid => _mediaObject.mid != null ? _mediaObject.mid.toString() : null;
 
   bool get closed => _mediaObject.port == 0;
 
@@ -941,7 +943,7 @@ class AnswerMediaSection extends MediaSection {
           iceCandidates: iceCandidates,
           planB: planB,
         ) {
-    _mediaObject.mid = mid;
+    _mediaObject.mid = offerMediaObject.mid;
     _mediaObject.type = offerMediaObject.type;
     _mediaObject.protocol = offerMediaObject.protocol;
 
@@ -976,7 +978,7 @@ class AnswerMediaSection extends MediaSection {
               rate: codec.clockRate,
             );
 
-            if (codec.channels > 1) {
+            if (codec.channels != null && codec.channels > 1) {
               rtp.encoding = codec.channels;
             }
 

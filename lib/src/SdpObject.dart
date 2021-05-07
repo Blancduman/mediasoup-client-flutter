@@ -11,7 +11,7 @@ class Origin {
   Origin({
     this.username,
     this.sessionId,
-    this.sessionVersion,
+    this.sessionVersion = 0,
     this.netType,
     this.ipVer,
     this.address,
@@ -20,7 +20,7 @@ class Origin {
   Origin.fromMap(Map data) {
     username = data['username'];
     sessionId = data['sessionId'];
-    sessionVersion = data['sessionVersion'];
+    sessionVersion = data['sessionVersion'] ?? 0;
     netType = data['netType'];
     ipVer = data['ipVer'];
     address = data['address'];
@@ -173,20 +173,20 @@ class SdpObject {
     if (data['fingerprint'] != null) {
       fingerprint = Fingerprint.fromMap(data['fingerprint']);
     }
-    media =
-        List<MediaObject>.from((data['media'] ?? []).map((m) => MediaObject.fromMap(m)).toList());
-    groups = List<Group>.from((data['groups'] ?? []).map((g) => Group.fromMap(g)).toList());
     if (data['msidSemantic'] != null) {
       msidSemantic = MsidSemantic.fromMap(data['msidSemantic']);
     }
+    media =
+        List<MediaObject>.from((data['media'] ?? []).map((m) => MediaObject.fromMap(m)).toList());
+    groups = List<Group>.from((data['groups'] ?? []).map((g) => Group.fromMap(g)).toList());
     icelite = data['icelite'];
     description = data['description'];
   }
 
-  Map<dynamic, dynamic> toMap() {
-    Map<dynamic, dynamic> result = <dynamic, dynamic>{};
+  Map<String, dynamic> toMap() {
+    Map<String, dynamic> result = <String, dynamic>{};
     if (version != null) {
-      result['version'] = version;
+      result['version'] = version.toString();
     }
     if (origin != null) {
       result['origin'] = origin.toMap();

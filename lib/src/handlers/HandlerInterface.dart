@@ -88,7 +88,7 @@ class HandlerRunOptions {
   List<RTCIceServer> iceServers;
   RTCIceTransportPolicy iceTransportPolicy;
   var additionalSettings;
-  var proprietaryConstraints;
+  Map<String, dynamic> proprietaryConstraints;
   var extendedRtpCapabilities;
 
   HandlerRunOptions({

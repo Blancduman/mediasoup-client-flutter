@@ -98,15 +98,17 @@ class RoomClient {
   }
 
   Future<MediaStream> createVideoStream() async {
-    Map<String, dynamic> mediaConstraints = {
+    Map<String, dynamic> mediaConstraints = <String, dynamic>{
       'audio': false,
       'video': {
         'mandatory': {
-          'minWidth': '320',
-          'minHeight': '240',
-          'minFrameRate': '15',
+          'minWidth':
+          '1280', // Provide your own width, height and frame rate here
+          'minHeight': '720',
+          'minFrameRate': '30',
         },
         'facingMode': 'user',
+        'optional': [],
       },
     };
 
@@ -153,17 +155,17 @@ class RoomClient {
         );
 
         _sendTransport.on('connect',
-            (DtlsParameters dtlsParameters, callback, errback) {
+            (data) {
           _webSocket
               .socket.request(
                 'connectWebRtcTransport',
                 {
                   'transportId': _recvTransport.id,
-                  'dtlsParameters': dtlsParameters.toMap(),
+                  'dtlsParameters': data['dtlsParameters'].toMap(),
                 }
               )
-              .then(callback)
-              .catchError(errback);
+              .then(data['callback'])
+              .catchError(data['errback']);
         });
 
         _sendTransport.on('produce',
@@ -179,11 +181,11 @@ class RoomClient {
               },
             );
 
-            callback({
+            data['callback']({
               'id': response['id'],
             });
           } catch (error) {
-            errback(error);
+            data['errback'](error);
           }
         });
 
@@ -228,7 +230,7 @@ class RoomClient {
 
         _recvTransport.on(
           'connect',
-          (data, callback, errback) {
+          (data) {
             _webSocket
                 .socket.request(
                   'connectWebRtcTransport',
@@ -237,8 +239,8 @@ class RoomClient {
                     'dtlsParameters': data['dtlsParameters'].toMap(),
                   },
                 )
-                .then(callback)
-                .catchError(errback);
+                .then(data['callback'])
+                .catchError(data['errback']);
           },
         );
       }
@@ -255,26 +257,26 @@ class RoomClient {
 
       if (_produce) {
         if (_mediasoupDevice.canProduce(RTCRtpMediaType.RTCRtpMediaTypeAudio)) {
-          MediaStream audioStream;
+          MediaStream videoStream;
           MediaStreamTrack track;
           try {
-            audioStream = await createAudioStream();
-            track = audioStream.getAudioTracks().first;
+            videoStream = await createVideoStream();
+            track = videoStream.getVideoTracks().first;
             _sendTransport.produce(
               track: track,
               codecOptions: ProducerCodecOptions(
                 opusStereo: 1,
                 opusDtx: 1,
               ),
-              stream: audioStream,
+              stream: videoStream,
               appData: {
-                'source': 'mic',
+                'source': 'webcam',
               },
-              source: 'mic',
+              source: 'webcam',
             );
           } catch (error) {
-            if (audioStream != null) {
-              await audioStream.dispose();
+            if (videoStream != null) {
+              await videoStream.dispose();
             }
           }
 

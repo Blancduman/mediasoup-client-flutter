@@ -162,9 +162,9 @@ class Device {
     SctpParameters sctpParameters,
     List<RTCIceServer> iceServers,
     RTCIceTransportPolicy iceTransportPolicy,
-    Map<dynamic, dynamic> additionalSettings,
-    Map<dynamic, dynamic> proprietaryConstraints,
-    Map<dynamic, dynamic> appData,
+    Map<String, dynamic> additionalSettings,
+    Map<String, dynamic> proprietaryConstraints,
+    Map<String, dynamic> appData,
     Function producerCallback,
     Function consumerCallback,
     Function dataProducerCallback,
@@ -223,9 +223,9 @@ class Device {
     SctpParameters sctpParameters,
     List<RTCIceServer> iceServers,
     RTCIceTransportPolicy iceTransportPolicy,
-    Map<dynamic, dynamic> additionalSettings,
-    Map<dynamic, dynamic> proprietaryConstraints,
-    Map<dynamic, dynamic> appData,
+    Map<String, dynamic> additionalSettings,
+    Map<String, dynamic> proprietaryConstraints,
+    Map<String, dynamic> appData,
     Function producerCallback,
     Function dataProducerCallback,
   }) {
@@ -262,13 +262,13 @@ class Device {
       dtlsParameters: DtlsParameters.fromMap(data['dtlsParameters']),
       sctpParameters: SctpParameters.fromMap(data['sctpParameters']),
       iceServers: [],
-      proprietaryConstraints: {
+      proprietaryConstraints: Map<String, dynamic>.from({
         'optional': [
           {
             'googDscp': true,
           }
         ]
-      },
+      }),
       additionalSettings: {
         'encodedInsertableStreams': false,
       },
@@ -289,9 +289,9 @@ class Device {
     SctpParameters sctpParameters,
     List<RTCIceServer> iceServers,
     RTCIceTransportPolicy iceTransportPolicy,
-    Map<dynamic, dynamic> additionalSettings,
-    Map<dynamic, dynamic> proprietaryConstraints,
-    Map<dynamic, dynamic> appData,
+    Map<String, dynamic> additionalSettings,
+    Map<String, dynamic> proprietaryConstraints,
+    Map<String, dynamic> appData,
     Function consumerCallback,
     Function dataConsumerCallback,
   }) {
@@ -328,13 +328,13 @@ class Device {
       dtlsParameters: DtlsParameters.fromMap(data['dtlsParameters']),
       sctpParameters: SctpParameters.fromMap(data['sctpParameters']),
       iceServers: [],
-      proprietaryConstraints: <String, dynamic>{
+      proprietaryConstraints: Map<String, dynamic>.from({
         'optional': [
           {
             'googDscp': true,
           }
         ]
-      },
+      }),
       additionalSettings: {
         'encodedInsertableStreams': false,
       },

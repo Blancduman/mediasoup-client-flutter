@@ -158,7 +158,7 @@ class IceCandidate {
 
   IceCandidate.fromMap(Map data) {
     component = data['component'] ?? 1;
-    foundation = data['foundation'];
+    foundation = data['foundation'].toString();
     ip = data['ip'];
     port = data['port'];
     priority = data['priority'];
@@ -223,6 +223,8 @@ class IceCandidate {
     if (networkCost != null) {
       result['networkCost'] = networkCost;
     }
+
+    return result;
   }
 
   static IceCandidate copy(IceCandidate old) {
@@ -420,9 +422,9 @@ class Transport extends EnhancedEventEmitter {
     SctpParameters sctpParameters,
     List<RTCIceServer> iceServers,
     RTCIceTransportPolicy iceTransportPolicy,
-    Map<dynamic, dynamic> additionalSettings,
-    Map<dynamic, dynamic> proprietaryConstraints,
-    Map<dynamic, dynamic> appData,
+    Map<String, dynamic> additionalSettings,
+    Map<String, dynamic> proprietaryConstraints,
+    Map<String, dynamic> appData,
     ExtendedRtpCapabilities extendedRtpCapabilities,
     CanProduceByKind canProduceByKind,
     this.producerCallback,
@@ -440,7 +442,7 @@ class Transport extends EnhancedEventEmitter {
         sctpParameters != null ? sctpParameters.maxMessageSize : null;
 
     // Clone and sanitize additionalSettings.
-    additionalSettings = Map<dynamic, dynamic>.of(additionalSettings);
+    additionalSettings = Map<String, dynamic>.of(additionalSettings);
 
     additionalSettings.remove('iceServers');
     additionalSettings.remove('iceTransportPolicy');

@@ -13,7 +13,7 @@ import 'package:mediasoup_client_flutter/src/handlers/sdp/PlanBUtils.dart';
 import 'package:mediasoup_client_flutter/src/handlers/sdp/RemoteSdp.dart';
 import 'package:mediasoup_client_flutter/src/utils.dart';
 
-Logger logger = Logger('Native');
+Logger _logger = Logger('Native');
 
 class Native extends HandlerInterface {
   // Handler direction.
@@ -85,7 +85,7 @@ class Native extends HandlerInterface {
 
   @override
   Future<void> close() async {
-    logger.debug('close()');
+    _logger.debug('close()');
 
     // Close RTCPeerConnection.
     if (_pc != null) {
@@ -97,7 +97,7 @@ class Native extends HandlerInterface {
 
   @override
   Future<RtpCapabilities> getNativeRtpCapabilities() async {
-    logger.debug('getNativeRtpCapabilities()');
+    _logger.debug('getNativeRtpCapabilities()');
 
     Map<String, dynamic> config = {
       'iceServers'         : [{"url": "stun:stun.l.google.com:19302"},],
@@ -144,7 +144,7 @@ class Native extends HandlerInterface {
 
   @override
   SctpCapabilities getNativeSctpCapabilities() {
-    logger.debug('getNativeSctpCapabilities()');
+    _logger.debug('getNativeSctpCapabilities()');
 
     return SctpCapabilities(
       numStreams: NumSctpStreams(
@@ -176,13 +176,13 @@ class Native extends HandlerInterface {
   Future<HandlerReceiveResult> receive(HandlerReceiveOptions options) async {
     _assertRecvDirection();
 
-    logger.debug('receive() [trackId:${options.trackId}, kind:${RTCRtpMediaTypeExtension.value(options.kind)}]');
+    _logger.debug('receive() [trackId:${options.trackId}, kind:${RTCRtpMediaTypeExtension.value(options.kind)}]');
 
     String localId = options.trackId;
     String mid = RTCRtpMediaTypeExtension.value(options.kind);
     String streamId = options.rtpParameters.rtcp.cname;
 
-    logger.debug(
+    _logger.debug(
 			'receive() | forcing a random remote streamId to avoid well known bug in native');
     streamId += '-hack-${generateRandomNumber()}';
 
@@ -196,7 +196,7 @@ class Native extends HandlerInterface {
 
     RTCSessionDescription offer = RTCSessionDescription(_remoteSdp.getSdp(), 'offer');
 
-    logger.debug('receive() | calling pc.setRemoteDescription() [offer:${offer.toMap()}]');
+    _logger.debug('receive() | calling pc.setRemoteDescription() [offer:${offer.toMap()}]');
 
     await _pc.setRemoteDescription(offer);
 
@@ -215,7 +215,7 @@ class Native extends HandlerInterface {
       await _setupTransport(localDtlsRole: DtlsRole.client, localSdpObject: localSdpObject);
     }
 
-    logger.debug('receive() | calling pc.setLocalDescription() [answer:${answer.toMap()}]');
+    _logger.debug('receive() | calling pc.setLocalDescription() [answer:${answer.toMap()}]');
 
     await _pc.setLocalDescription(answer);
 
@@ -244,7 +244,7 @@ class Native extends HandlerInterface {
     initOptions.maxRetransmits = options.sctpStreamParameters.maxRetransmits;
     initOptions.protocol = options.protocol;
 
-    logger.debug('receiveDataChannel() [options:${initOptions.toMap()}]');
+    _logger.debug('receiveDataChannel() [options:${initOptions.toMap()}]');
 
     RTCDataChannel dataChannel = await _pc.createDataChannel(options.label, initOptions);
 
@@ -256,7 +256,7 @@ class Native extends HandlerInterface {
 
       RTCSessionDescription offer = RTCSessionDescription(_remoteSdp.getSdp(), 'offer');
 
-      logger.debug('receiveDataChannel() | calling pc.setRemoteDescription() [offer:${offer.toMap()}]');
+      _logger.debug('receiveDataChannel() | calling pc.setRemoteDescription() [offer:${offer.toMap()}]');
 
       await _pc.setRemoteDescription(offer);
 
@@ -268,7 +268,7 @@ class Native extends HandlerInterface {
         await _setupTransport(localDtlsRole: DtlsRole.client, localSdpObject: localSdpObject);
       }
 
-      logger.debug('receiveDataChannel() | calling pc.setRemoteDescription() [answer:${answer.toMap()}]');
+      _logger.debug('receiveDataChannel() | calling pc.setRemoteDescription() [answer:${answer.toMap()}]');
 
       await _pc.setLocalDescription(answer);
 
@@ -285,7 +285,7 @@ class Native extends HandlerInterface {
 
   @override
   Future<void> restartIce(IceParameters iceParameters) async {
-    logger.debug('restartIce()');
+    _logger.debug('restartIce()');
 
     if (!_transportReady) {
       return null;
@@ -294,25 +294,25 @@ class Native extends HandlerInterface {
     if (_direction == Direction.send) {
       RTCSessionDescription offer = await _pc.createOffer({ 'iceRestart': true});
 
-      logger.debug('restartIce() | calling pc.setLocalDescription() [offer:${offer.toMap()}]');
+      _logger.debug('restartIce() | calling pc.setLocalDescription() [offer:${offer.toMap()}]');
 
       await _pc.setLocalDescription(offer);
 
       RTCSessionDescription answer = RTCSessionDescription(_remoteSdp.getSdp(), 'answer');
 
-      logger.debug('restartIce() | calling pc.setRemoteDescription() [answer:${answer.toMap()}]');
+      _logger.debug('restartIce() | calling pc.setRemoteDescription() [answer:${answer.toMap()}]');
 
       await _pc.setRemoteDescription(answer);
     } else {
       RTCSessionDescription offer = RTCSessionDescription(_remoteSdp.getSdp(), 'offer');
 
-      logger.debug('restartIce() | calling pc.setRemoteDescription() [offer:${offer.sdp}]');
+      _logger.debug('restartIce() | calling pc.setRemoteDescription() [offer:${offer.sdp}]');
 
       await _pc.setRemoteDescription(offer);
 
       RTCSessionDescription answer = await _pc.createAnswer();
 
-      logger.debug('restartIce() | calling pc.setLocalDescription() [answer:${answer.toMap()}]');
+      _logger.debug('restartIce() | calling pc.setLocalDescription() [answer:${answer.toMap()}]');
 
       await _pc.setLocalDescription(answer);
     }
@@ -321,7 +321,7 @@ class Native extends HandlerInterface {
 
   @override
   void run({HandlerRunOptions options}) async {
-    logger.debug('run()');
+    _logger.debug('run()');
 
     _direction = options.direction;
 
@@ -386,19 +386,29 @@ class Native extends HandlerInterface {
   Future<HandlerSendResult> send(HandlerSendOptions options) async {
     _assertSendRirection();
 
-    logger.debug('send() [kind:${options.track.kind}, track.id:${options.track.id}]');
+    _logger.debug('send() [kind:${options.track.kind}, track.id:${options.track.id}]');
 
-    await options.stream.addTrack(options.track);
-    await _pc.addStream(_sendStream);
+    if (options.codec != null) {
+      _logger.warn('send() | codec selection is not available in Native handler');
+    }
 
-    RTCSessionDescription offer = await _pc.createOffer();
+    // await options.stream.addTrack(options.track);
+    RTCRtpSender sender = await _pc.addTrack(options.track, options.stream);
+
+    RTCSessionDescription offer = await _pc.createOffer({
+      'mandatory': {
+        'OfferToReceiveAudio': false,
+        'OfferToReceiveVideo': false,
+      },
+      'optional': [],
+    });
     SdpObject localSdpObject = SdpObject.fromMap(parse(offer.sdp));
     MediaObject offerMediaObject;
-    RtpParameters sendingRtpParameters = RtpParameters.copy(_sendingRtpParametersByKind[options.track.kind]);
+    RtpParameters sendingRtpParameters = RtpParameters.copy(_sendingRtpParametersByKind[RTCRtpMediaTypeExtension.fromString(options.track.kind)]);
 
     sendingRtpParameters.codecs = Ortc.reduceCodecs(sendingRtpParameters.codecs, null);
 
-    RtpParameters sendingRemoteRtpParameters = RtpParameters.copy(_sendingRemoteRtpParametersByKind[options.track.kind]);
+    RtpParameters sendingRemoteRtpParameters = RtpParameters.copy(_sendingRemoteRtpParametersByKind[RTCRtpMediaTypeExtension.fromString(options.track.kind)]);
 
     sendingRemoteRtpParameters.codecs = Ortc.reduceCodecs(sendingRemoteRtpParameters.codecs, null);
 
@@ -407,7 +417,7 @@ class Native extends HandlerInterface {
     }
 
     if (options.track.kind == 'video' && options.encodings != null && options.encodings.length > 1) {
-      logger.debug('send() | enabling simulcast');
+      _logger.debug('send() | enabling simulcast');
 
       localSdpObject = SdpObject.fromMap(parse(offer.sdp));
       offerMediaObject = localSdpObject.media.firstWhere((MediaObject m) => m.type == 'video', orElse: () => null,);
@@ -417,7 +427,7 @@ class Native extends HandlerInterface {
       offer = RTCSessionDescription(write(localSdpObject.toMap(), null), 'offer');
     }
 
-    logger.debug('send() | calling pc.setLocalDescription() [offer:${offer.toMap()}]');
+    _logger.debug('send() | calling pc.setLocalDescription() [offer:${offer.toMap()}]');
 
     await _pc.setLocalDescription(offer);
 
@@ -431,7 +441,7 @@ class Native extends HandlerInterface {
     sendingRtpParameters.encodings = PlanBUtils.getRtpEncodings(offerMediaObject, options.track);
 
     // Complete encodings with given values.
-    if (options.encodings != null) {
+    if (options.encodings != null && options.encodings.isNotEmpty) {
       for (int idx = 0; idx < sendingRtpParameters.encodings.length; ++idx) {
         if (options.encodings[idx] != null) {
           sendingRtpParameters.encodings[idx] = RtpEncodingParameters.assign(sendingRtpParameters.encodings[idx], options.encodings[idx]);
@@ -462,7 +472,7 @@ class Native extends HandlerInterface {
 
     RTCSessionDescription answer = RTCSessionDescription(_remoteSdp.getSdp(), 'answer');
 
-    logger.debug('send() | calling pc.setRemoteDescription() [answer:${answer.toMap()}');
+    _logger.debug('send() | calling pc.setRemoteDescription() [answer:${answer.toMap()}');
 
     await _pc.setRemoteDescription(answer);
 
@@ -472,7 +482,7 @@ class Native extends HandlerInterface {
     // Insert into the map.
     _mapSendLocalIdTrack[localId] = options.track;
 
-    return HandlerSendResult(localId: localId, rtpParameters: sendingRtpParameters,);
+    return HandlerSendResult(localId: localId, rtpParameters: sendingRtpParameters, rtpSender: sender,);
   }
 
   @override
@@ -489,7 +499,7 @@ class Native extends HandlerInterface {
     initOptions.protocol = options.protocol;
     // initOptions.priority = options.priority;
     
-    logger.debug('sendDataChannel() [options:${initOptions.toMap()}]');
+    _logger.debug('sendDataChannel() [options:${initOptions.toMap()}]');
 
     RTCDataChannel dataChannel = await _pc.createDataChannel(options.label, initOptions);
 
@@ -507,7 +517,7 @@ class Native extends HandlerInterface {
         await _setupTransport(localDtlsRole: DtlsRole.server, localSdpObject: localSdpObject);
       }
 
-      logger.debug('sendDataChannel() | calling pc.setLocalDescription() [offer:${offer.toMap()}]');
+      _logger.debug('sendDataChannel() | calling pc.setLocalDescription() [offer:${offer.toMap()}]');
 
       await _pc.setLocalDescription(offer);
 
@@ -515,7 +525,7 @@ class Native extends HandlerInterface {
 
       RTCSessionDescription answer = RTCSessionDescription(_remoteSdp.getSdp(), 'answer');
 
-      logger.debug('sendDataChannel() | calling pc.setRemoteDescription() [answer:${answer.toMap()}]');
+      _logger.debug('sendDataChannel() | calling pc.setRemoteDescription() [answer:${answer.toMap()}]');
 
 			await _pc.setRemoteDescription(answer);
 
@@ -547,7 +557,7 @@ class Native extends HandlerInterface {
   Future<void> stopReceiving(String localId) async {
     _assertRecvDirection();
 
-    logger.debug('stopReceiving() [localId:$localId]');
+    _logger.debug('stopReceiving() [localId:$localId]');
 
     RtpParameters rtpParameters = _mapRecvLocalIdInfo[localId];
 
@@ -558,7 +568,7 @@ class Native extends HandlerInterface {
 
     RTCSessionDescription offer = RTCSessionDescription(_remoteSdp.getSdp(), 'offer');
 
-    logger.debug('stopReceiving() | calling pc.setRemoteDescription() [offer:${offer.toMap()}]');
+    _logger.debug('stopReceiving() | calling pc.setRemoteDescription() [offer:${offer.toMap()}]');
 
     await _pc.setRemoteDescription(offer);
   }
@@ -567,7 +577,7 @@ class Native extends HandlerInterface {
   Future<void> stopSending(String localId) async {
     _assertSendRirection();
 
-    logger.debug('stopSending() [localId:$localId]');
+    _logger.debug('stopSending() [localId:$localId]');
 
     MediaStreamTrack track = _mapSendLocalIdTrack[localId];
 
@@ -581,7 +591,7 @@ class Native extends HandlerInterface {
     
     RTCSessionDescription offer = await _pc.createOffer();
 
-    logger.debug('stopSending() | calling pc.setLocalDescription() [offer:${offer.toMap()}]');
+    _logger.debug('stopSending() | calling pc.setLocalDescription() [offer:${offer.toMap()}]');
 
     try {
       await _pc.setLocalDescription(offer);
@@ -590,7 +600,7 @@ class Native extends HandlerInterface {
 			// "Failed to create channels". If so, ignore it.
 			if (_sendStream.getTracks().length == 0)
 			{
-				logger.warn('stopSending() | ignoring expected error due no sending tracks: ${error.toString()}',);
+				_logger.warn('stopSending() | ignoring expected error due no sending tracks: ${error.toString()}',);
 
 				return;
 			}
@@ -604,14 +614,14 @@ class Native extends HandlerInterface {
 
     RTCSessionDescription answer = RTCSessionDescription(_remoteSdp.getSdp(), 'answer');
 
-    logger.debug('stopSending() | calling pc.setRemoteDescription() [answer:[${answer.toMap()}]');
+    _logger.debug('stopSending() | calling pc.setRemoteDescription() [answer:[${answer.toMap()}]');
 
     await _pc.setRemoteDescription(answer);
   }
 
   @override
   Future<void> updateIceServers(List<RTCIceServer> iceServers) async {
-    logger.debug('updateIceServers()');
+    _logger.debug('updateIceServers()');
 
     Map<String, dynamic> configuration = _pc.getConfiguration;
 
