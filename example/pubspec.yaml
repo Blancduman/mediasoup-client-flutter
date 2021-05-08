@@ -27,7 +27,7 @@ dependencies:
     path: ../
   socket_io_client: ^0.9.12
   protoo_client:
-    path: ./dependencies/dart-protoo-client
+    git: https://github.com/ZackMitkin/dart-protoo-client
   random_words: ^1.0.2
   random_string: ^2.1.0
   flutter_webrtc: ^0.6.3
