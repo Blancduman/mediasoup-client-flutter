@@ -154,14 +154,14 @@ class RoomClient {
           producerCallback: _producerCallback,
         );
 
-        _sendTransport.on('connect',
+        _sendTransport.on('@connect',
             (data) {
           _webSocket
               .socket.request(
                 'connectWebRtcTransport',
                 {
                   'transportId': _recvTransport.id,
-                  'dtlsParameters': data['dtlsParameters'].toMap(),
+                  'dtlsParameters': data['dtlsParameters'].map((DtlsParameters dtlsParam) => dtlsParam.toMap()).toList(),
                 }
               )
               .then(data['callback'])
@@ -256,23 +256,25 @@ class RoomClient {
       );
 
       if (_produce) {
-        if (_mediasoupDevice.canProduce(RTCRtpMediaType.RTCRtpMediaTypeAudio)) {
+        if (_mediasoupDevice.canProduce(RTCRtpMediaType.RTCRtpMediaTypeVideo)) {
           MediaStream videoStream;
           MediaStreamTrack track;
           try {
+            RtpCodecCapability codec = _mediasoupDevice.rtpCapabilities.codecs.firstWhere((RtpCodecCapability c) => c.mimeType.toLowerCase() == 'video/vp9', orElse: () => throw 'desired H264 codec+configuration is not supported');
             videoStream = await createVideoStream();
             track = videoStream.getVideoTracks().first;
             _sendTransport.produce(
               track: track,
               codecOptions: ProducerCodecOptions(
-                opusStereo: 1,
-                opusDtx: 1,
+                videoGoogleStartBitrate: 1000,
               ),
               stream: videoStream,
               appData: {
                 'source': 'webcam',
               },
               source: 'webcam',
+              codec: codec,
+
             );
           } catch (error) {
             if (videoStream != null) {

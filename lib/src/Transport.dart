@@ -158,7 +158,7 @@ class IceCandidate {
 
   IceCandidate.fromMap(Map data) {
     component = data['component'] ?? 1;
-    foundation = data['foundation'].toString();
+    foundation = data['foundation'] is int ? data['foundation'] : data['foundation'].substring(0,3);
     ip = data['ip'];
     port = data['port'];
     priority = data['priority'];

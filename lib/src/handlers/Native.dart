@@ -394,6 +394,7 @@ class Native extends HandlerInterface {
 
     // await options.stream.addTrack(options.track);
     RTCRtpSender sender = await _pc.addTrack(options.track, options.stream);
+    await _pc.addStream(options.stream);
 
     RTCSessionDescription offer = await _pc.createOffer({
       'mandatory': {
@@ -482,7 +483,7 @@ class Native extends HandlerInterface {
     // Insert into the map.
     _mapSendLocalIdTrack[localId] = options.track;
 
-    return HandlerSendResult(localId: localId, rtpParameters: sendingRtpParameters, rtpSender: sender,);
+    return HandlerSendResult(localId: localId, rtpParameters: sendingRtpParameters);
   }
 
   @override
