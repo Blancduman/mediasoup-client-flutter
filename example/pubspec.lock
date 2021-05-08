@@ -119,9 +119,11 @@ packages:
   protoo_client:
     dependency: "direct main"
     description:
-      path: "dependencies/dart-protoo-client"
-      relative: true
-    source: path
+      path: "."
+      ref: HEAD
+      resolved-ref: "102b90dc3b3de53b7e48cbdb3f03c536b988bf59"
+      url: "https://github.com/ZackMitkin/dart-protoo-client"
+    source: git
     version: "0.3.0"
   random_string:
     dependency: "direct main"
