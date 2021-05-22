@@ -759,7 +759,7 @@ class Ortc {
     if (capCodec == null) {
       filteredCodecs.add(codecs.first);
 
-      if (isRtxCodec(codecs[1])) {
+      if (codecs.length > 1 && isRtxCodec(codecs[1])) {
         filteredCodecs.add(codecs[1]);
       }
     } else {
