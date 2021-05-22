@@ -123,7 +123,7 @@ class SctpStreamParameters {
   });
 
   static SctpStreamParameters copy(SctpStreamParameters old) {
-    SctpStreamParameters(
+    return SctpStreamParameters(
       streamId: old.streamId,
       ordered: old.ordered,
       maxPacketLifeTime: old.maxPacketLifeTime,

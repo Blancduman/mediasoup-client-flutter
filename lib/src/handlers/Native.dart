@@ -114,7 +114,7 @@ class Native extends HandlerInterface {
         'OfferToReceiveVideo': true,
       },
       'optional': [
-        {'`DtlsSrtpKeyAgreement`': true},
+        {'DtlsSrtpKeyAgreement': true},
       ],
     };
 
@@ -124,8 +124,8 @@ class Native extends HandlerInterface {
       RTCSessionDescription offer = await pc.createOffer(constraints);
 
       try {
-        await pc.close();
-        await pc.dispose();
+        await pc?.close();
+        pc?.dispose();
       } catch (error) {}
 
       SdpObject sdpObject = SdpObject.fromMap(parse(offer.sdp));
@@ -136,6 +136,7 @@ class Native extends HandlerInterface {
     } catch (error) {
       try {
         await pc?.close();
+        pc?.dispose();
       } catch (error2) {}
 
       throw error;
@@ -392,8 +393,8 @@ class Native extends HandlerInterface {
       _logger.warn('send() | codec selection is not available in Native handler');
     }
 
-    // await options.stream.addTrack(options.track);
-    RTCRtpSender sender = await _pc.addTrack(options.track, options.stream);
+    await options.stream.addTrack(options.track);
+    // RTCRtpSender sender = await _pc.addTrack(options.track, options.stream);
     await _pc.addStream(options.stream);
 
     RTCSessionDescription offer = await _pc.createOffer({
@@ -452,7 +453,6 @@ class Native extends HandlerInterface {
 
     // If VP8 or H264 and there is effective simulcast, add scalabilityMode to
     // each encoding.
-    
     if (sendingRtpParameters.encodings.length > 1 &&
       (
         sendingRtpParameters.codecs[0].mimeType.toLowerCase() == 'video/vp8' ||

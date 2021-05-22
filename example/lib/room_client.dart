@@ -25,7 +25,7 @@ class RoomClient {
   Map<String, DataConsumer> _dataConsumers = {};
   Map<String, MediaDeviceInfo> _webcams = {};
   bool _produce = false;
-  bool _consume = true;
+  bool _consume = false;
 
   RoomClient({
     this.roomId,
@@ -154,14 +154,14 @@ class RoomClient {
           producerCallback: _producerCallback,
         );
 
-        _sendTransport.on('@connect',
+        _sendTransport.on('connect',
             (data) {
           _webSocket
               .socket.request(
                 'connectWebRtcTransport',
                 {
                   'transportId': _recvTransport.id,
-                  'dtlsParameters': data['dtlsParameters'].map((DtlsParameters dtlsParam) => dtlsParam.toMap()).toList(),
+                  'dtlsParameters': data['dtlsParameters'].toMap(),
                 }
               )
               .then(data['callback'])
@@ -169,28 +169,33 @@ class RoomClient {
         });
 
         _sendTransport.on('produce',
-            (data, callback, errback) async {
+            (data) async {
           try {
             Map response = await _webSocket.socket.request(
               'produce',
               {
                 'transportId': _sendTransport.id,
-                'kind': RTCRtpMediaTypeExtension.value(data['kind']),
+                'kind': data['kind'],
                 'rtpParameters': data['rtpParameters'].toMap(),
-                'appData': data['appData']
+                'appData': Map<String, dynamic>.from(data['appData'])
               },
             );
 
-            data['callback']({
-              'id': response['id'],
-            });
+            // return response['id'];
+
+            data['callback'](
+              response['id'],
+            );
+            // data['callback']({
+            //   'id': response['id'],
+            // });
           } catch (error) {
             data['errback'](error);
           }
         });
 
         _sendTransport.on('producedata',
-            (data, callback, errback) async {
+            (data) async {
           try {
             Map response = await _webSocket.socket.request(
               'produceData',
@@ -203,11 +208,9 @@ class RoomClient {
               }
             );
 
-            callback({
-              'id': response['id'],
-            });
+            data['callback'](response['id']);
           } catch (error) {
-            errback(error);
+            data['errback'](error);
           }
         });
       }
@@ -270,7 +273,7 @@ class RoomClient {
               ),
               stream: videoStream,
               appData: {
-                'source': 'webcam',
+                'source': 'cam',
               },
               source: 'webcam',
               codec: codec,
@@ -333,11 +336,11 @@ class RoomClient {
             }
             try {
               _recvTransport.consume(
-                id: request['id'],
-                producerId: request['producerId'],
-                kind: RTCRtpMediaTypeExtension.fromString(request['kind']),
-                rtpParameters: RtpParameters.fromMap(request['rtpParameters']),
-                appData: Map<dynamic, dynamic>.from(request['appData']),
+                id: request['data']['id'],
+                producerId: request['data']['producerId'],
+                kind: RTCRtpMediaTypeExtension.fromString(request['data']['kind']),
+                rtpParameters: RtpParameters.fromMap(request['data']['rtpParameters']),
+                appData: Map<dynamic, dynamic>.from(request['data']['appData']),
               );
             } catch (error) {
               print('newConsumer request failed: $error');

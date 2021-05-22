@@ -18,6 +18,10 @@ class EnhancedEventEmitter extends EventEmitter {
   }
 
   Future<dynamic> safeEmitAsFuture(String event, [Map<String, dynamic> args]) async {
+
+    Completer<dynamic> completer = Completer<dynamic>();
+    args['callback'] = completer.complete;
+    args['errback'] = completer.completeError;
     try {
       return emitAsFuture(event, args);
     } catch (error) {

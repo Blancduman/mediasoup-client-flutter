@@ -37,10 +37,10 @@ class RtpCapabilities {
     List<String> fecMechanisms,
   }) {
     return RtpCapabilities(
-      codecs: codecs != null ? codecs : old.codecs,
+      codecs: codecs != null ? codecs : old.codecs != null ? List<RtpCodecCapability>.from(old.codecs) : null,
       headerExtensions:
-          headerExtensions != null ? headerExtensions : old.headerExtensions,
-      fecMechanisms: fecMechanisms != null ? fecMechanisms : old.fecMechanisms,
+          headerExtensions != null ? headerExtensions : old.headerExtensions != null ? List<RtpHeaderExtension>.from(old.headerExtensions) : null,
+      fecMechanisms: fecMechanisms != null ? fecMechanisms : old.fecMechanisms != null ? List<String>.from(old.fecMechanisms) : null,
     );
   }
 
@@ -410,7 +410,7 @@ class RtpEncodingParameters extends RTCRtpEncoding {
   static RtpEncodingParameters fromMap(Map data) {
     return RtpEncodingParameters(
       codecPayloadType: data['codecPayloadType'],
-      rtx: RtxSsrc(data['rtx']),
+      rtx: data['rtx'] != null ? RtxSsrc(data['rtx']) : null,
       dtx: data['dtx'],
       scalabilityMode: data['scalabilityMode'],
       adaptivePtime: data['adaptivePtime'],
@@ -643,7 +643,7 @@ class RtpParameters {
   List<RtpEncodingParameters> encodings;
 
   /// Parameters used for RTCP.
-  RtcpParapeters rtcp;
+  RtcpParameters rtcp;
 
   RtpParameters({
     this.mid,
@@ -658,6 +658,7 @@ class RtpParameters {
     codecs = List<RtpCodecParameters>.from(data['codecs'].map((codec) => RtpCodecParameters.fromMap(codec)).toList());
     headerExtensions = List<RtpHeaderExtensionParameters>.from(data['headerExtensions'].map((headerExtension) => RtpHeaderExtensionParameters.fromMap(headerExtension)).toList());
     encodings = List<RtpEncodingParameters>.from(data['encodings'].map((encoding) => RtpEncodingParameters.fromMap(encoding)).toList());
+    rtcp = RtcpParameters.fromMap(data['rtcp']);
   }
 
   static RtpParameters copy(
@@ -666,15 +667,15 @@ class RtpParameters {
     List<RtpCodecParameters> codecs,
     List<RtpHeaderExtensionParameters> headerExtensions,
     List<RtpEncodingParameters> encodings,
-    RtcpParapeters rtcp,
+    RtcpParameters rtcp,
   }) {
     return RtpParameters(
-      codecs: mid ?? old.codecs,
-      encodings: codecs != null ? codecs : old.encodings,
+      codecs: codecs != null ? codecs : List<RtpCodecParameters>.from(old.codecs),
+      encodings: encodings != null ? encodings : List<RtpEncodingParameters>.from(old.encodings),
       headerExtensions:
-          headerExtensions != null ? headerExtensions : old.headerExtensions,
-      mid: encodings != null ? encodings : old.mid,
-      rtcp: rtcp ?? old.rtcp,
+          headerExtensions != null ? headerExtensions : List<RtpHeaderExtensionParameters>.from(old.headerExtensions),
+      mid: mid ?? old.mid,
+      rtcp: rtcp != null ? rtcp : RtcpParameters.copy(old.rtcp),
     );
   }
 
@@ -702,20 +703,32 @@ class RtpParameters {
 /// all its associated consumers.
 ///
 /// mediasoup assumes reducedSize to always be true.
-class RtcpParapeters extends RTCRTCPParameters {
+class RtcpParameters extends RTCRTCPParameters {
   /*
 	 * Whether RTCP-mux is used. Default true.
 	 */
   final bool mux;
 
-  RtcpParapeters({this.mux, String cname, bool reducedSize})
+  RtcpParameters({this.mux, String cname, bool reducedSize})
       : super(cname, reducedSize);
 
-  factory RtcpParapeters.fromMap(Map<dynamic, dynamic> map) {
-    return RtcpParapeters(
+  factory RtcpParameters.fromMap(Map<dynamic, dynamic> map) {
+    return RtcpParameters(
       cname: map['cname'],
       mux: map['mux'],
       reducedSize: map['reducedSize'],
+    );
+  }
+
+  static RtcpParameters copy (RtcpParameters old, {
+    bool mux,
+    String cname,
+    bool reducedSize,
+  }) {
+    return RtcpParameters(
+      mux: mux != null ? mux : old?.mux,
+      cname: cname != null ? cname : old?.cname,
+      reducedSize: reducedSize != null ? reducedSize : old?.reducedSize,
     );
   }
 

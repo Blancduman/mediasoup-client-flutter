@@ -107,7 +107,8 @@ class IceCandidate {
 
   /// Unique identifier that allows ICE to correlate candidates that appear on
   /// multiple transports.
-  String foundation;
+  var foundation;
+  // String foundation;
 
   ///The assigned priority of the candidate.
   int priority;
@@ -158,7 +159,8 @@ class IceCandidate {
 
   IceCandidate.fromMap(Map data) {
     component = data['component'] ?? 1;
-    foundation = data['foundation'] is int ? data['foundation'] : data['foundation'].substring(0,3);
+    foundation = data['foundation'];
+    // foundation = data['foundation'] is int ? data['foundation'] : data['foundation'].substring(0,3);
     ip = data['ip'];
     port = data['port'];
     priority = data['priority'];
@@ -171,7 +173,7 @@ class IceCandidate {
     if (data['tcpType'] != null) {
       tcpType = TcpTypeExtension.fromString(data['tcpType']);
     }
-    transport = data['transport'];
+    transport = data['transport'] ?? 'udp';
     raddr = data['raddr'];
     rport = data['rport'];
     generation = data['generation'];
@@ -752,7 +754,7 @@ class Transport extends EnhancedEventEmitter {
     bool stopTracks = true,
     bool disableTrackOnPause = true,
     bool zeroRtpOnPause = false,
-    Map<dynamic, dynamic> appData,
+    Map<String, dynamic> appData,
     String source,
   }) {
     _logger.debug('produce() [track:${track.toString()}');

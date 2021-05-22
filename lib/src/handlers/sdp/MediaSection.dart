@@ -152,9 +152,13 @@ class Ext {
 
   Map<String, dynamic> toMap() {
     Map<String, dynamic> result = {
+      if (value != null)
       'value': value,
+      if (direction != null)
       'direction': direction,
+      if (uri != null)
       'uri': uri,
+      if (config != null)
       'config': config,
     };
     if (encryptUri != null && encryptUri.isNotEmpty) {
