@@ -71,6 +71,14 @@ class RoomClient {
       _micProducer.on('trackended', () {
         disableMic().catchError(() {});
       });
+    } else {
+      _webcamProducer = producer;
+
+      _webcamProducer.on('transportclose', () {
+        _webcamProducer = null;
+      });
+
+      _webcamProducer.on('trackended', () {});
     }
   }
 
@@ -81,7 +89,8 @@ class RoomClient {
       _consumers.remove(consumer.id);
     });
 
-    ScalabilityMode scalabilityMode = ScalabilityMode.parse(consumer.rtpParameters.encodings.first.scalabilityMode);
+    ScalabilityMode scalabilityMode = ScalabilityMode.parse(
+        consumer.rtpParameters.encodings.first.scalabilityMode);
 
     accept();
   }
@@ -103,7 +112,7 @@ class RoomClient {
       'video': {
         'mandatory': {
           'minWidth':
-          '1280', // Provide your own width, height and frame rate here
+              '1280', // Provide your own width, height and frame rate here
           'minHeight': '720',
           'minFrameRate': '30',
         },
@@ -126,7 +135,8 @@ class RoomClient {
     try {
       _mediasoupDevice = Device();
 
-      dynamic routerRtpCapabilities = await _webSocket.socket.request('getRouterRtpCapabilities', {});
+      dynamic routerRtpCapabilities =
+          await _webSocket.socket.request('getRouterRtpCapabilities', {});
 
       print(routerRtpCapabilities);
 
@@ -139,37 +149,30 @@ class RoomClient {
       }
 
       if (_produce) {
-        Map transportInfo = await _webSocket.socket.request(
-          'createWebRtcTransport',
-           {
-            'forceTcp': false,
-            'producing': true,
-            'consuming': false,
-            'sctpCapabilities': _mediasoupDevice.sctpCapabilities.toMap(),
-          }
-        );
+        Map transportInfo =
+            await _webSocket.socket.request('createWebRtcTransport', {
+          'forceTcp': false,
+          'producing': true,
+          'consuming': false,
+          'sctpCapabilities': _mediasoupDevice.sctpCapabilities.toMap(),
+        });
 
         _sendTransport = _mediasoupDevice.createSendTransportFromMap(
           transportInfo,
           producerCallback: _producerCallback,
         );
 
-        _sendTransport.on('connect',
-            (data) {
-          _webSocket
-              .socket.request(
-                'connectWebRtcTransport',
-                {
-                  'transportId': _sendTransport.id,
-                  'dtlsParameters': data['dtlsParameters'].toMap(),
-                }
-              )
+        _sendTransport.on('connect', (data) {
+          _webSocket.socket
+              .request('connectWebRtcTransport', {
+                'transportId': _sendTransport.id,
+                'dtlsParameters': data['dtlsParameters'].toMap(),
+              })
               .then(data['callback'])
               .catchError(data['errback']);
         });
 
-        _sendTransport.on('produce',
-            (List<dynamic> data) async {
+        _sendTransport.on('produce', (List<dynamic> data) async {
           try {
             Map response = await _webSocket.socket.request(
               'produce',
@@ -186,27 +189,20 @@ class RoomClient {
             data[0]['callback'](
               response['id'],
             );
-            // data['callback']({
-            //   'id': response['id'],
-            // });
           } catch (error) {
             data[0]['errback'](error);
           }
         });
 
-        _sendTransport.on('producedata',
-            (data) async {
+        _sendTransport.on('producedata', (data) async {
           try {
-            Map response = await _webSocket.socket.request(
-              'produceData',
-              {
-                'transportId': _sendTransport.id,
-                'sctpStreamParameters': data['sctpStreamParameters'].toMap(),
-                'label': data['label'],
-                'protocol': data['protocol'],
-                'appData': data['appData'],
-              }
-            );
+            Map response = await _webSocket.socket.request('produceData', {
+              'transportId': _sendTransport.id,
+              'sctpStreamParameters': data['sctpStreamParameters'].toMap(),
+              'label': data['label'],
+              'protocol': data['protocol'],
+              'appData': data['appData'],
+            });
 
             data['callback'](response['id']);
           } catch (error) {
@@ -234,8 +230,8 @@ class RoomClient {
         _recvTransport.on(
           'connect',
           (data) {
-            _webSocket
-                .socket.request(
+            _webSocket.socket
+                .request(
                   'connectWebRtcTransport',
                   {
                     'transportId': _recvTransport.id,
@@ -248,22 +244,24 @@ class RoomClient {
         );
       }
 
-      Map peers = await _webSocket.socket.request(
-        'join',
-        {
-          'displayName': displayName,
-          'device': "It's flutter boy",
-          'rtpCapabilities': _mediasoupDevice.rtpCapabilities.toMap(),
-          'sctpCapabilities': _mediasoupDevice.sctpCapabilities.toMap(),
-        }
-      );
+      Map peers = await _webSocket.socket.request('join', {
+        'displayName': displayName,
+        'device': "It's flutter boy",
+        'rtpCapabilities': _mediasoupDevice.rtpCapabilities.toMap(),
+        'sctpCapabilities': _mediasoupDevice.sctpCapabilities.toMap(),
+      });
 
       if (_produce) {
         if (_mediasoupDevice.canProduce(RTCRtpMediaType.RTCRtpMediaTypeVideo)) {
           MediaStream videoStream;
           MediaStreamTrack track;
           try {
-            RtpCodecCapability codec = _mediasoupDevice.rtpCapabilities.codecs.firstWhere((RtpCodecCapability c) => c.mimeType.toLowerCase() == 'video/vp9', orElse: () => throw 'desired H264 codec+configuration is not supported');
+            RtpCodecCapability codec = _mediasoupDevice.rtpCapabilities.codecs
+                .firstWhere(
+                    (RtpCodecCapability c) =>
+                        c.mimeType.toLowerCase() == 'video/vp9',
+                    orElse: () =>
+                        throw 'desired H264 codec+configuration is not supported');
             videoStream = await createVideoStream();
             track = videoStream.getVideoTracks().first;
             _sendTransport.produce(
@@ -271,27 +269,50 @@ class RoomClient {
               codecOptions: ProducerCodecOptions(
                 videoGoogleStartBitrate: 1000,
               ),
+              encodings: [
+                RtpEncodingParameters(scalabilityMode: 'S3T3_KEY'),
+              ],
               stream: videoStream,
               appData: {
                 'source': 'cam',
               },
               source: 'webcam',
               codec: codec,
-
             );
           } catch (error) {
             if (videoStream != null) {
               await videoStream.dispose();
             }
           }
-
-          _sendTransport.on('connectionstatechange', (connectionState) {
-            if (connectionState == 'connected') {
-              enableChatDataProducer();
-              enableBotDataProducer();
-            }
-          });
         }
+        if (_mediasoupDevice.canProduce(RTCRtpMediaType.RTCRtpMediaTypeAudio)) {
+          MediaStream audioStream;
+          MediaStreamTrack track;
+          try {
+            audioStream = await createAudioStream();
+            track = audioStream.getAudioTracks().first;
+            _sendTransport.produce(
+              track: track,
+              codecOptions: ProducerCodecOptions(opusStereo: 1, opusDtx: 1),
+              stream: audioStream,
+              appData: {
+                'source': 'mic',
+              },
+              source: 'mic',
+            );
+          } catch (error) {
+            if (audioStream != null) {
+              await audioStream.dispose();
+            }
+          }
+        }
+
+        _sendTransport.on('connectionstatechange', (connectionState) {
+          if (connectionState == 'connected') {
+            enableChatDataProducer();
+            enableBotDataProducer();
+          }
+        });
       }
     } catch (error) {
       print(error);
@@ -338,8 +359,10 @@ class RoomClient {
               _recvTransport.consume(
                 id: request['data']['id'],
                 producerId: request['data']['producerId'],
-                kind: RTCRtpMediaTypeExtension.fromString(request['data']['kind']),
-                rtpParameters: RtpParameters.fromMap(request['data']['rtpParameters']),
+                kind: RTCRtpMediaTypeExtension.fromString(
+                    request['data']['kind']),
+                rtpParameters:
+                    RtpParameters.fromMap(request['data']['rtpParameters']),
                 appData: Map<dynamic, dynamic>.from(request['data']['appData']),
               );
             } catch (error) {
