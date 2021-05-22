@@ -90,7 +90,7 @@ class Native extends HandlerInterface {
     // Close RTCPeerConnection.
     if (_pc != null) {
       try {
-        await _pc.close();
+        //await _pc.close();
       } catch (error) {}
     }
   }

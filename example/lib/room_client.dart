@@ -160,7 +160,7 @@ class RoomClient {
               .socket.request(
                 'connectWebRtcTransport',
                 {
-                  'transportId': _recvTransport.id,
+                  'transportId': _sendTransport.id,
                   'dtlsParameters': data['dtlsParameters'].toMap(),
                 }
               )
@@ -169,28 +169,28 @@ class RoomClient {
         });
 
         _sendTransport.on('produce',
-            (data) async {
+            (List<dynamic> data) async {
           try {
             Map response = await _webSocket.socket.request(
               'produce',
               {
                 'transportId': _sendTransport.id,
-                'kind': data['kind'],
-                'rtpParameters': data['rtpParameters'].toMap(),
-                'appData': Map<String, dynamic>.from(data['appData'])
+                'kind': data[0]['kind'],
+                'rtpParameters': data[0]['rtpParameters'].toMap(),
+                'appData': Map<String, dynamic>.from(data[0]['appData'])
               },
             );
 
             // return response['id'];
 
-            data['callback'](
+            data[0]['callback'](
               response['id'],
             );
             // data['callback']({
             //   'id': response['id'],
             // });
           } catch (error) {
-            data['errback'](error);
+            data[0]['errback'](error);
           }
         });
 

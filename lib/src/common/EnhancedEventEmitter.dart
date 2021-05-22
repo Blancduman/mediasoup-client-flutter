@@ -23,7 +23,7 @@ class EnhancedEventEmitter extends EventEmitter {
     args['callback'] = completer.complete;
     args['errback'] = completer.completeError;
     try {
-      return emitAsFuture(event, args);
+      return emitAsFuture(event, [args]);
     } catch (error) {
       _logger.error(
         'safeEmitAsFuture() event listener threw an error [event:$event]:$error',
