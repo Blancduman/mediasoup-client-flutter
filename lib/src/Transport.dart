@@ -208,26 +208,26 @@ class IceCandidate {
       result['type'] = type.value;
     }
     if (tcpType != null) {
-      result['tcpType'] = tcpType.value;
+      result['tcptype'] = tcpType.value;
     }
     if (transport != null) {
       result['transport'] = transport;
     }
-    if (raddr != null) {
-      result['raddr'] = raddr;
-    }
-    if (rport != null) {
-      result['rport'] = rport;
-    }
-    if (generation != null) {
-      result['generation'] = generation;
-    }
-    if (networkId != null) {
-      result['networkId'] = networkId;
-    }
-    if (networkCost != null) {
-      result['networkCost'] = networkCost;
-    }
+    // if (raddr != null) {
+    //   result['raddr'] = raddr;
+    // }
+    // if (rport != null) {
+    //   result['rport'] = rport;
+    // }
+    // if (generation != null) {
+    //   result['generation'] = generation;
+    // }
+    // if (networkId != null) {
+    //   result['network-id'] = networkId;
+    // }
+    // if (networkCost != null) {
+    //   result['network-cost'] = networkCost;
+    // }
 
     return result;
   }

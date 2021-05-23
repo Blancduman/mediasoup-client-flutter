@@ -36,7 +36,7 @@ class Native extends HandlerInterface {
   int _nextSendLocalId = 0;
   // Map of MID, RTP parameters and RTCRtpReceiver indexed by local id.
   // Value is an Object with mid, rtpParameters and rtpReceiver.
-  Map<String, RtpParameters> _mapRecvLocalIdInfo = <String, RtpParameters>{};
+  Map<String, Map<String, dynamic>> _mapRecvLocalIdInfo = <String, Map<String, dynamic>>{};
   // Whether  a DataChannel m=application section has been created.
   bool _hasDataChannelMediaSection = false;
   // Sending DataChannel id value counter. Increamented for each new DataChannel.
@@ -227,7 +227,10 @@ class Native extends HandlerInterface {
       throw('remote track not found');
     }
 
-    _mapRecvLocalIdInfo[localId] = RtpParameters.copy(options.rtpParameters, mid: mid);
+    _mapRecvLocalIdInfo[localId] = {
+      'mid': mid,
+      'rtpParameters': options.rtpParameters,
+    };
 
     return HandlerReceiveResult(localId: localId, track: track);
   }
@@ -559,12 +562,13 @@ class Native extends HandlerInterface {
 
     _logger.debug('stopReceiving() [localId:$localId]');
 
-    RtpParameters rtpParameters = _mapRecvLocalIdInfo[localId];
+    RtpParameters rtpParameters = _mapRecvLocalIdInfo[localId]['rtpParameters'];
+    String mid = _mapRecvLocalIdInfo[localId]['mid'];
 
     // Remote from the map.
     _mapRecvLocalIdInfo.remove(localId);
 
-    _remoteSdp.planBStopReceiving(rtpParameters.mid, rtpParameters);
+    _remoteSdp.planBStopReceiving(mid, rtpParameters);
 
     RTCSessionDescription offer = RTCSessionDescription(_remoteSdp.getSdp(), 'offer');
 

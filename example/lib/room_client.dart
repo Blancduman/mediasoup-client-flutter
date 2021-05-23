@@ -167,8 +167,7 @@ class RoomClient {
               .request('connectWebRtcTransport', {
                 'transportId': _sendTransport.id,
                 'dtlsParameters': data['dtlsParameters'].toMap(),
-              })
-              .then(data['callback'])
+              }).then(data['callback'])
               .catchError(data['errback']);
         });
 

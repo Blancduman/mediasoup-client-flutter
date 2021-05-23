@@ -709,7 +709,7 @@ class MediaObject {
   Map<String, dynamic> toMap() {
     Map<String, dynamic> result = <String, dynamic>{};
     if (candidates != null) {
-      result['candidates'] = candidates.map((IceCandidate c) => c.toMap()).toList();
+      result['candidates'] = [candidates.map((IceCandidate c) => c.toMap()).toList().first];
     }
     if (iceUfrag != null) {
       result['iceUfrag'] = iceUfrag;
