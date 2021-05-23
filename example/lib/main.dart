@@ -52,6 +52,9 @@ class _EnterPageState extends State<EnterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('mediasoup-client-flutter'),
+      ),
       body: Container(
         alignment: Alignment.center,
         child: Column(

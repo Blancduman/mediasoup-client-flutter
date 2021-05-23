@@ -394,7 +394,6 @@ class Native extends HandlerInterface {
     }
 
     await options.stream.addTrack(options.track);
-    // RTCRtpSender sender = await _pc.addTrack(options.track, options.stream);
     await _pc.addStream(options.stream);
 
     RTCSessionDescription offer = await _pc.createOffer({

@@ -188,10 +188,10 @@ class CommonUtils {
 
       switch (mimeType) {
         case 'audio/opus': {
-          String spropStereo = codec.parameters['sprop-stereo'];
+          int spropStereo = codec.parameters['sprop-stereo'];
 
           if (spropStereo != null) {
-            parameters['stereo'] = int.parse(spropStereo) > 0 ? 1 : 0;
+            parameters['stereo'] = spropStereo > 0 ? 1 : 0;
           }
           break;
         }

@@ -25,7 +25,7 @@ class RoomClient {
   Map<String, DataConsumer> _dataConsumers = {};
   Map<String, MediaDeviceInfo> _webcams = {};
   bool _produce = false;
-  bool _consume = false;
+  bool _consume = true;
 
   RoomClient({
     this.roomId,
@@ -82,7 +82,7 @@ class RoomClient {
     }
   }
 
-  void _consumerCallback(Consumer consumer, Function accept) {
+  void _consumerCallback(dynamic consumer, dynamic accept) {
     _consumers[consumer.id] = consumer;
 
     consumer.on('transportclose', () {
@@ -162,7 +162,7 @@ class RoomClient {
           producerCallback: _producerCallback,
         );
 
-        _sendTransport.on('connect', (data) {
+        _sendTransport.on('connect', (Map data) {
           _webSocket.socket
               .request('connectWebRtcTransport', {
                 'transportId': _sendTransport.id,
@@ -172,25 +172,23 @@ class RoomClient {
               .catchError(data['errback']);
         });
 
-        _sendTransport.on('produce', (List<dynamic> data) async {
+        _sendTransport.on('produce', (Map data) async {
           try {
             Map response = await _webSocket.socket.request(
               'produce',
               {
                 'transportId': _sendTransport.id,
-                'kind': data[0]['kind'],
-                'rtpParameters': data[0]['rtpParameters'].toMap(),
-                'appData': Map<String, dynamic>.from(data[0]['appData'])
+                'kind': data['kind'],
+                'rtpParameters': data['rtpParameters'].toMap(),
+                'appData': Map<String, dynamic>.from(data['appData'])
               },
             );
 
             // return response['id'];
 
-            data[0]['callback'](
-              response['id'],
-            );
+            data['callback'](response['id']);
           } catch (error) {
-            data[0]['errback'](error);
+            data['errback'](error);
           }
         });
 
@@ -274,7 +272,7 @@ class RoomClient {
               ],
               stream: videoStream,
               appData: {
-                'source': 'cam',
+                'source': 'webcam',
               },
               source: 'webcam',
               codec: codec,
@@ -364,6 +362,7 @@ class RoomClient {
                 rtpParameters:
                     RtpParameters.fromMap(request['data']['rtpParameters']),
                 appData: Map<dynamic, dynamic>.from(request['data']['appData']),
+                accept: accept,
               );
             } catch (error) {
               print('newConsumer request failed: $error');

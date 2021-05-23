@@ -501,10 +501,10 @@ class Transport extends EnhancedEventEmitter {
 
     handler.on(
       '@connect',
-      (List<dynamic> data) {
-        DtlsParameters dtlsParameters = data[0]['dtlsParameters'];
-        Function callback = data[0]['callback'];
-        Function errback = data[0]['errback'];
+      (Map data) {
+        DtlsParameters dtlsParameters = data['dtlsParameters'];
+        Function callback = data['callback'];
+        Function errback = data['errback'];
 
         if (_closed) {
           errback('closed');
@@ -803,7 +803,9 @@ class Transport extends EnhancedEventEmitter {
         try {
           List<RtpEncodingParameters> normalizedEncodings = [];
 
-          if (encodings != null && encodings.isNotEmpty) {
+          if (encodings != null && encodings.isEmpty) {
+            normalizedEncodings = null;
+          } else if (encodings != null && encodings.isNotEmpty) {
             normalizedEncodings =
                 encodings.map((RtpEncodingParameters encoding) {
               RtpEncodingParameters normalizedEncoding =
@@ -955,7 +957,7 @@ class Transport extends EnhancedEventEmitter {
             localId: receiveResult.localId,
             producerId: producerId,
             rtpParameters: rtpParameters,
-            appData: appData,
+            appData: Map<String, dynamic>.from(appData),
             track: receiveResult.track,
             rtpReceiver: receiveResult.rtpReceiver,
           );

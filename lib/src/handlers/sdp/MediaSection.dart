@@ -612,7 +612,7 @@ class MediaObject {
       protocol = data['protocol'];
     }
     if (data['payloads'] != null) {
-      payloads = data['payloads'];
+      payloads = '${data['payloads']}';
     }
     if (data['connection'] != null) {
       connection = Connection.fromMap(data['connection']);
@@ -1250,7 +1250,7 @@ class OfferMediaSection extends MediaSection {
         version: 4,
       );
 
-      if (sctpParameters != null) {
+      if (sctpParameters == null) {
         _mediaObject.protocol = 'UDP/TLS/RTP/SAVPF';
       } else {
         _mediaObject.protocol = 'UDP/DTLS/SCTP';
@@ -1287,7 +1287,7 @@ class OfferMediaSection extends MediaSection {
               rate: codec.clockRate,
             );
 
-            if (codec.channels > 1) {
+            if (codec.channels  != null && codec.channels > 1) {
               rtp.encoding = codec.channels;
             }
 
@@ -1440,8 +1440,8 @@ class OfferMediaSection extends MediaSection {
 
     _mediaObject.ssrcs.add(Ssrc(
       id: ssrc,
-      attribute: 'cname',
-      value: offerRtpParameters.rtcp.cname,
+      attribute: 'msid',
+      value: '${streamId ?? '-'} $trackId',
     ));
 
     if (rtxSsrc != null) {
