@@ -1287,7 +1287,7 @@ class OfferMediaSection extends MediaSection {
               rate: codec.clockRate,
             );
 
-            if (codec.channels > 1) {
+            if (codec.channels != null && codec.channels > 1) {
               rtp.encoding = codec.channels;
             }
 

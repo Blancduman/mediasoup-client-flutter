@@ -932,7 +932,7 @@ class Transport extends EnhancedEventEmitter {
     }
 
     _flexQueue.addTask(FlexTaskAdd(
-        id: id,
+        id: '',
         message: 'transport.consume()',
         execFun: () async {
           // Unsure the device can consume it.
@@ -943,8 +943,7 @@ class Transport extends EnhancedEventEmitter {
             throw ('cannot consume this Producer');
           }
 
-          HandlerReceiveResult receiveResult =
-              await _handler.receive(HandlerReceiveOptions(
+          final receiveResult = await _handler.receive(HandlerReceiveOptions(
             trackId: id,
             kind: kind,
             rtpParameters: rtpParameters,

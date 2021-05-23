@@ -262,16 +262,8 @@ class Device {
       dtlsParameters: DtlsParameters.fromMap(data['dtlsParameters']),
       sctpParameters: SctpParameters.fromMap(data['sctpParameters']),
       iceServers: [],
-      proprietaryConstraints: Map<String, dynamic>.from({
-        'optional': [
-          {
-            'googDscp': true,
-          }
-        ]
-      }),
-      additionalSettings: {
-        'encodedInsertableStreams': false,
-      },
+      proprietaryConstraints:Map<String, dynamic>(),
+      additionalSettings: Map<String, dynamic>(),
       producerCallback: producerCallback,
       dataProducerCallback: dataProducerCallback,
     );
@@ -329,16 +321,8 @@ class Device {
       sctpParameters: data['sctpParameters'] != null ? SctpParameters.fromMap(data['sctpParameters']) : null,
       iceServers: [],
       appData: data['appData'] ?? {},
-      proprietaryConstraints: Map<String, dynamic>.from({
-        'optional': [
-          {
-            'googDscp': true,
-          }
-        ]
-      }),
-      additionalSettings: {
-        'encodedInsertableStreams': false,
-      },
+      proprietaryConstraints: Map<String, dynamic>(),
+      additionalSettings: Map<String, dynamic>(),
       consumerCallback: consumerCallback,
       dataConsumerCallback: dataConsumerCallback,
     );

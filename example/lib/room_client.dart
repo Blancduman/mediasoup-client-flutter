@@ -25,7 +25,7 @@ class RoomClient {
   Map<String, DataConsumer> _dataConsumers = {};
   Map<String, MediaDeviceInfo> _webcams = {};
   bool _produce = false;
-  bool _consume = false;
+  bool _consume = true;
 
   RoomClient({
     this.roomId,
@@ -351,7 +351,7 @@ class RoomClient {
       switch (request['method']) {
         case 'newConsumer':
           {
-            if (!_consume) {
+            if (!_consume || request['data']['kind'] == 'audio') {
               reject(403, 'I do not want to consume');
               break;
             }
@@ -363,7 +363,10 @@ class RoomClient {
                     request['data']['kind']),
                 rtpParameters:
                     RtpParameters.fromMap(request['data']['rtpParameters']),
-                appData: Map<dynamic, dynamic>.from(request['data']['appData']),
+                appData: Map<dynamic, dynamic>.from({
+                  ...request['data']['appData'],
+                  peerId: request['data']['peerId']
+                }),
               );
             } catch (error) {
               print('newConsumer request failed: $error');

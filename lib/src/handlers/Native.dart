@@ -179,13 +179,14 @@ class Native extends HandlerInterface {
 
     _logger.debug('receive() [trackId:${options.trackId}, kind:${RTCRtpMediaTypeExtension.value(options.kind)}]');
 
-    String localId = options.trackId;
-    String mid = RTCRtpMediaTypeExtension.value(options.kind);
+
+    String mid =  options.rtpParameters.mid;
+    String localId = mid ?? options.trackId;
     String streamId = options.rtpParameters.rtcp.cname;
 
     _logger.debug(
 			'receive() | forcing a random remote streamId to avoid well known bug in native');
-    streamId += '-hack-${generateRandomNumber()}';
+    //streamId += '-hack-${generateRandomNumber()}';
 
     _remoteSdp.receive(
       mid: mid,
