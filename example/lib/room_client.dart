@@ -27,11 +27,14 @@ class RoomClient {
   bool _produce = false;
   bool _consume = true;
 
+  Function(Consumer consumer) onConsumer;
+
   RoomClient({
     this.roomId,
     this.peerId,
     this.url,
     this.displayName,
+    this.onConsumer
   });
 
   void close() {
@@ -92,7 +95,8 @@ class RoomClient {
     ScalabilityMode scalabilityMode = ScalabilityMode.parse(
         consumer.rtpParameters.encodings.first.scalabilityMode);
 
-    accept();
+    onConsumer(consumer);
+    accept({});
   }
 
   Future<MediaStream> createAudioStream() async {

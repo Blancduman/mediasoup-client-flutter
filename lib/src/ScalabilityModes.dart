@@ -10,7 +10,8 @@ class ScalabilityMode {
     List match =
         scalabilityModeRegex.allMatches(scalabilityMode ?? '').toList();
 
-    if (match.isNotEmpty) {
+    // FIXME: fix regexp
+    if (match.isNotEmpty && false) {
       return ScalabilityMode(
         spatialLayers: int.parse(match[0]),
         temporalLayers: int.parse(match[1]),
