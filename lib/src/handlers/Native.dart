@@ -232,7 +232,7 @@ class Native extends HandlerInterface {
       'rtpParameters': options.rtpParameters,
     };
 
-    return HandlerReceiveResult(localId: localId, track: track);
+    return HandlerReceiveResult(localId: localId, track: track, stream: stream);
   }
 
   @override

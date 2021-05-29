@@ -157,6 +157,7 @@ class Producer extends EnhancedEventEmitter {
     _zeroRtpOnPause = zeroRtpOnPause;
     _stream = stream;
     _source = source;
+    _closed = false;
   }
 
   /// Producer id.

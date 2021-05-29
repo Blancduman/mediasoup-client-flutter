@@ -139,12 +139,14 @@ class HandlerSendDataChannelResult {
 class HandlerReceiveResult {
   String localId;
   MediaStreamTrack track;
+  MediaStream stream;
   RTCRtpReceiver rtpReceiver;
 
   HandlerReceiveResult({
     this.localId,
     this.track,
     this.rtpReceiver,
+    this.stream,
   });
 }
 

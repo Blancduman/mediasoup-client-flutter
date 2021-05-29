@@ -7,7 +7,7 @@ packages:
       name: async
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.5.0"
+    version: "2.6.1"
   boolean_selector:
     dependency: transitive
     description:
@@ -49,7 +49,7 @@ packages:
       name: cupertino_icons
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.2"
+    version: "1.0.3"
   events2:
     dependency: transitive
     description:
@@ -121,7 +121,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "102b90dc3b3de53b7e48cbdb3f03c536b988bf59"
+      resolved-ref: "5f395a9e5999ab2ab014af85b75bb6e3b675de56"
       url: "https://github.com/ZackMitkin/dart-protoo-client"
     source: git
     version: "0.3.0"
@@ -171,7 +171,7 @@ packages:
       name: source_span
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.8.0"
+    version: "1.8.1"
   stack_trace:
     dependency: transitive
     description:
@@ -206,7 +206,7 @@ packages:
       name: test_api
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.2.19"
+    version: "0.3.0"
   typed_data:
     dependency: transitive
     description:

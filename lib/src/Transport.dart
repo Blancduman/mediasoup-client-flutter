@@ -960,6 +960,7 @@ class Transport extends EnhancedEventEmitter {
             appData: Map<String, dynamic>.from(appData),
             track: receiveResult.track,
             rtpReceiver: receiveResult.rtpReceiver,
+            stream: receiveResult.stream,
           );
 
           _consumers[consumer.id] = consumer;

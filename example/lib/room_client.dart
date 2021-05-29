@@ -26,12 +26,16 @@ class RoomClient {
   Map<String, MediaDeviceInfo> _webcams = {};
   bool _produce = false;
   bool _consume = true;
+  Function onConsumer;
+  Function onProducer;
 
   RoomClient({
     this.roomId,
     this.peerId,
     this.url,
     this.displayName,
+    this.onConsumer,
+    this.onProducer,
   });
 
   void close() {
@@ -59,6 +63,22 @@ class RoomClient {
     _micProducer = null;
   }
 
+  Future<void> disableWebcam() async {
+    if (_webcamProducer == null) {
+      return;
+    }
+
+    _webcamProducer.close();
+
+    try {
+      await _webSocket.socket.request('closeProducer', {
+        'producerId': _webcamProducer.id,
+      });
+    } catch (error) {}
+
+    _webcamProducer = null;
+  }
+
   void _producerCallback(Producer producer) {
     if (producer.source == 'mic') {
       _micProducer = producer;
@@ -69,17 +89,20 @@ class RoomClient {
       });
 
       _micProducer.on('trackended', () {
-        disableMic().catchError(() {});
+        disableMic().catchError((data) {});
       });
-    } else {
+    } else if (producer.source == 'webcam'){
       _webcamProducer = producer;
 
       _webcamProducer.on('transportclose', () {
         _webcamProducer = null;
       });
 
-      _webcamProducer.on('trackended', () {});
+      _webcamProducer.on('trackended', () {
+        disableWebcam().catchError((data) {});
+      });
     }
+    onProducer?.call(producer);
   }
 
   void _consumerCallback(dynamic consumer, dynamic accept) {
@@ -92,7 +115,8 @@ class RoomClient {
     ScalabilityMode scalabilityMode = ScalabilityMode.parse(
         consumer.rtpParameters.encodings.first.scalabilityMode);
 
-    accept();
+    accept({});
+    onConsumer?.call(consumer);
   }
 
   Future<MediaStream> createAudioStream() async {
@@ -183,8 +207,6 @@ class RoomClient {
               },
             );
 
-            // return response['id'];
-
             data['callback'](response['id']);
           } catch (error) {
             data['errback'](error);
@@ -249,60 +271,8 @@ class RoomClient {
       });
 
       if (_produce) {
-        if (_mediasoupDevice.canProduce(RTCRtpMediaType.RTCRtpMediaTypeVideo)) {
-          MediaStream videoStream;
-          MediaStreamTrack track;
-          try {
-            RtpCodecCapability codec = _mediasoupDevice.rtpCapabilities.codecs
-                .firstWhere(
-                    (RtpCodecCapability c) =>
-                        c.mimeType.toLowerCase() == 'video/vp9',
-                    orElse: () =>
-                        throw 'desired H264 codec+configuration is not supported');
-            videoStream = await createVideoStream();
-            track = videoStream.getVideoTracks().first;
-            _sendTransport.produce(
-              track: track,
-              codecOptions: ProducerCodecOptions(
-                videoGoogleStartBitrate: 1000,
-              ),
-              encodings: [
-                RtpEncodingParameters(scalabilityMode: 'S3T3_KEY'),
-              ],
-              stream: videoStream,
-              appData: {
-                'source': 'webcam',
-              },
-              source: 'webcam',
-              codec: codec,
-            );
-          } catch (error) {
-            if (videoStream != null) {
-              await videoStream.dispose();
-            }
-          }
-        }
-        if (_mediasoupDevice.canProduce(RTCRtpMediaType.RTCRtpMediaTypeAudio)) {
-          MediaStream audioStream;
-          MediaStreamTrack track;
-          try {
-            audioStream = await createAudioStream();
-            track = audioStream.getAudioTracks().first;
-            _sendTransport.produce(
-              track: track,
-              codecOptions: ProducerCodecOptions(opusStereo: 1, opusDtx: 1),
-              stream: audioStream,
-              appData: {
-                'source': 'mic',
-              },
-              source: 'mic',
-            );
-          } catch (error) {
-            if (audioStream != null) {
-              await audioStream.dispose();
-            }
-          }
-        }
+        enableMic();
+        enableWebcam();
 
         _sendTransport.on('connectionstatechange', (connectionState) {
           if (connectionState == 'connected') {
@@ -314,6 +284,78 @@ class RoomClient {
     } catch (error) {
       print(error);
       close();
+    }
+  }
+
+  void enableWebcam() async {
+    if (_webcamProducer != null) {
+      return null;
+    }
+
+    if (!_mediasoupDevice.canProduce(RTCRtpMediaType.RTCRtpMediaTypeVideo)) {
+      return;
+    }
+    MediaStream videoStream;
+    MediaStreamTrack track;
+    try {
+      RtpCodecCapability codec = _mediasoupDevice.rtpCapabilities.codecs
+          .firstWhere(
+              (RtpCodecCapability c) =>
+                  c.mimeType.toLowerCase() == 'video/vp9',
+              orElse: () =>
+                  throw 'desired vp9 codec+configuration is not supported');
+      videoStream = await createVideoStream();
+      track = videoStream.getVideoTracks().first;
+      _sendTransport.produce(
+        track: track,
+        codecOptions: ProducerCodecOptions(
+          videoGoogleStartBitrate: 1000,
+        ),
+        encodings: [
+          RtpEncodingParameters(scalabilityMode: 'S3T3_KEY'),
+        ],
+        stream: videoStream,
+        appData: {
+          'source': 'webcam',
+        },
+        source: 'webcam',
+        codec: codec,
+      );
+    } catch (error) {
+      if (videoStream != null) {
+        await videoStream.dispose();
+      }
+    }
+
+  }
+
+  void enableMic() async {
+    if (_micProducer != null) {
+      return;
+    }
+
+    if (!_mediasoupDevice.canProduce(RTCRtpMediaType.RTCRtpMediaTypeAudio)) {
+      return;
+    }
+
+    MediaStream audioStream;
+    MediaStreamTrack track;
+    try {
+      audioStream = await createAudioStream();
+      track = audioStream.getAudioTracks().first;
+      _sendTransport.produce(
+        track: track,
+        codecOptions: ProducerCodecOptions(opusStereo: 1, opusDtx: 1),
+        stream: audioStream,
+        appData: {
+          'source': 'mic',
+        },
+        source: 'mic',
+      );
+    } catch (error) {
+      if (audioStream != null) {
+        await audioStream.dispose();
+      }
     }
   }
 
@@ -371,6 +413,54 @@ class RoomClient {
           }
         default:
           break;
+      }
+    };
+
+    _webSocket.onNotification = (notification) async {
+      switch (notification['method']) {
+        //TODO: todo;
+        case 'producerScore':
+          {
+            break;
+          }
+        case 'consumerClosed': {
+          String consumerId = notification['data']['consumerId'];
+          Consumer consumer = _consumers[consumerId];
+
+          if (consumer == null) {
+            break;
+          }
+
+          await consumer.close();
+          _consumers.remove(consumerId);
+
+          var peerId = consumer.appData['peerId'];
+
+          break;
+        }
+        case 'consumerPaused': {
+          String consumerId = notification['data']['consumerId'];
+          Consumer consumer = _consumers[consumerId];
+
+          if (consumer == null) {
+            break;
+          }
+
+          consumer.pause();
+          break;
+        }
+
+        case 'consumerResumed': {
+          String consumerId = notification['data']['consumerId'];
+          Consumer consumer = _consumers[consumerId];
+
+          if (consumer == null) {
+            break;
+          }
+
+          consumer.resume();
+          break;
+        }
       }
     };
   }

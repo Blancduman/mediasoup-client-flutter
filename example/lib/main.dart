@@ -1,3 +1,4 @@
+import 'package:example/Presentation/Room.dart';
 import 'package:random_words/random_words.dart';
 
 import 'package:example/room_client.dart';
@@ -16,8 +17,6 @@ class EnterPage extends StatefulWidget {
 
 class _EnterPageState extends State<EnterPage> {
   final TextEditingController _textEditingController = TextEditingController();
-  bool join = false;
-  RoomClient roomClient;
 
   @override
   void initState() {
@@ -34,13 +33,6 @@ class _EnterPageState extends State<EnterPage> {
         composing: TextRange.empty,
       );
     });
-
-    roomClient = RoomClient(
-        roomId: 'asdasdds',
-        url: 'wss://v3demo.mediasoup.org:4443',
-        displayName: nouns.take(1).first,
-        peerId: 'zxcvvczx');
-    roomClient.join();
   }
 
   @override
@@ -67,6 +59,9 @@ class _EnterPageState extends State<EnterPage> {
                 hintText: 'Room url',
               ),
             ),
+            TextButton(onPressed: () {
+              Navigator.pushNamed(context, Room.RoutePath, arguments: _textEditingController.value.text.toLowerCase());
+            }, child: Text('Join'),),
           ],
         ),
       ),
@@ -79,8 +74,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       initialRoute: '/',
-      routes: {
-        EnterPage.RoutePath: (context) => EnterPage(),
+      // ignore: missing_return
+      onGenerateRoute: (settings) {
+        if (settings.name == EnterPage.RoutePath) {
+          return MaterialPageRoute(builder: (context) => EnterPage(),);
+        }
+        if (settings.name == Room.RoutePath) {
+          return MaterialPageRoute(builder: (context) => Room(url: settings.arguments,),);
+        }
       },
     );
   }
