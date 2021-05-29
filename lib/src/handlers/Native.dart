@@ -125,7 +125,7 @@ class Native extends HandlerInterface {
 
       try {
         await pc?.close();
-        pc?.dispose();
+        // pc?.dispose();
       } catch (error) {}
 
       SdpObject sdpObject = SdpObject.fromMap(parse(offer.sdp));
@@ -136,7 +136,7 @@ class Native extends HandlerInterface {
     } catch (error) {
       try {
         await pc?.close();
-        pc?.dispose();
+        // pc?.dispose();
       } catch (error2) {}
 
       throw error;
