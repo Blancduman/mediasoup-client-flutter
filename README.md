@@ -5,7 +5,7 @@ Be carefull: WORK IN PROGRESS.
 
 `` | Android | iOS | macOS | Windows | Linux | Web
 --- | --- | --- | --- | --- | --- | ---
-Plan-B | ✔ | untested | untested | untested | untested | ✗
+Plan-B | ✔ | untested | untested | consumers✔/producer? | untested | ✗
 Unified-Plan | ✗ | ✗ | ✗ | ✗ | ✗ | ✗
 
 No datachannels yet;
