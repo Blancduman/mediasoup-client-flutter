@@ -53,6 +53,7 @@ extension IceCandidateTypeExtension on IceCandidateType {
   };
 
   static IceCandidateType fromString(String type) => types[type];
+
   String get value => values[this];
 }
 
@@ -99,6 +100,7 @@ extension TcpTypeExtension on TcpType {
   };
 
   static TcpType fromString(String type) => types[type];
+
   String get value => values[this];
 }
 
@@ -107,7 +109,9 @@ class IceCandidate {
 
   /// Unique identifier that allows ICE to correlate candidates that appear on
   /// multiple transports.
-  String foundation;
+  var foundation;
+
+  // String foundation;
 
   ///The assigned priority of the candidate.
   int priority;
@@ -159,10 +163,11 @@ class IceCandidate {
   IceCandidate.fromMap(Map data) {
     component = data['component'] ?? 1;
     foundation = data['foundation'];
+    // foundation = data['foundation'] is int ? data['foundation'] : data['foundation'].substring(0,3);
     ip = data['ip'];
     port = data['port'];
     priority = data['priority'];
-    if (data['protocol']) {
+    if (data['protocol'] != null) {
       protocol = ProtocolExtension.fromString(data['protocol']);
     }
     if (data['type'] != null) {
@@ -171,7 +176,7 @@ class IceCandidate {
     if (data['tcpType'] != null) {
       tcpType = TcpTypeExtension.fromString(data['tcpType']);
     }
-    transport = data['transport'];
+    transport = data['transport'] ?? 'udp';
     raddr = data['raddr'];
     rport = data['rport'];
     generation = data['generation'];
@@ -203,26 +208,28 @@ class IceCandidate {
       result['type'] = type.value;
     }
     if (tcpType != null) {
-      result['tcpType'] = tcpType.value;
+      result['tcptype'] = tcpType.value;
     }
     if (transport != null) {
       result['transport'] = transport;
     }
-    if (raddr != null) {
-      result['raddr'] = raddr;
-    }
-    if (rport != null) {
-      result['rport'] = rport;
-    }
-    if (generation != null) {
-      result['generation'] = generation;
-    }
-    if (networkId != null) {
-      result['networkId'] = networkId;
-    }
-    if (networkCost != null) {
-      result['networkCost'] = networkCost;
-    }
+    // if (raddr != null) {
+    //   result['raddr'] = raddr;
+    // }
+    // if (rport != null) {
+    //   result['rport'] = rport;
+    // }
+    // if (generation != null) {
+    //   result['generation'] = generation;
+    // }
+    // if (networkId != null) {
+    //   result['network-id'] = networkId;
+    // }
+    // if (networkCost != null) {
+    //   result['network-cost'] = networkCost;
+    // }
+
+    return result;
   }
 
   static IceCandidate copy(IceCandidate old) {
@@ -265,6 +272,7 @@ extension DtlsRoleExtension on DtlsRole {
   };
 
   static DtlsRole fromString(String type) => types[type];
+
   String get value => values[this];
 }
 
@@ -278,6 +286,13 @@ class DtlsFingerprint {
     algorithm = data['algorithm'];
     value = data['value'];
   }
+
+  Map<String, String> toMap() {
+    return {
+      'algorithm': algorithm,
+      'value': value,
+    };
+  }
 }
 
 class DtlsParameters {
@@ -288,9 +303,17 @@ class DtlsParameters {
 
   DtlsParameters.fromMap(Map data) {
     role = DtlsRoleExtension.fromString(data['role']);
-    fingerprints = data['fingerprints']
+    fingerprints = List<DtlsFingerprint>.from(data['fingerprints']
         .map((fingerP) => DtlsFingerprint.fromMap(fingerP))
-        .toList();
+        .toList());
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'role': role.value,
+      'fingerprints':
+          fingerprints.map((DtlsFingerprint fp) => fp.toMap()).toList(),
+    };
   }
 }
 
@@ -300,6 +323,7 @@ class PlainRtpParameters {
   int port;
 
   int get ipVersion => _ipVersion;
+
   set ipVersion(int ip) {
     if (ip != 4 || ip != 6) {
       throw 'only 4 or 6';
@@ -312,7 +336,7 @@ class PlainRtpParameters {
         assert(ipVersion != 4 || ipVersion != 6, 'Only 4 or 6');
 }
 
-Logger logger = Logger('Transport');
+Logger _logger = Logger('Transport');
 
 enum Direction {
   send,
@@ -331,12 +355,14 @@ extension DirectionExtension on Direction {
   };
 
   static Direction fromString(String type) => types[type];
+
   String get value => values[this];
 }
 
 class CanProduceByKind {
   bool audio;
   bool video;
+
   // TODO: what is that?
   Map<String, bool> tmp;
 
@@ -354,36 +380,51 @@ class CanProduceByKind {
 class Transport extends EnhancedEventEmitter {
   // Id.
   String _id;
+
   // Closed flag.
   bool _closed = false;
+
   // Direction
   Direction _direction;
+
   // Extended RTP capabilities.
   // TODO: make class ExtendedRtpCapabilities;
   var _extendedRtpCapabilities;
+
   // Whether we can produce audio/video based on computed extended RTP
   // capabilities.
   CanProduceByKind _canProduceByKind;
+
   // SCTP max message size if enabled, null otherwise.
   int _maxSctpMessageSize;
+
   // RTC handler instance.
   HandlerInterface _handler;
+
   // Transport connection state.
   String _connectionState = 'new';
+
   // App custom data.
   Map<String, dynamic> _appData;
+
   // Map of Producers indexed by id.
   Map<String, Producer> _producers = <String, Producer>{};
+
   // Map of Consumers indexed by id.
   Map<String, Consumer> _consumers = <String, Consumer>{};
+
   // Map of DataProducers indexed by id.
   Map<String, DataProducer> _dataProducers = <String, DataProducer>{};
+
   // Map of DataConsumers indexed by id.
   Map<String, DataConsumer> _dataConsumers = <String, DataConsumer>{};
+
   // Whether the Consumer for RTP probation has been created.
   bool _probatorConsumerCreated = false;
+
   // FlexQueue instance to make async tasks happen sequentially.
   FlexQueue _flexQueue = FlexQueue();
+
   // Observer instance.
   EnhancedEventEmitter _observer = EnhancedEventEmitter();
 
@@ -405,9 +446,9 @@ class Transport extends EnhancedEventEmitter {
     SctpParameters sctpParameters,
     List<RTCIceServer> iceServers,
     RTCIceTransportPolicy iceTransportPolicy,
-    Map<dynamic, dynamic> additionalSettings,
-    Map<dynamic, dynamic> proprietaryConstraints,
-    Map<dynamic, dynamic> appData,
+    Map<String, dynamic> additionalSettings,
+    Map<String, dynamic> proprietaryConstraints,
+    Map<String, dynamic> appData,
     ExtendedRtpCapabilities extendedRtpCapabilities,
     CanProduceByKind canProduceByKind,
     this.producerCallback,
@@ -415,7 +456,7 @@ class Transport extends EnhancedEventEmitter {
     this.dataProducerCallback,
     this.dataConsumerCallback,
   }) : super() {
-    logger.debug('constructor() [id:$id, direction:${direction.value}]');
+    _logger.debug('constructor() [id:$id, direction:${direction.value}]');
 
     _id = id;
     _direction = direction;
@@ -425,7 +466,7 @@ class Transport extends EnhancedEventEmitter {
         sctpParameters != null ? sctpParameters.maxMessageSize : null;
 
     // Clone and sanitize additionalSettings.
-    additionalSettings = Map<dynamic, dynamic>.of(additionalSettings);
+    additionalSettings = Map<String, dynamic>.of(additionalSettings);
 
     additionalSettings.remove('iceServers');
     additionalSettings.remove('iceTransportPolicy');
@@ -460,10 +501,10 @@ class Transport extends EnhancedEventEmitter {
 
     handler.on(
       '@connect',
-      (List<Object> data) {
-        DtlsParameters dtlsParameters = data[0];
-        Function callback = data[1];
-        Function errback = data[2];
+      (Map data) {
+        DtlsParameters dtlsParameters = data['dtlsParameters'];
+        Function callback = data['callback'];
+        Function errback = data['errback'];
 
         if (_closed) {
           errback('closed');
@@ -471,25 +512,31 @@ class Transport extends EnhancedEventEmitter {
           return;
         }
 
-        safeEmit('connect', [dtlsParameters, callback, errback]);
+        safeEmit('connect', {
+          'dtlsParameters': dtlsParameters,
+          'callback': callback,
+          'errback': errback
+        });
       },
     );
 
     handler.on(
       '@connectionstatechange',
-      (List<Object> data) {
-        String connectionState = data[0];
+      (Map data) {
+        String connectionState = data['state'];
 
         if (connectionState == _connectionState) {
           return;
         }
 
-        logger.debug('connection state changed to $connectionState');
+        _logger.debug('connection state changed to $connectionState');
 
         _connectionState = connectionState;
 
         if (!_closed) {
-          safeEmit('connectionstatechange', [connectionState]);
+          safeEmit('connectionstatechange', {
+            'connectionState': connectionState,
+          });
         }
       },
     );
@@ -497,8 +544,10 @@ class Transport extends EnhancedEventEmitter {
 
   /// Transport id.
   String get id => _id;
+
   // Whether the Transport is closed.
   bool get closed => _closed;
+
   // Transport direction.
   Direction get direction => _direction;
 
@@ -531,7 +580,7 @@ class Transport extends EnhancedEventEmitter {
       return;
     }
 
-    logger.debug('close()');
+    _logger.debug('close()');
 
     _closed = true;
 
@@ -581,7 +630,7 @@ class Transport extends EnhancedEventEmitter {
 
   /// Restart ICE connection.
   void restartIce(IceParameters iceParameters) {
-    logger.debug('restartIce()');
+    _logger.debug('restartIce()');
 
     if (this._closed)
       throw ('closed');
@@ -598,7 +647,7 @@ class Transport extends EnhancedEventEmitter {
 
   /// Update ICE servers.
   void updateIceServers(List<RTCIceServer> iceServers) {
-    logger.debug('updateIceServers()');
+    _logger.debug('updateIceServers()');
 
     if (this._closed)
       throw ('closed');
@@ -626,7 +675,7 @@ class Transport extends EnhancedEventEmitter {
         execFun: _handler.stopSending,
         message: 'producer @close event',
         errorCallbackFun: (error) =>
-            logger.warn('producer.close() failed:${error.toString()}'),
+            _logger.warn('producer.close() failed:${error.toString()}'),
       ));
     });
 
@@ -722,15 +771,17 @@ class Transport extends EnhancedEventEmitter {
   /// use producerCallback to receive a new Producer.
   void produce({
     MediaStreamTrack track,
+    MediaStream stream,
     List<RtpEncodingParameters> encodings,
     ProducerCodecOptions codecOptions,
     RtpCodecCapability codec,
     bool stopTracks = true,
     bool disableTrackOnPause = true,
     bool zeroRtpOnPause = false,
-    Map<dynamic, dynamic> appData,
+    Map<String, dynamic> appData,
+    String source,
   }) {
-    logger.debug('produce() [track:${track.toString()}');
+    _logger.debug('produce() [track:${track.toString()}');
 
     if (track == null) {
       throw ('missing track');
@@ -752,7 +803,9 @@ class Transport extends EnhancedEventEmitter {
         try {
           List<RtpEncodingParameters> normalizedEncodings = [];
 
-          if (encodings != null && encodings.isNotEmpty) {
+          if (encodings != null && encodings.isEmpty) {
+            normalizedEncodings = null;
+          } else if (encodings != null && encodings.isNotEmpty) {
             normalizedEncodings =
                 encodings.map((RtpEncodingParameters encoding) {
               RtpEncodingParameters normalizedEncoding =
@@ -796,17 +849,18 @@ class Transport extends EnhancedEventEmitter {
             encodings: normalizedEncodings,
             codecOptions: codecOptions,
             codec: codec,
+            stream: stream,
           ));
 
           try {
             // This will fill rtpParameters's missing fields with default values.
             Ortc.validateRtpParameters(sendResult.rtpParameters);
 
-            String id = await safeEmitAsFuture('produce', [
-              track.kind,
-              sendResult.rtpParameters,
-              appData,
-            ]);
+            String id = await safeEmitAsFuture('produce', {
+              'kind': track.kind,
+              'rtpParameters': sendResult.rtpParameters,
+              'appData': appData,
+            });
 
             Producer producer = Producer(
               id: id,
@@ -818,13 +872,17 @@ class Transport extends EnhancedEventEmitter {
               disableTrackOnPause: disableTrackOnPause,
               zeroRtpOnPause: zeroRtpOnPause,
               appData: appData,
+              stream: stream,
+              source: source,
             );
 
             _producers[producer.id] = producer;
             _handleProducer(producer);
 
             // Emit observer event.
-            _observer.safeEmit('newProducer', [producer]);
+            _observer.safeEmit('newProducer', {
+              'producer': producer,
+            });
 
             this?.producerCallback(producer);
           } catch (error) {
@@ -854,84 +912,89 @@ class Transport extends EnhancedEventEmitter {
     RTCRtpMediaType kind,
     RtpParameters rtpParameters,
     Map<dynamic, dynamic> appData,
+    Function accept,
   }) {
-    logger.debug('consume()');
+    _logger.debug('consume()');
 
     rtpParameters = RtpParameters.copy(rtpParameters);
 
     if (_closed) {
-      throw('closed');
+      throw ('closed');
     } else if (_direction != Direction.recv) {
-      throw('not a receiving Transport');
+      throw ('not a receiving Transport');
     } else if (id == null) {
-      throw('missing id');
+      throw ('missing id');
     } else if (producerId == null) {
-      throw('missing producerId');
-    } else if (
-      kind != RTCRtpMediaType.RTCRtpMediaTypeAudio && kind != RTCRtpMediaType.RTCRtpMediaTypeVideo
-    ) {
-      throw('invalid kind ${RTCRtpMediaTypeExtension.value(kind)}');
+      throw ('missing producerId');
+    } else if (kind != RTCRtpMediaType.RTCRtpMediaTypeAudio &&
+        kind != RTCRtpMediaType.RTCRtpMediaTypeVideo) {
+      throw ('invalid kind ${RTCRtpMediaTypeExtension.value(kind)}');
     } else if (listeners('connect').isEmpty && _connectionState == 'new') {
-      throw('no "connect" listener set into this transport');
+      throw ('no "connect" listener set into this transport');
     }
 
     _flexQueue.addTask(FlexTaskAdd(
-      id: id,
-      message: 'transport.consume()',
-      execFun: () async {
-        // Unsure the device can consume it.
-        bool canConsume = Ortc.canReceive(rtpParameters, _extendedRtpCapabilities);
+        id: id,
+        message: 'transport.consume()',
+        execFun: () async {
+          // Unsure the device can consume it.
+          bool canConsume =
+              Ortc.canReceive(rtpParameters, _extendedRtpCapabilities);
 
-        if (!canConsume) {
-          throw('cannot consume this Producer');
-        }
-
-        HandlerReceiveResult receiveResult = await _handler.receive(HandlerReceiveOptions(
-          trackId: id,
-          kind: kind,
-          rtpParameters: rtpParameters,
-        ));
-
-        Consumer consumer = Consumer(
-          id: id,
-          localId: receiveResult.localId,
-          producerId: producerId,
-          rtpParameters: rtpParameters,
-          appData: appData,
-          track: receiveResult.track,
-          rtpReceiver: receiveResult.rtpReceiver,
-        );
-
-        _consumers[consumer.id] = consumer;
-
-        _handleConsumer(consumer);
-
-        // If this is the first video Consumer and the Consumer for RTP probation
-        // has not yet been created, create it now.
-        if (!_probatorConsumerCreated && kind == RTCRtpMediaType.RTCRtpMediaTypeVideo) {
-          try {
-            RtpParameters probatorRtpParameters = Ortc.generateProbatorRtpparameters(consumer.rtpParameters);
-
-            await _handler.receive(HandlerReceiveOptions(
-              trackId: 'probator',
-              kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
-              rtpParameters: probatorRtpParameters,
-            ));
-
-            logger.debug('consume() | Consumer for RTP probation created');
-
-            _probatorConsumerCreated = true;
-          } catch (error) {
-            logger.error('consume() | failed to create Consumer for RTP probation:${error.toString()}');
+          if (!canConsume) {
+            throw ('cannot consume this Producer');
           }
-        }
 
-        // Emit observer event.
-        _observer.safeEmit('newconsumer', [consumer]);
+          HandlerReceiveResult receiveResult =
+              await _handler.receive(HandlerReceiveOptions(
+            trackId: id,
+            kind: kind,
+            rtpParameters: rtpParameters,
+          ));
 
-        consumerCallback(consumer);
-      }
-    ));
+          Consumer consumer = Consumer(
+            id: id,
+            localId: receiveResult.localId,
+            producerId: producerId,
+            rtpParameters: rtpParameters,
+            appData: Map<String, dynamic>.from(appData),
+            track: receiveResult.track,
+            rtpReceiver: receiveResult.rtpReceiver,
+            stream: receiveResult.stream,
+          );
+
+          _consumers[consumer.id] = consumer;
+
+          _handleConsumer(consumer);
+
+          // If this is the first video Consumer and the Consumer for RTP probation
+          // has not yet been created, create it now.
+          if (!_probatorConsumerCreated &&
+              kind == RTCRtpMediaType.RTCRtpMediaTypeVideo) {
+            try {
+              RtpParameters probatorRtpParameters =
+                  Ortc.generateProbatorRtpparameters(consumer.rtpParameters);
+
+              await _handler.receive(HandlerReceiveOptions(
+                trackId: 'probator',
+                kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
+                rtpParameters: probatorRtpParameters,
+              ));
+
+              _logger.debug('consume() | Consumer for RTP probation created');
+
+              _probatorConsumerCreated = true;
+            } catch (error) {
+              _logger.error(
+                  'consume() | failed to create Consumer for RTP probation:${error.toString()}');
+            }
+          }
+
+          // Emit observer event.
+          _observer.safeEmit('newconsumer', {'consumer': consumer});
+
+          consumerCallback(consumer, accept);
+        }));
   }
 
   /// Create a DataProducer
@@ -945,18 +1008,18 @@ class Transport extends EnhancedEventEmitter {
     String protocol = '',
     Map<dynamic, dynamic> appData,
   }) {
-    logger.debug('produceData()');
+    _logger.debug('produceData()');
 
     if (_direction != Direction.send) {
       throw ('not a sending Transport');
     } else if (_maxSctpMessageSize == null) {
-      throw('SCTP not enabled by remote Transport');
+      throw ('SCTP not enabled by remote Transport');
     } else if (priority == null) {
       throw ('wrong priority');
     } else if (listeners('connect').isEmpty && _connectionState == 'new') {
-      throw('no "connect" listener set into this transport');
+      throw ('no "connect" listener set into this transport');
     } else if (listeners('producedata').isEmpty) {
-      throw('no "producedata" listener set into this transport');
+      throw ('no "producedata" listener set into this transport');
     }
 
     if (maxPacketLife != null || maxRetransmits != null) {
@@ -965,43 +1028,46 @@ class Transport extends EnhancedEventEmitter {
 
     // Enqueue command.
     _flexQueue.addTask(FlexTaskAdd(
-      id: '',
-      execFun: () async {
-        HandlerSendDataChannelResult sendDataResult = await _handler.sendDataChannel(SctpStreamParameters(
-          ordered: ordered,
-          maxPacketLifeTime: maxPacketLife,
-          maxRetransmits: maxRetransmits,
-          priority: priority,
-          label: label,
-          protocol: protocol,
-        ));
+        id: '',
+        execFun: () async {
+          HandlerSendDataChannelResult sendDataResult =
+              await _handler.sendDataChannel(SctpStreamParameters(
+            ordered: ordered,
+            maxPacketLifeTime: maxPacketLife,
+            maxRetransmits: maxRetransmits,
+            priority: priority,
+            label: label,
+            protocol: protocol,
+          ));
 
-        // This will fill sctpStreamParameters's missing fields with default values.
-        Ortc.validateSctpStreamParameters(sendDataResult.sctpStreamParameters);
+          // This will fill sctpStreamParameters's missing fields with default values.
+          Ortc.validateSctpStreamParameters(
+              sendDataResult.sctpStreamParameters);
 
-        String id = await safeEmitAsFuture('producedata', [
-          sendDataResult.sctpStreamParameters,
-          label,
-          protocol,
-          appData,
-        ]);
+          String id = await safeEmitAsFuture('producedata', {
+            'sctpStreamParameters': sendDataResult.sctpStreamParameters,
+            'label': label,
+            'protocol': protocol,
+            'appData': appData,
+          });
 
-        DataProducer dataProducer = DataProducer(
-          id: id,
-          dataChannel: sendDataResult.dataChannel,
-          sctpStreamParameters: sendDataResult.sctpStreamParameters,
-          appData: appData,
-        );
+          DataProducer dataProducer = DataProducer(
+            id: id,
+            dataChannel: sendDataResult.dataChannel,
+            sctpStreamParameters: sendDataResult.sctpStreamParameters,
+            appData: appData,
+          );
 
-        _dataProducers[dataProducer.id] = dataProducer;
-        _handleDataProducer(dataProducer);
+          _dataProducers[dataProducer.id] = dataProducer;
+          _handleDataProducer(dataProducer);
 
-        // Emit observer event.
-        _observer.safeEmit('newdataproducer', [dataProducer]);
-        
-        dataProducerCallback(dataProducer);
-      }
-    ));
+          // Emit observer event.
+          _observer.safeEmit('newdataproducer', {
+            'dataProducer': dataProducer,
+          });
+
+          dataProducerCallback(dataProducer);
+        }));
   }
 
   // Create a DataConsumer
@@ -1014,55 +1080,57 @@ class Transport extends EnhancedEventEmitter {
     String protocol = '',
     Map<dynamic, dynamic> appData,
   }) {
-    logger.debug('consumeData()');
+    _logger.debug('consumeData()');
 
     sctpStreamParameters = SctpStreamParameters.copy(sctpStreamParameters);
 
     if (_closed) {
-      throw('closed');
+      throw ('closed');
     } else if (_direction != Direction.recv) {
-      throw('not a receiving Transport');
+      throw ('not a receiving Transport');
     } else if (_maxSctpMessageSize == null) {
-      throw('SCTP not enabled by remote Transport');
+      throw ('SCTP not enabled by remote Transport');
     } else if (id == null) {
-      throw('missing id');
+      throw ('missing id');
     } else if (dataProducerId == null) {
-      throw('missing dataProducerId');
+      throw ('missing dataProducerId');
     } else if (listeners('connect').isEmpty && _connectionState == 'new') {
-      throw('no "connect" listener set into this transport');
+      throw ('no "connect" listener set into this transport');
     }
 
     // This may throw.
     Ortc.validateSctpStreamParameters(sctpStreamParameters);
 
     // Enqueue command.
-    
+
     _flexQueue.addTask(FlexTaskAdd(
       id: id,
       message: 'transport.consumeData()',
       execFun: () async {
-        HandlerReceiveDataChannelResult receiveDataChannelResult = await _handler.receiveDataChannel(HandlerReceiveDataChannelOptions(
+        HandlerReceiveDataChannelResult receiveDataChannelResult =
+            await _handler.receiveDataChannel(HandlerReceiveDataChannelOptions(
           sctpStreamParameters: sctpStreamParameters,
           label: label,
           protocol: protocol,
         ));
 
         DataConsumer dataConsumer = DataConsumer(
-          id: id,
-          dataProducerId: dataProducerId,
-          dataChannel: receiveDataChannelResult.dataChannel,
-          sctpStreamParameters: sctpStreamParameters,
-          appData: appData
-        );
+            id: id,
+            dataProducerId: dataProducerId,
+            dataChannel: receiveDataChannelResult.dataChannel,
+            sctpStreamParameters: sctpStreamParameters,
+            appData: appData);
 
         _dataConsumers[dataConsumer.id] = dataConsumer;
         _handleDataConsumer(dataConsumer);
 
         // Emit observer event.
-        _observer.safeEmit('newdataconsumer', [dataConsumer]);
+        _observer.safeEmit('newdataconsumer', {
+          'dataConsumer': dataConsumer,
+        });
 
         dataConsumerCallback(dataConsumer);
-      }
+      },
     ));
   }
 }

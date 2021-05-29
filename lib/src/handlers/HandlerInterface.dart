@@ -88,7 +88,7 @@ class HandlerRunOptions {
   List<RTCIceServer> iceServers;
   RTCIceTransportPolicy iceTransportPolicy;
   var additionalSettings;
-  var proprietaryConstraints;
+  Map<String, dynamic> proprietaryConstraints;
   var extendedRtpCapabilities;
 
   HandlerRunOptions({
@@ -118,12 +118,14 @@ class HandlerSendOptions {
   List<RtpEncodingParameters> encodings;
   ProducerCodecOptions codecOptions;
   RtpCodecCapability codec;
+  MediaStream stream;
 
   HandlerSendOptions({
     this.track,
     this.encodings,
     this.codecOptions,
     this.codec,
+    this.stream,
   });
 }
 
@@ -137,12 +139,14 @@ class HandlerSendDataChannelResult {
 class HandlerReceiveResult {
   String localId;
   MediaStreamTrack track;
+  MediaStream stream;
   RTCRtpReceiver rtpReceiver;
 
   HandlerReceiveResult({
     this.localId,
     this.track,
     this.rtpReceiver,
+    this.stream,
   });
 }
 

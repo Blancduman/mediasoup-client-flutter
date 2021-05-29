@@ -201,7 +201,7 @@ class RemoteSdp {
     RtpParameters offerRtpParameters,
     RtpParameters answerRtpParameters,
     ProducerCodecOptions codecOptions,
-    bool extmapAllowMixed,
+    bool extmapAllowMixed = false,
   }) {
     AnswerMediaSection mediaSection = AnswerMediaSection(
       iceParameters: _iceParameters,

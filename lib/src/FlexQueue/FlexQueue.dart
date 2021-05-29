@@ -81,12 +81,15 @@ class FlexQueue {
         print(task?.message);
         try {
           if (task.argument == null) {
-            task?.callbackFun((await task.execFun()));
+            var result = await task.execFun();
+            task?.callbackFun?.call(result);
           } else {
-            task?.callbackFun((await task.execFun(task.argument)));
+            var result = await task.execFun(task.argument);
+            task?.callbackFun?.call(result);
           }
         } catch (error) {
-          task?.errorCallbackFun(error);
+          print(error);
+          task.errorCallbackFun?.call(error);
         }
         isBusy = false;
         _runTask();

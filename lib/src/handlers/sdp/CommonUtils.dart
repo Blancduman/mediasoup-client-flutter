@@ -11,8 +11,8 @@ class CommonUtils {
     // Array of RtpHeaderExtensions.
     List<RtpHeaderExtension> headerExtensions = <RtpHeaderExtension>[];
     // Whether a m=audio/video section has been already found.
-    bool gotAudio;
-    bool gotVideo;
+    bool gotAudio = false;
+    bool gotVideo = false;
 
     for (MediaObject m in sdpObject.media) {
       String kind = m.type;
@@ -62,7 +62,7 @@ class CommonUtils {
         }
 
         // Specials case to convert parameter value to string.
-        if (parameters != null && parameters['profile-level-id']) {
+        if (parameters != null && parameters['profile-level-id'] != null) {
           parameters['profile-level-id'] = '${parameters['profile-level-id']}';
         }
 
@@ -188,10 +188,10 @@ class CommonUtils {
 
       switch (mimeType) {
         case 'audio/opus': {
-          String spropStereo = codec.parameters['sprop-stereo'];
+          int spropStereo = codec.parameters['sprop-stereo'];
 
           if (spropStereo != null) {
-            parameters['stereo'] = int.parse(spropStereo) > 0 ? 1 : 0;
+            parameters['stereo'] = spropStereo > 0 ? 1 : 0;
           }
           break;
         }

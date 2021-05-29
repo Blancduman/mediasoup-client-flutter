@@ -11,7 +11,7 @@ class Origin {
   Origin({
     this.username,
     this.sessionId,
-    this.sessionVersion,
+    this.sessionVersion = 0,
     this.netType,
     this.ipVer,
     this.address,
@@ -20,7 +20,7 @@ class Origin {
   Origin.fromMap(Map data) {
     username = data['username'];
     sessionId = data['sessionId'];
-    sessionVersion = data['sessionVersion'];
+    sessionVersion = data['sessionVersion'] ?? 0;
     netType = data['netType'];
     ipVer = data['ipVer'];
     address = data['address'];
@@ -41,7 +41,9 @@ class Origin {
 class Invalid {
   String value;
 
-  Invalid({this.value,});
+  Invalid({
+    this.value,
+  });
 
   Invalid.fromMap(Map data) {
     value = data['value'];
@@ -58,7 +60,10 @@ class Timing {
   int start;
   int stop;
 
-  Timing({this.start, this.stop,});
+  Timing({
+    this.start,
+    this.stop,
+  });
 
   Timing.fromMap(Map data) {
     start = data['start'];
@@ -84,7 +89,7 @@ class Group {
 
   Group.fromMap(Map data) {
     type = data['type'];
-    mids = data['mids'];
+    mids = data['mids'].toString();
   }
 
   Map<String, String> toMap() {
@@ -99,7 +104,10 @@ class MsidSemantic {
   String semantic;
   String token;
 
-  MsidSemantic({this.semantic, this.token,});
+  MsidSemantic({
+    this.semantic,
+    this.token,
+  });
 
   MsidSemantic.fromMap(Map data) {
     semantic = data['semantic'];
@@ -147,11 +155,13 @@ class SdpObject {
     this.icelite,
   });
 
-  SdpObject.fromMap(Map data) {
+  SdpObject.fromMap(Map<String, dynamic> data) {
     version = data['version'];
     origin = Origin.fromMap(data['origin']);
     name = data['name'];
-    invalid = (data['invalid'] ?? []).map((Map inval) => Invalid.fromMap(inval)).toList();
+    invalid = List<Invalid>.from((data['invalid'] ?? [])
+        .map((inval) => Invalid.fromMap(inval))
+        .toList());
     if (data['timing'] != null) {
       timing = Timing.fromMap(data['timing']);
     }
@@ -160,22 +170,23 @@ class SdpObject {
     }
     iceUfrag = data['iceUfrag'];
     icePwd = data['icePwd'];
-    if (data['fingerprint']) {
+    if (data['fingerprint'] != null) {
       fingerprint = Fingerprint.fromMap(data['fingerprint']);
     }
-    media = (data['media'] ?? []).map((Map m) => MediaObject.fromMap(m)).toList();
-    groups = (data['groups'] ?? []).map((Map g) => Group.fromMap(g)).toList();
     if (data['msidSemantic'] != null) {
       msidSemantic = MsidSemantic.fromMap(data['msidSemantic']);
     }
+    media =
+        List<MediaObject>.from((data['media'] ?? []).map((m) => MediaObject.fromMap(m)).toList());
+    groups = List<Group>.from((data['groups'] ?? []).map((g) => Group.fromMap(g)).toList());
     icelite = data['icelite'];
     description = data['description'];
   }
 
-  Map<dynamic, dynamic> toMap() {
-    Map<dynamic, dynamic> result = <dynamic, dynamic>{};
+  Map<String, dynamic> toMap() {
+    Map<String, dynamic> result = <String, dynamic>{};
     if (version != null) {
-      result['version'] = version;
+      result['version'] = version.toString();
     }
     if (origin != null) {
       result['origin'] = origin.toMap();
@@ -216,7 +227,7 @@ class SdpObject {
     if (icelite != null) {
       result['icelite'] = icelite;
     }
-    
+
     return result;
   }
 }

@@ -152,9 +152,13 @@ class Ext {
 
   Map<String, dynamic> toMap() {
     Map<String, dynamic> result = {
+      if (value != null)
       'value': value,
+      if (direction != null)
       'direction': direction,
+      if (uri != null)
       'uri': uri,
+      if (config != null)
       'config': config,
     };
     if (encryptUri != null && encryptUri.isNotEmpty) {
@@ -569,7 +573,7 @@ class MediaObject {
 
   MediaObject.fromMap(Map data) {
     if (data['candidates'] != null) {
-      candidates = (data['candidates'] ?? []).map((Map candidate) => IceCandidate.fromMap(candidate)).toList();
+      candidates = List<IceCandidate>.from((data['candidates'] ?? []).map((candidate) => IceCandidate.fromMap(candidate)).toList());
     }
     if (data['iceUfrag'] != null) {
       iceUfrag = data['iceUfrag'];
@@ -587,7 +591,7 @@ class MediaObject {
       setup = data['setup'];
     }
     if (data['mid'] != null) {
-      mid = data['mid'];
+      mid = data['mid'].toString();
     }
     if (data['port'] != null) {
       port = data['port'];
@@ -596,10 +600,10 @@ class MediaObject {
       direction = RtpHeaderDirectionExtension.fromString(data['direction']);
     }
     if (data['rtp'] != null) {
-      rtp = (data['rtp'] ?? []).map((Map r) => Rtp.fromMap(r)).toList();
+      rtp = List<Rtp>.from((data['rtp'] ?? <Rtp>[]).map((r) => Rtp.fromMap(r)).toList());
     }
     if (data['fmtp'] != null) {
-      fmtp = (data['fmtp'] ?? []).map((Map f) => Fmtp.fromMap(f)).toList();
+      fmtp = List<Fmtp>.from((data['fmtp'] ?? []).map((f) => Fmtp.fromMap(f)).toList());
     }
     if (data['type'] != null) {
       type = data['type'];
@@ -608,7 +612,7 @@ class MediaObject {
       protocol = data['protocol'];
     }
     if (data['payloads'] != null) {
-      payloads = data['payloads'];
+      payloads = '${data['payloads']}';
     }
     if (data['connection'] != null) {
       connection = Connection.fromMap(data['connection']);
@@ -617,7 +621,7 @@ class MediaObject {
       rtcp = Rtcp.fromMap(data['rtcp']);
     }
     if (data['ext'] != null) {
-      ext = (data['ext'] ?? []).map((Map e) => Ext.fromMap(e)).toList();
+      ext = List<Ext>.from((data['ext'] ?? []).map((e) => Ext.fromMap(e)).toList());
     }
     if (data['msid'] != null) {
       msid = data['msid'];
@@ -626,13 +630,13 @@ class MediaObject {
       rtcpMux = data['rtcpMux'];
     }
     if (data['rtcpFb'] != null) {
-      rtcpFb = (data['rtcpFb'] ?? []).map((Map r) => RtcpFb.fromMap(r)).toList();
+      rtcpFb = List<RtcpFb>.from((data['rtcpFb'] ?? []).map((r) => RtcpFb.fromMap(r)).toList());
     }
     if (data['ssrcs'] != null) {
-      ssrcs = (data['ssrcs'] ?? []).map((Map ssrc) => Ssrc.fromMap(ssrc)).toList();
+      ssrcs = List<Ssrc>.from((data['ssrcs'] ?? []).map((ssrc) => Ssrc.fromMap(ssrc)).toList());
     }
     if (data['ssrcGroups'] != null) {
-      ssrcGroups = (data['ssrcGroups'] ?? []).map((Map ssrcGroup) => SsrcGroup.fromMap(ssrcGroup)).toList();
+      ssrcGroups = List<SsrcGroup>.from((data['ssrcGroups'] ?? []).map((ssrcGroup) => SsrcGroup.fromMap(ssrcGroup)).toList());
     }
     if (data['simulcast'] != null) {
       simulcast = Simulcast.fromMap(data['simulcast']);
@@ -641,7 +645,7 @@ class MediaObject {
       simulcast_03 = Simulcast_03.fromMap(data['simulcast_03']);
     }
     if (data['rids'] != null) {
-      rids = (data['rids'] ?? []).map((Map r) => Rid.fromMap(r)).toList();
+      rids = List<Rid>.from((data['rids'] ?? []).map((r) => Rid.fromMap(r)).toList());
     }
     if (data['extmapAllowMixed'] != null) {
       extmapAllowMixed = data['extmapAllowMixed'];
@@ -665,13 +669,13 @@ class MediaObject {
       fingerprint = Fingerprint.fromMap(data['fingerprint']);
     }
     if (data['rtcpFbTrrInt'] != null) {
-      rtcpFbTrrInt = (data['rtcpFbTrrInt'] ?? []).map((Map rFTI) => RtcpFbTrrInt.fromMap(data['rtcpFbTrrInt'])).toList();
+      rtcpFbTrrInt = List<RtcpFbTrrInt>.from((data['rtcpFbTrrInt'] ?? []).map((rFTI) => RtcpFbTrrInt.fromMap(data['rtcpFbTrrInt'])).toList());
     }
     if (data['crypto'] != null) {
-      crypto = (data['crypto'] ?? []).map((Map c) => Crypto.fromMap(c)).toList();
+      crypto = List<Crypto>.from((data['crypto'] ?? []).map((c) => Crypto.fromMap(c)).toList());
     }
     if (data['invalid'] != null) {
-      invalid = (data['invalid'] ?? []).map((Map i) => Invalid.fromMap(i)).toList();
+      invalid = List<Invalid>.from((data['invalid'] ?? []).map((i) => Invalid.fromMap(i)).toList());
     }
     if (data['ptime'] != null) {
       ptime = data['ptime'];
@@ -683,7 +687,7 @@ class MediaObject {
       label = data['label'];
     }
     if (data['bandwidth'] != null) {
-      bandwidth = (data['bandwidth'] ?? []).map((Map b) => Bandwidth.fromMap(b)).toList();
+      bandwidth = List<Bandwidth>.from((data['bandwidth'] ?? []).map((b) => Bandwidth.fromMap(b)).toList());
     }
     if (data['framerate'] != null) {
       framerate = data['framerate'];
@@ -692,7 +696,7 @@ class MediaObject {
       bundleOnly = data['bundleOnly'];
     }
     if (data['imageattrs'] != null) {
-      imageattrs = (data['imageattrs'] ?? []).map((Map ia) => Imageattrs.fromMap(ia)).toList();
+      imageattrs = List<Imageattrs>.from((data['imageattrs'] ?? []).map((ia) => Imageattrs.fromMap(ia)).toList());
     }
     if (data['sourceFilter'] != null) {
       sourceFilter = SourceFilter.fromMap(data['sourceFilter']);
@@ -705,7 +709,7 @@ class MediaObject {
   Map<String, dynamic> toMap() {
     Map<String, dynamic> result = <String, dynamic>{};
     if (candidates != null) {
-      result['candidates'] = candidates.map((IceCandidate c) => c.toMap()).toList();
+      result['candidates'] = [candidates.map((IceCandidate c) => c.toMap()).toList().first];
     }
     if (iceUfrag != null) {
       result['iceUfrag'] = iceUfrag;
@@ -836,6 +840,8 @@ class MediaObject {
     if (description != null) {
       result['description'] = description;
     }
+
+    return result;
   }
 }
 
@@ -892,7 +898,7 @@ abstract class MediaSection {
 
   void setDtlsRole(DtlsRole role);
 
-  String get mid => _mediaObject.mid.toString();
+  String get mid => _mediaObject.mid != null ? _mediaObject.mid.toString() : null;
 
   bool get closed => _mediaObject.port == 0;
 
@@ -941,7 +947,7 @@ class AnswerMediaSection extends MediaSection {
           iceCandidates: iceCandidates,
           planB: planB,
         ) {
-    _mediaObject.mid = mid;
+    _mediaObject.mid = offerMediaObject.mid;
     _mediaObject.type = offerMediaObject.type;
     _mediaObject.protocol = offerMediaObject.protocol;
 
@@ -976,7 +982,7 @@ class AnswerMediaSection extends MediaSection {
               rate: codec.clockRate,
             );
 
-            if (codec.channels > 1) {
+            if (codec.channels != null && codec.channels > 1) {
               rtp.encoding = codec.channels;
             }
 
@@ -988,9 +994,9 @@ class AnswerMediaSection extends MediaSection {
                 Map<dynamic, dynamic>.of(codec.parameters);
 
             if (codecOptions != null) {
-              bool opusStereo = codecOptions.opusStereo;
-              bool opusFec = codecOptions.opusFec;
-              bool opusDtx = codecOptions.opusDtx;
+              int opusStereo = codecOptions.opusStereo;
+              int opusFec = codecOptions.opusFec;
+              int opusDtx = codecOptions.opusDtx;
               int opusMaxPlaybackRate = codecOptions.opusMaxPlaybackRate;
               int opusMaxAverageBitrate = codecOptions.opusMaxAverageBitrate;
               int opusPtime = codecOptions.opusPtime;
@@ -1009,18 +1015,24 @@ class AnswerMediaSection extends MediaSection {
                 case 'audio/opus':
                   {
                     if (opusStereo != null) {
-                      offerCodec.parameters['sprop-stereo'] = opusStereo ? 1 : 0;
-                      codecParameters['stereo'] = opusStereo ? 1 : 0;
+                      // offerCodec.parameters['sprop-stereo'] = opusStereo ? 1 : 0;
+                      offerCodec.parameters['sprop-stereo'] = opusStereo != null ? opusStereo : 0;
+                      // codecParameters['stereo'] = opusStereo ? 1 : 0;
+                      codecParameters['stereo'] = opusStereo != null ? opusStereo : 0;
                     }
 
                     if (opusFec != null) {
-                      offerCodec.parameters['useinbandfec'] = opusFec ? 1 : 0;
-                      codecParameters['useinbandfec'] = opusFec ? 1 : 0;
+                      // offerCodec.parameters['useinbandfec'] = opusFec ? 1 : 0;
+                      offerCodec.parameters['useinbandfec'] = opusFec != null ? opusFec : 0;
+                      // codecParameters['useinbandfec'] = opusFec ? 1 : 0;
+                      codecParameters['useinbandfec'] = opusFec != null ? opusFec : 0;
                     }
 
                     if (opusDtx != null) {
-                      offerCodec.parameters['usedtx'] = opusDtx ? 1 : 0;
-                      codecParameters['usedtx'] = opusDtx ? 1 : 0;
+                      // offerCodec.parameters['usedtx'] = opusDtx ? 1 : 0;
+                      offerCodec.parameters['usedtx'] = opusDtx != null ? opusDtx : 0;
+                      // codecParameters['usedtx'] = opusDtx ? 1 : 0;
+                      codecParameters['usedtx'] = opusDtx != null ? opusDtx : 0;
                     }
 
                     if (opusMaxPlaybackRate != null) {
@@ -1238,7 +1250,7 @@ class OfferMediaSection extends MediaSection {
         version: 4,
       );
 
-      if (sctpParameters != null) {
+      if (sctpParameters == null) {
         _mediaObject.protocol = 'UDP/TLS/RTP/SAVPF';
       } else {
         _mediaObject.protocol = 'UDP/DTLS/SCTP';
@@ -1275,7 +1287,7 @@ class OfferMediaSection extends MediaSection {
               rate: codec.clockRate,
             );
 
-            if (codec.channels > 1) {
+            if (codec.channels  != null && codec.channels > 1) {
               rtp.encoding = codec.channels;
             }
 
@@ -1428,8 +1440,8 @@ class OfferMediaSection extends MediaSection {
 
     _mediaObject.ssrcs.add(Ssrc(
       id: ssrc,
-      attribute: 'cname',
-      value: offerRtpParameters.rtcp.cname,
+      attribute: 'msid',
+      value: '${streamId ?? '-'} $trackId',
     ));
 
     if (rtxSsrc != null) {

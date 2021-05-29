@@ -129,7 +129,7 @@ packages:
       name: flutter_webrtc
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.5.8"
+    version: "0.6.3"
   glob:
     dependency: transitive
     description:
@@ -389,4 +389,4 @@ packages:
     version: "3.1.0"
 sdks:
   dart: ">=2.12.0 <3.0.0"
-  flutter: ">=1.17.0"
+  flutter: ">=1.22.0"

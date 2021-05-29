@@ -33,6 +33,8 @@ class Consumer extends EnhancedEventEmitter {
   bool _paused;
   /// App custom data.
   final Map<String, dynamic> _appData;
+  /// Stream.
+  MediaStream _stream;
   /// Observer instance.
   EnhancedEventEmitter _observer = EnhancedEventEmitter();
 
@@ -48,6 +50,7 @@ class Consumer extends EnhancedEventEmitter {
     MediaStreamTrack track,
     RtpParameters rtpParameters,
     Map<String, dynamic> appData,
+    MediaStream stream,
   }) : this._appData = appData, super() {
     _logger.debug('constructor()');
 
@@ -58,6 +61,7 @@ class Consumer extends EnhancedEventEmitter {
     _track = track;
     _rtpParameters = rtpParameters;
     _paused = !track.enabled;
+    _stream = stream;
     _handleTrack();
   }
 
@@ -81,6 +85,8 @@ class Consumer extends EnhancedEventEmitter {
   bool get paused => _paused;
   /// App custom data.
   Map<String, dynamic> get appData => _appData;
+  /// Stream.
+  MediaStream get stream => _stream;
   /// Observer.
   /// 
   /// @emits close

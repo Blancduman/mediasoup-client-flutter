@@ -25,6 +25,12 @@ class NumSctpStreams {
 class SctpCapabilities {
   NumSctpStreams numStreams;
   SctpCapabilities({this.numStreams});
+
+  Map<String, dynamic> toMap() {
+    return {
+      'numStreams': numStreams.toMap(),
+    };
+  }
 }
 
 class SctpParameters {
@@ -54,6 +60,15 @@ class SctpParameters {
       'MIS': mis,
       'maxMessageSize': maxMessageSize,
     };
+  }
+
+  static SctpParameters fromMap(Map data) {
+    return SctpParameters(
+      port: data['port'],
+      os: data['OS'],
+      mis: data['MIS'],
+      maxMessageSize: data['maxMessageSize'],
+    );
   }
 }
 
@@ -108,7 +123,7 @@ class SctpStreamParameters {
   });
 
   static SctpStreamParameters copy(SctpStreamParameters old) {
-    SctpStreamParameters(
+    return SctpStreamParameters(
       streamId: old.streamId,
       ordered: old.ordered,
       maxPacketLifeTime: old.maxPacketLifeTime,
@@ -117,6 +132,18 @@ class SctpStreamParameters {
       label: old.label,
       protocol: old.protocol,
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'streamId': streamId,
+      'ordered': ordered,
+      'maxPacketLifeTime': maxPacketLifeTime,
+      'maxRetransmits': maxRetransmits,
+      'priority': priority.value,
+      'label': label,
+      'protocol': protocol,
+    };
   }
 }
 

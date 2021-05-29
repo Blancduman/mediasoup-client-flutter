@@ -9,10 +9,13 @@ dynamic tryToParseInt(String testNumber) {
   return null;
 }
 
-void attachProperties(Iterable<RegExpMatch> matchs, Map<String, dynamic> location, names, String rawName) {
-  if ((rawName != null && rawName.isNotEmpty) && (names == null || names.isEmpty)) {
+void attachProperties(Iterable<RegExpMatch> matchs,
+    Map<String, dynamic> location, names, String rawName) {
+  if ((rawName != null && rawName.isNotEmpty) &&
+      (names == null || names.isEmpty)) {
     matchs.forEach((match) {
-      location[rawName] = tryToParseInt(match.groupCount == 0 ? match.input : match.group(1));
+      location[rawName] =
+          tryToParseInt(match.groupCount == 0 ? match.input : match.group(1));
     });
   } else {
     matchs.forEach((match) {
@@ -23,7 +26,8 @@ void attachProperties(Iterable<RegExpMatch> matchs, Map<String, dynamic> locatio
   }
 }
 
-void parseReg(Map<String, dynamic> obj, Map<String, dynamic> location, String content) {
+void parseReg(
+    Map<String, dynamic> obj, Map<String, dynamic> location, String content) {
   final bool needsBlank = obj['name'] != null && obj['names'] != null;
   if (obj['push'] != null && location[obj['push']] == null) {
     location[obj['push']] = [];
@@ -43,9 +47,11 @@ void parseReg(Map<String, dynamic> obj, Map<String, dynamic> location, String co
   }
 
   if (obj['reg'] is RegExp) {
-    attachProperties(obj['reg'].allMatches(content), keyLocation, obj['names'], obj['name']);
+    attachProperties(
+        obj['reg'].allMatches(content), keyLocation, obj['names'], obj['name']);
   } else {
-    attachProperties(RegExp(obj['reg']).allMatches(content), keyLocation, obj['names'], obj['name']);
+    attachProperties(RegExp(obj['reg']).allMatches(content), keyLocation,
+        obj['names'], obj['name']);
   }
 
   if (obj['push'] != null) {
@@ -57,7 +63,8 @@ Map<String, dynamic> parse(String sdp) {
   Map<String, dynamic> session = <String, dynamic>{};
   var medias = [];
 
-  var location = session; // points at where properties go under (one of the above)
+  var location =
+      session; // points at where properties go under (one of the above)
 
   LineSplitter().convert(sdp).forEach((line) {
     if (line != '') {
@@ -96,7 +103,7 @@ Map<String, dynamic> parse(String sdp) {
         if (location['invalid'] == null) {
           location['invalid'] = [];
         }
-        
+
         Map<String, dynamic> tmp = <String, dynamic>{};
         tmp['value'] = content;
         location['invalid'].add(tmp);
@@ -135,7 +142,7 @@ List<String> parsePayloads(str) => str.split(' ');
 List<String> parseRemoteCandidates(String str) {
   var candidates = [];
   List<String> parts = [];
-  
+
   str.split(' ').forEach((dynamic v) {
     dynamic value = tryToParseInt(v);
     if (value != null) {

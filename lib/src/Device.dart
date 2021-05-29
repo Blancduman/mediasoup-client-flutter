@@ -7,7 +7,7 @@ import 'package:mediasoup_client_flutter/src/common/EnhancedEventEmitter.dart';
 import 'package:mediasoup_client_flutter/src/common/Logger.dart';
 import 'package:mediasoup_client_flutter/src/handlers/HandlerInterface.dart';
 
-Logger logger = Logger('Device');
+Logger _logger = Logger('Device');
 
 class Device {
   // Loaded flag.
@@ -28,11 +28,11 @@ class Device {
   bool get loaded => _loaded;
 
   /// RTP capabilities of the Device for receiving media.
-  /// 
+  ///
   /// @throws {InvalidStateError} if not loaded.
   RtpCapabilities get rtpCapabilities {
     if (!_loaded) {
-      throw('not loaded');
+      throw ('not loaded');
     }
 
     return _recvRtpCapabilities;
@@ -41,8 +41,8 @@ class Device {
   /// SCTP capabilities of the Device.
   /// @throws {InvalidStateError} if not loaded.
   SctpCapabilities get sctpCapabilities {
-    if (_loaded) {
-      throw('not loaded');
+    if (!_loaded) {
+      throw ('not loaded');
     }
 
     return _sctpCapabilities;
@@ -55,7 +55,8 @@ class Device {
   Future<void> load({
     RtpCapabilities routerRtpCapabilities,
   }) async {
-    logger.debug('load() [routerRtpCapabilities:${routerRtpCapabilities}]');
+    _logger.debug(
+        'load() [routerRtpCapabilities:${routerRtpCapabilities.toString()}]');
 
     routerRtpCapabilities = RtpCapabilities.copy(routerRtpCapabilities);
 
@@ -64,7 +65,7 @@ class Device {
 
     try {
       if (_loaded) {
-        throw('already loaded');
+        throw ('already loaded');
       }
 
       // This may throw.
@@ -72,41 +73,49 @@ class Device {
 
       handler = HandlerInterface.handlerFactory();
 
-      RtpCapabilities nativeRtpCapabilities = await handler.getNativeRtpCapabilities();
+      RtpCapabilities nativeRtpCapabilities =
+          await handler.getNativeRtpCapabilities();
 
-      logger.debug('load() | got native RTP capabilities:$nativeRtpCapabilities');
+      _logger
+          .debug('load() | got native RTP capabilities:$nativeRtpCapabilities');
 
       // This may throw.
       Ortc.validateRtpCapabilities(nativeRtpCapabilities);
 
       // Get extended RTP capabilities.
-      _extendedRtpCapabilities = Ortc.getExtendedRtpCapabilities(nativeRtpCapabilities, routerRtpCapabilities);
+      _extendedRtpCapabilities = Ortc.getExtendedRtpCapabilities(
+          nativeRtpCapabilities, routerRtpCapabilities);
 
-      logger.debug('load() | got extended RTP capabilities:$_extendedRtpCapabilities');
+      _logger.debug(
+          'load() | got extended RTP capabilities:$_extendedRtpCapabilities');
 
       // Check wether we can produce audio/video.
       _canProduceByKind = CanProduceByKind(
-        audio: Ortc.canSend(RTCRtpMediaType.RTCRtpMediaTypeAudio, _extendedRtpCapabilities),
-        video: Ortc.canSend(RTCRtpMediaType.RTCRtpMediaTypeVideo, _extendedRtpCapabilities),
+        audio: Ortc.canSend(
+            RTCRtpMediaType.RTCRtpMediaTypeAudio, _extendedRtpCapabilities),
+        video: Ortc.canSend(
+            RTCRtpMediaType.RTCRtpMediaTypeVideo, _extendedRtpCapabilities),
       );
 
       // Generate our receiving RTP capabilities for receiving media.
-      _recvRtpCapabilities = Ortc.getRecvRtpCapabilities(_extendedRtpCapabilities);
+      _recvRtpCapabilities =
+          Ortc.getRecvRtpCapabilities(_extendedRtpCapabilities);
 
       // This may throw.
       Ortc.validateRtpCapabilities(_recvRtpCapabilities);
 
-      logger.debug('load() | got receiving RTP capabilities:$_recvRtpCapabilities');
+      _logger.debug(
+          'load() | got receiving RTP capabilities:$_recvRtpCapabilities');
 
       // Generate our SCTP capabilities.
       _sctpCapabilities = handler.getNativeSctpCapabilities();
 
-      logger.debug('load() | got native SCTP capabilities:$_sctpCapabilities');
+      _logger.debug('load() | got native SCTP capabilities:$_sctpCapabilities');
 
       // This may throw.
       Ortc.validateSctpCapabilities(_sctpCapabilities);
 
-      logger.debug('load() successed');
+      _logger.debug('load() successed');
 
       _loaded = true;
 
@@ -121,7 +130,7 @@ class Device {
   }
 
   // /// Create a new Device to connect to mediasoup server.
-  // /// 
+  // ///
   // /// @throws {UnsupportedError} if device is not supported.
   // Device() {
   //   logger.debug('constructor()');
@@ -130,14 +139,15 @@ class Device {
   // }
 
   /// Whether we can produce audio/video.
-  /// 
+  ///
   /// @throws {InvalidStateError} if not loaded.
   /// @throws {TypeError} if wrong arguments.
   bool canProduce(RTCRtpMediaType kind) {
     if (!_loaded) {
-      throw('not loaded');
-    } else if (kind != RTCRtpMediaType.RTCRtpMediaTypeAudio && kind != RTCRtpMediaType.RTCRtpMediaTypeVideo) {
-      throw('invalid kind ${RTCRtpMediaTypeExtension.value(kind)}');
+      throw ('not loaded');
+    } else if (kind != RTCRtpMediaType.RTCRtpMediaTypeAudio &&
+        kind != RTCRtpMediaType.RTCRtpMediaTypeVideo) {
+      throw ('invalid kind ${RTCRtpMediaTypeExtension.value(kind)}');
     }
 
     return _canProduceByKind.canIt(kind);
@@ -152,24 +162,24 @@ class Device {
     SctpParameters sctpParameters,
     List<RTCIceServer> iceServers,
     RTCIceTransportPolicy iceTransportPolicy,
-    Map<dynamic, dynamic> additionalSettings,
-    Map<dynamic, dynamic> proprietaryConstraints,
-    Map<dynamic, dynamic> appData,
+    Map<String, dynamic> additionalSettings,
+    Map<String, dynamic> proprietaryConstraints,
+    Map<String, dynamic> appData,
     Function producerCallback,
     Function consumerCallback,
     Function dataProducerCallback,
     Function dataConsumerCallback,
   }) {
     if (!_loaded) {
-			throw('not loaded');
+      throw ('not loaded');
     } else if (id == null) {
-			throw('missing id');
-		} else if (iceParameters == null) {
-			throw('missing iceParameters');
+      throw ('missing id');
+    } else if (iceParameters == null) {
+      throw ('missing iceParameters');
     } else if (iceCandidates == null) {
-			throw('missing iceCandidates');
-		} else if (dtlsParameters == null) {
-			throw('missing dtlsParameters');
+      throw ('missing iceCandidates');
+    } else if (dtlsParameters == null) {
+      throw ('missing dtlsParameters');
     }
 
     // Create a new Transport.
@@ -194,14 +204,15 @@ class Device {
     );
 
     // Emit observer event.
-    _observer.safeEmit('newtransport', [transport]);  
+    _observer.safeEmit('newtransport', {
+      'transport': transport,
+    });
 
     return transport;
   }
 
-
   /// Creates a Transport for sending media.
-  /// 
+  ///
   /// @throws {InvalidStateError} if not loaded.
   /// @throws {TypeError} if wrong arguments.
   Transport createSendTransport({
@@ -212,13 +223,13 @@ class Device {
     SctpParameters sctpParameters,
     List<RTCIceServer> iceServers,
     RTCIceTransportPolicy iceTransportPolicy,
-    Map<dynamic, dynamic> additionalSettings,
-    Map<dynamic, dynamic> proprietaryConstraints,
-    Map<dynamic, dynamic> appData,
+    Map<String, dynamic> additionalSettings,
+    Map<String, dynamic> proprietaryConstraints,
+    Map<String, dynamic> appData,
     Function producerCallback,
     Function dataProducerCallback,
   }) {
-    logger.debug('createSendTransport()');
+    _logger.debug('createSendTransport()');
 
     return _createTransport(
       direction: Direction.send,
@@ -237,8 +248,37 @@ class Device {
     );
   }
 
+  Transport createSendTransportFromMap(
+    Map data, {
+    Function producerCallback,
+    Function dataProducerCallback,
+  }) {
+    return createSendTransport(
+      id: data['id'],
+      iceParameters: IceParameters.fromMap(data['iceParameters']),
+      iceCandidates: List<IceCandidate>.from(data['iceCandidates']
+          .map((iceCandidate) => IceCandidate.fromMap(iceCandidate))
+          .toList()),
+      dtlsParameters: DtlsParameters.fromMap(data['dtlsParameters']),
+      sctpParameters: SctpParameters.fromMap(data['sctpParameters']),
+      iceServers: [],
+      proprietaryConstraints: Map<String, dynamic>.from({
+        'optional': [
+          {
+            'googDscp': true,
+          }
+        ]
+      }),
+      additionalSettings: {
+        'encodedInsertableStreams': false,
+      },
+      producerCallback: producerCallback,
+      dataProducerCallback: dataProducerCallback,
+    );
+  }
+
   /// Creates a Transport for receiving media.
-  /// 
+  ///
   /// @throws {InvalidStateError} if not loaded.
   /// @throws {TypeError} if wrong arguments.
   Transport createRecvTransport({
@@ -249,13 +289,13 @@ class Device {
     SctpParameters sctpParameters,
     List<RTCIceServer> iceServers,
     RTCIceTransportPolicy iceTransportPolicy,
-    Map<dynamic, dynamic> additionalSettings,
-    Map<dynamic, dynamic> proprietaryConstraints,
-    Map<dynamic, dynamic> appData,
+    Map<String, dynamic> additionalSettings,
+    Map<String, dynamic> proprietaryConstraints,
+    Map<String, dynamic> appData,
     Function consumerCallback,
     Function dataConsumerCallback,
   }) {
-    logger.debug('createRecvTransport()');
+    _logger.debug('createRecvTransport()');
 
     return _createTransport(
       direction: Direction.recv,
@@ -269,6 +309,36 @@ class Device {
       additionalSettings: additionalSettings,
       proprietaryConstraints: proprietaryConstraints,
       appData: appData,
+      consumerCallback: consumerCallback,
+      dataConsumerCallback: dataConsumerCallback,
+    );
+  }
+
+  Transport createRecvTransportFromMap(
+    Map data, {
+    Function consumerCallback,
+    Function dataConsumerCallback,
+  }) {
+    return createRecvTransport(
+      id: data['id'],
+      iceParameters: IceParameters.fromMap(data['iceParameters']),
+      iceCandidates: List<IceCandidate>.from(data['iceCandidates']
+          .map((iceCandidate) => IceCandidate.fromMap(iceCandidate))
+          .toList()),
+      dtlsParameters: DtlsParameters.fromMap(data['dtlsParameters']),
+      sctpParameters: data['sctpParameters'] != null ? SctpParameters.fromMap(data['sctpParameters']) : null,
+      iceServers: [],
+      appData: data['appData'] ?? {},
+      proprietaryConstraints: Map<String, dynamic>.from({
+        'optional': [
+          {
+            'googDscp': true,
+          }
+        ]
+      }),
+      additionalSettings: {
+        'encodedInsertableStreams': false,
+      },
       consumerCallback: consumerCallback,
       dataConsumerCallback: dataConsumerCallback,
     );

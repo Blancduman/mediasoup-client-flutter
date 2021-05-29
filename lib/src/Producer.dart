@@ -5,26 +5,85 @@ import 'package:mediasoup_client_flutter/src/common/EnhancedEventEmitter.dart';
 
 // https://mediasoup.org/documentation/v3/mediasoup-client/api/#ProducerCodecOptions
 class ProducerCodecOptions {
-  bool opusStereo;
-  bool opusFec;
-  bool opusDtx;
+  int opusStereo;
+  int opusFec;
+  int opusDtx;
   int opusMaxPlaybackRate;
   int opusMaxAverageBitrate;
   int opusPtime;
   int videoGoogleStartBitrate;
   int videoGoogleMaxBitrate;
   int videoGoogleMinBitrate;
+
+  ProducerCodecOptions({
+    this.opusStereo,
+    this.opusFec,
+    this.opusDtx,
+    this.opusMaxPlaybackRate,
+    this.opusMaxAverageBitrate,
+    this.opusPtime,
+    this.videoGoogleStartBitrate,
+    this.videoGoogleMaxBitrate,
+    this.videoGoogleMinBitrate,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      if (opusStereo != null)
+      'opusStereo': opusStereo,
+      if (opusFec != null)
+      'opusFec': opusFec,
+      if (opusDtx != null)
+      'opusDtx': opusDtx,
+      if (opusMaxPlaybackRate != null)
+      'opusMaxPlaybackRate': opusMaxPlaybackRate,
+      if (opusMaxAverageBitrate != null)
+      'opusMaxAverageBitrate': opusMaxAverageBitrate,
+      if (opusPtime != null)
+      'opusPtime': opusPtime,
+      if (videoGoogleStartBitrate != null)
+      'videoGoogleStartBitrate': videoGoogleStartBitrate,
+      if (videoGoogleMaxBitrate != null)
+      'videoGoogleMaxBitrate': videoGoogleMaxBitrate,
+      if (videoGoogleMinBitrate != null)
+      'videoGoogleMinBitrate': videoGoogleMinBitrate,
+    };
+  }
 }
 
 class ProducerOptions {
   MediaStreamTrack track;
-  List<RtpEncodingParameters> encoding;
+  List<RtpEncodingParameters> encodings;
   ProducerCodecOptions codecOptions;
   RtpCodecCapability codec;
   bool stopTracks;
   bool disableTrackOnPause;
   bool zeroRtpOnPause;
   Map<String, dynamic> appData;
+
+  ProducerOptions({
+    this.track,
+    this.encodings,
+    this.codecOptions,
+    this.codec,
+    this.stopTracks,
+    this.disableTrackOnPause,
+    this.zeroRtpOnPause,
+    this.appData,
+  });
+
+  // Map<String, dynamic> toMap() {
+  //   return {
+  //     'track': track,
+  //     'encoding': encodings,
+  //     'codecOptions': codecOptions,
+  //     'codec': codec,
+  //     'stopTracks': stopTracks,
+  //     'disableTrackOnPause': disableTrackOnPause,
+  //     'zeroRtpOnPause': zeroRtpOnPause,
+  //     'appData': appData,
+  //   };
+  // }
 }
 
 Logger _logger = Logger('Producer');
@@ -58,6 +117,10 @@ class Producer extends EnhancedEventEmitter {
   final Map<String, dynamic> _appData;
   // Observer instance.
   EnhancedEventEmitter _observer = EnhancedEventEmitter();
+  // Stream
+  MediaStream _stream;
+  // Source
+  String _source;
 
 	/// @emits transportclose
 	/// @emits trackended
@@ -76,6 +139,8 @@ class Producer extends EnhancedEventEmitter {
     bool disableTrackOnPause,
     bool zeroRtpOnPause,
     Map<String, dynamic> appData,
+    MediaStream stream,
+    String source,
   }) : this._appData = appData, super() {
     _logger.debug('constructor()');
 
@@ -90,8 +155,9 @@ class Producer extends EnhancedEventEmitter {
     _stopTracks = stopTracks;
     _disableTrackOnPause = disableTrackOnPause;
     _zeroRtpOnPause = zeroRtpOnPause;
-
-    ///
+    _stream = stream;
+    _source = source;
+    _closed = false;
   }
 
   /// Producer id.
@@ -123,6 +189,11 @@ class Producer extends EnhancedEventEmitter {
   /// @emits resume
   /// @emits trackended
   EnhancedEventEmitter get observer => _observer;
+
+  /// Stream
+  MediaStream get stream => _stream;
+  /// Source of stream
+  String get source => _source;
 
 
 
@@ -206,7 +277,9 @@ class Producer extends EnhancedEventEmitter {
      }
 
      if (_zeroRtpOnPause) {
-       safeEmitAsFuture('@replacetrack', [_track]).catchError((){});
+       safeEmitAsFuture('@replacetrack', {
+         '_track': _track,
+       }).catchError((){});
      }
 
      // Emit observer event.
@@ -238,7 +311,9 @@ class Producer extends EnhancedEventEmitter {
     }
 
     if (_zeroRtpOnPause || _paused) {
-      await safeEmitAsFuture('@replacetrack', [track]);
+      await safeEmitAsFuture('@replacetrack', {
+        'track': track,
+      });
     }
 
     // Destroy the previous track.
@@ -270,7 +345,9 @@ class Producer extends EnhancedEventEmitter {
     if (spatialLayer == _maxSpatialLayer)
       return;
 
-      await safeEmitAsFuture('@setmaxspatiallayer', [spatialLayer]);
+      await safeEmitAsFuture('@setmaxspatiallayer', {
+        'spatialLayer': spatialLayer,
+      });
 
       _maxSpatialLayer = spatialLayer;
   }
@@ -281,7 +358,9 @@ class Producer extends EnhancedEventEmitter {
     else if (params == null)
       throw 'invalid params';
 
-    await safeEmitAsFuture('@setrtpencodingparameters', [params]);
+    await safeEmitAsFuture('@setrtpencodingparameters', {
+      'params': params,
+    });
   }
 
   void _onTrackEnded() {

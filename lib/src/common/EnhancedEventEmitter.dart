@@ -7,7 +7,7 @@ Logger _logger = Logger('EnhancedEventEmitter');
 
 class EnhancedEventEmitter extends EventEmitter {
   EnhancedEventEmitter() : super();
-  void safeEmit(String event, [List<Object> args]) {
+  void safeEmit(String event, [Map<String, dynamic> args]) {
     try {
       emit(event, args);
     } catch (error) {
@@ -17,9 +17,14 @@ class EnhancedEventEmitter extends EventEmitter {
     }
   }
 
-  Future<dynamic> safeEmitAsFuture(String event, [List<Object> args]) async {
+  Future<dynamic> safeEmitAsFuture(String event, [Map<String, dynamic> args]) async {
+
+    Completer<dynamic> completer = Completer<dynamic>();
+    args['callback'] = completer.complete;
+    args['errback'] = completer.completeError;
     try {
-      return emitAsFuture(event, args);
+      emitAsFuture(event, args);
+      return completer.future;
     } catch (error) {
       _logger.error(
         'safeEmitAsFuture() event listener threw an error [event:$event]:$error',

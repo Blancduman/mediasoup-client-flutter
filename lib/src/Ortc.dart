@@ -159,7 +159,7 @@ class Ortc {
     // if (caps.codecs != null && caps.codecs is! List<RtpCodecCapability>) {
     //   throw ('caps.codecs is not an array');
     // } else
-     if (caps.codecs == null) {
+    if (caps.codecs == null) {
       caps.codecs = <RtpCodecCapability>[];
     }
 
@@ -171,7 +171,7 @@ class Ortc {
     // if (caps.headerExtensions == null &&
     //     caps.headerExtensions is! List<RtpHeaderExtension>) {
     //   throw ('caps.headerExtensions is not an array');
-    // } else 
+    // } else
     if (caps.headerExtensions == null) {
       caps.headerExtensions = <RtpHeaderExtension>[];
     }
@@ -248,7 +248,7 @@ class Ortc {
   /// Validates RtcpParameters. It may modify given data by adding missing
   /// fields with default values.
   /// It throws if invalid.
-  static void validateRtcpParameters(RtcpParapeters rtcp) {
+  static void validateRtcpParameters(RtcpParameters rtcp) {
     if (rtcp == null) {
       throw ('rtcp is not an object');
     }
@@ -309,7 +309,7 @@ class Ortc {
     }
 
     for (String key in codec.parameters.keys) {
-      String value = codec.parameters[key];
+      var value = codec.parameters[key];
       if (value == null) {
         codec.parameters[key] = '';
         value = '';
@@ -371,7 +371,7 @@ class Ortc {
 
     // rtcp is optional. If unset, fill with an empty object.
     if (params.rtcp == null) {
-      params.rtcp = RtcpParapeters();
+      params.rtcp = RtcpParameters();
     }
 
     validateRtcpParameters(params.rtcp);
@@ -731,7 +731,7 @@ class Ortc {
       codecs: [],
       headerExtensions: [],
       encodings: [RtpEncodingParameters(ssrc: RTP_PROBATOR_SSRC)],
-      rtcp: RtcpParapeters(cname: 'probator'),
+      rtcp: RtcpParameters(cname: 'probator'),
     );
 
     rtpParameters.codecs.add(videoRtpParameters.codecs.first);
@@ -759,7 +759,7 @@ class Ortc {
     if (capCodec == null) {
       filteredCodecs.add(codecs.first);
 
-      if (isRtxCodec(codecs[1])) {
+      if (codecs.length > 1 && isRtxCodec(codecs[1])) {
         filteredCodecs.add(codecs[1]);
       }
     } else {
@@ -794,7 +794,7 @@ class Ortc {
       codecs: [],
       headerExtensions: [],
       encodings: [],
-      rtcp: RtcpParapeters(),
+      rtcp: RtcpParameters(),
     );
 
     for (ExtendedRtpCodec extendedCodec in extendedRtpCapabilities.codecs) {
@@ -954,7 +954,7 @@ class Ortc {
       codecs: [],
       headerExtensions: [],
       encodings: [],
-      rtcp: RtcpParapeters(),
+      rtcp: RtcpParameters(),
     );
 
     for (ExtendedRtpCodec extendedCodec in extendedRtpCapabilities.codecs) {

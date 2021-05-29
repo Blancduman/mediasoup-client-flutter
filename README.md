@@ -1,14 +1,16 @@
 # WIP: mediasoup_client_flutter
 
-Be carefull: WORK IN PROGRESS. This project is untested. 
+Be carefull: WORK IN PROGRESS.
 
-## Getting Started
 
-This project is a starting point for a Dart
-[package](https://flutter.dev/developing-packages/),
-a library module containing code that can be shared easily across
-multiple Flutter or Dart projects.
+`` | Android | iOS | macOS | Windows | Linux | Web
+--- | --- | --- | --- | --- | --- | ---
+Plan-B | ✔ | untested | untested | untested | untested | ✗
+Unified-Plan | ✗ | ✗ | ✗ | ✗ | ✗ | ✗
 
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+No datachannels yet;
+
+Tried to make it similar to JS version. But there is different approach.
+Main difference is that you have to pass callback to transport creating methods;
+
+Check example for information;

@@ -16,7 +16,7 @@ class PlanBUtils {
         continue;
       }
 
-      String trackId = line.value.split(' ').first;
+      String trackId = line.value.split(' ')[1];
 
       if (trackId == track.id) {
         int ssrc = line.id;
