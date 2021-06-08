@@ -590,8 +590,20 @@ class Native extends HandlerInterface {
     }
 
     _mapSendLocalIdTrack.remove(localId);
-    await _sendStream.removeTrack(track);
-    await  _pc.addStream(_sendStream);
+    // MediaStream sendStream = _pc.getLocalStreams().firstWhere((stream) {
+    //   List<MediaStreamTrack> tracks = stream.getVideoTracks();
+    //   if (tracks.isNotEmpty) {
+    //     return tracks.first.id == track.id;
+    //   }
+    //   return false;
+    // });
+
+    RTCRtpSender sender = (await _pc.getSenders()).firstWhere((e) => e.senderId == track.id);
+    await _pc.removeTrack(sender);
+    // await _pc.removeStream(sendStream);
+    // await _sendStream.removeTrack(track);
+    //
+    // await  _pc.addStream(_sendStream);
     
     RTCSessionDescription offer = await _pc.createOffer();
 

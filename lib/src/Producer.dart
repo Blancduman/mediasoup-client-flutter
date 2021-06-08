@@ -1,7 +1,7 @@
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mediasoup_client_flutter/src/RtpParameters.dart';
-import 'package:mediasoup_client_flutter/src/common/Logger.dart';
 import 'package:mediasoup_client_flutter/src/common/EnhancedEventEmitter.dart';
+import 'package:mediasoup_client_flutter/src/common/Logger.dart';
 
 // https://mediasoup.org/documentation/v3/mediasoup-client/api/#ProducerCodecOptions
 class ProducerCodecOptions {
@@ -205,7 +205,7 @@ class Producer extends EnhancedEventEmitter {
 
     _closed = true;
 
-    _destoryTrack();
+    _destroyTrack();
 
     emit('@close');
 
@@ -221,7 +221,7 @@ class Producer extends EnhancedEventEmitter {
 
     _closed = true;
 
-    _destoryTrack();
+    _destroyTrack();
 
     safeEmit('transportclose');
 
@@ -317,7 +317,7 @@ class Producer extends EnhancedEventEmitter {
     }
 
     // Destroy the previous track.
-    _destoryTrack();
+    _destroyTrack();
 
     // Set the new track.
     _track = track;
@@ -378,7 +378,7 @@ class Producer extends EnhancedEventEmitter {
     _track.onEnded = _onTrackEnded;
   }
 
-  void _destoryTrack() {
+  void _destroyTrack() {
     if (_track == null) return;
 
     try {
@@ -386,6 +386,7 @@ class Producer extends EnhancedEventEmitter {
 
       if (_stopTracks) {
         _track.stop();
+        _stream.dispose();
       }
     } catch (error) {}
   }
