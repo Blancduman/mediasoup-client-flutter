@@ -1,7 +1,7 @@
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mediasoup_client_flutter/src/RtpParameters.dart';
-import 'package:mediasoup_client_flutter/src/common/Logger.dart';
 import 'package:mediasoup_client_flutter/src/common/EnhancedEventEmitter.dart';
+import 'package:mediasoup_client_flutter/src/common/Logger.dart';
 
 Logger _logger = Logger('Consumer');
 
