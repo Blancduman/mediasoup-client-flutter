@@ -46,17 +46,17 @@ class ProducersBloc extends Bloc<ProducersEvent, ProducersState> {
   Stream<ProducersState> _mapProducerRemoveToState(ProducerRemove event) async* {
     switch (event.source) {
       case 'mic': {
-        state?.mic?.close();
+        state?.mic?.close?.call();
         yield ProducersState.removeMic(state);
         break;
       }
       case 'webcam': {
-        state?.webcam?.close();
+        state?.webcam?.close?.call();
         yield ProducersState.removeWebcam(state);
         break;
       }
       case 'screen': {
-        state?.screen?.close();
+        state?.screen?.close?.call();
         yield ProducersState.removeScreen(state);
         break;
       }
@@ -67,17 +67,17 @@ class ProducersBloc extends Bloc<ProducersEvent, ProducersState> {
   Stream<ProducersState> _mapProducerResumeToState(ProducerResumed event) async* {
     switch (event.source) {
       case 'mic': {
-        state?.mic?.resume();
+        state?.mic?.resume?.call();
         yield ProducersState.copy(state);
         break;
       }
       case 'webcam': {
-        state?.webcam?.resume();
+        state?.webcam?.resume?.call();
         yield ProducersState.copy(state);
         break;
       }
       case 'screen': {
-        state?.screen?.resume();
+        state?.screen?.resume?.call();
         yield ProducersState.copy(state);
         break;
       }
@@ -88,17 +88,17 @@ class ProducersBloc extends Bloc<ProducersEvent, ProducersState> {
   Stream<ProducersState> _mapProducerPausedToState(ProducerPaused event) async* {
     switch (event.source) {
       case 'mic': {
-        state?.mic?.pause();
+        state?.mic?.pause?.call();
         yield ProducersState.copy(state);
         break;
       }
       case 'webcam': {
-        state?.webcam?.pause();
+        state?.webcam?.pause?.call();
         yield ProducersState.copy(state);
         break;
       }
       case 'screen': {
-        state?.screen?.pause();
+        state?.screen?.pause?.call();
         yield ProducersState.copy(state);
         break;
       }

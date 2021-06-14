@@ -49,7 +49,7 @@ class _RenderMeState extends State<RenderMe> {
                 ),
                 child: RTCVideoView(
                   renderer,
-                  mirror: true,
+                  // mirror: true,
                 ),
               ),
               Positioned(

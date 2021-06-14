@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:example/logic/blocs/consumers/consumers_bloc.dart';
 import 'package:example/logic/blocs/me/me_bloc.dart';
+import 'package:example/logic/blocs/media_devices/media_devices_bloc.dart';
 import 'package:example/logic/blocs/peers/peers_bloc.dart';
 import 'package:example/logic/blocs/producers/producers_bloc.dart';
 import 'package:example/logic/blocs/room/room_bloc.dart';
@@ -13,6 +16,7 @@ class RoomClientRepository {
   final PeersBloc peersBloc;
   final MeBloc meBloc;
   final RoomBloc roomBloc;
+  final MediaDevicesBloc mediaDevicesBloc;
 
   final String roomId;
   final String peerId;
@@ -27,6 +31,10 @@ class RoomClientRepository {
   Transport _recvTransport;
   bool _produce = false;
   bool _consume = true;
+  StreamSubscription<MediaDevicesState> _mediaDevicesBlocSubscription;
+  String audioInputDeviceId;
+  String audioOutputDeviceId;
+  String videoInputDeviceId;
 
   RoomClientRepository({
     this.producersBloc,
@@ -38,7 +46,20 @@ class RoomClientRepository {
     this.peerId,
     this.url,
     this.displayName,
-  });
+    this.mediaDevicesBloc,
+  }) {
+    _mediaDevicesBlocSubscription = mediaDevicesBloc.stream.listen((MediaDevicesState state) async {
+      if (state.selectedAudioInput != null && state.selectedAudioInput.deviceId != audioInputDeviceId) {
+        await disableMic();
+        enableMic();
+      }
+
+      if (state.selectedVideoInput != null && state.selectedVideoInput.deviceId != videoInputDeviceId) {
+        await disableWebcam();
+        enableWebcam();
+      }
+    });
+  }
 
   void close() {
     if (_closed) {
@@ -48,6 +69,7 @@ class RoomClientRepository {
     _webSocket.close();
     _sendTransport?.close();
     _recvTransport?.close();
+    _mediaDevicesBlocSubscription?.cancel();
   }
 
   Future<void> disableMic() async {
@@ -124,7 +146,7 @@ class RoomClientRepository {
 
   void _consumerCallback(dynamic consumer, dynamic accept) {
     consumer.on('transportclose', () {
-      consumersBloc.add(ConsumerRemove(consumerId: consumer.id));
+      // consumersBloc.add(ConsumerRemove(consumerId: consumer.id));
     });
 
     ScalabilityMode scalabilityMode = ScalabilityMode.parse(
@@ -136,8 +158,13 @@ class RoomClientRepository {
   }
 
   Future<MediaStream> createAudioStream() async {
+    audioInputDeviceId = mediaDevicesBloc.state.selectedAudioInput.deviceId;
     Map<String, dynamic> mediaConstraints = {
-      'audio': true,
+      'audio': {
+        'optional': [
+          {'sourceId': audioInputDeviceId, },
+        ],
+      },
     };
 
     MediaStream stream =
@@ -147,6 +174,7 @@ class RoomClientRepository {
   }
 
   Future<MediaStream> createVideoStream() async {
+    videoInputDeviceId = mediaDevicesBloc.state.selectedVideoInput.deviceId;
     Map<String, dynamic> mediaConstraints = <String, dynamic>{
       'audio': false,
       'video': {
@@ -156,8 +184,9 @@ class RoomClientRepository {
           'minHeight': '720',
           'minFrameRate': '30',
         },
-        'facingMode': 'user',
-        'optional': [],
+        'optional': [
+          {'sourceId': videoInputDeviceId, },
+        ],
       },
     };
 
