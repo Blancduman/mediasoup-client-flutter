@@ -309,6 +309,7 @@ class RoomClientRepository {
                 'transportId': _sendTransport.id,
                 'kind': data['kind'],
                 'rtpParameters': data['rtpParameters'].toMap(),
+                if (data['appData'] != null)
                 'appData': Map<String, dynamic>.from(data['appData'])
               },
             );
