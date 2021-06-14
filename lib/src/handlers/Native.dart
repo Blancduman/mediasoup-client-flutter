@@ -396,7 +396,7 @@ class Native extends HandlerInterface {
       _logger.warn('send() | codec selection is not available in Native handler');
     }
 
-    await options.stream.addTrack(options.track);
+    // await options.stream.addTrack(options.track);
     await _pc.addStream(options.stream);
 
     RTCSessionDescription offer = await _pc.createOffer({

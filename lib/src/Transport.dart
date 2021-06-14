@@ -30,6 +30,50 @@ extension ProtocolExtension on Protocol {
   String get value => values[this];
 }
 
+class ProduceArguments {
+  final MediaStreamTrack track;
+  final MediaStream stream;
+  final List<RtpEncodingParameters> encodings;
+  final ProducerCodecOptions codecOptions;
+  final RtpCodecCapability codec;
+  final bool stopTracks;
+  final bool disableTrackOnPause;
+  final bool zeroRtpOnPause;
+  final Map<String, dynamic> appData;
+  final String source;
+
+  const ProduceArguments({
+    this.track,
+    this.stream,
+    this.encodings,
+    this.codecOptions,
+    this.codec,
+    this.stopTracks = true,
+    this.disableTrackOnPause = true,
+    this.zeroRtpOnPause = false,
+    this.appData,
+    this.source,
+  });
+}
+
+class ConsumeArguments {
+  final String id;
+  final String producerId;
+  final RTCRtpMediaType kind;
+  final RtpParameters rtpParameters;
+  final Map<dynamic, dynamic> appData;
+  final Function accept;
+
+  const ConsumeArguments({
+    this.id,
+    this.producerId,
+    this.kind,
+    this.rtpParameters,
+    this.appData,
+    this.accept,
+  });
+}
+
 enum IceCandidateType {
   host,
   srflx,
@@ -767,6 +811,110 @@ class Transport extends EnhancedEventEmitter {
     });
   }
 
+  Future<void> _produce(ProduceArguments arguments) async {
+    try {
+      List<RtpEncodingParameters> normalizedEncodings = [];
+
+      if (arguments.encodings != null && arguments.encodings.isEmpty) {
+        normalizedEncodings = null;
+      } else if (arguments.encodings != null &&
+          arguments.encodings.isNotEmpty) {
+        normalizedEncodings =
+            arguments.encodings.map((RtpEncodingParameters encoding) {
+          RtpEncodingParameters normalizedEncoding =
+              RtpEncodingParameters(active: true);
+
+          if (encoding.active == false) {
+            normalizedEncoding.active = false;
+          }
+          if (encoding.dtx != null) {
+            normalizedEncoding.dtx = encoding.dtx;
+          }
+          if (encoding.scalabilityMode != null) {
+            normalizedEncoding.scalabilityMode = encoding.scalabilityMode;
+          }
+          if (encoding.scaleResolutionDownBy != null) {
+            normalizedEncoding.scaleResolutionDownBy =
+                encoding.scaleResolutionDownBy;
+          }
+          if (encoding.maxBitrate != null) {
+            normalizedEncoding.maxBitrate = encoding.maxBitrate;
+          }
+          if (encoding.maxFramerate != null) {
+            normalizedEncoding.maxFramerate = encoding.maxFramerate;
+          }
+          if (encoding.adaptivePtime != null) {
+            normalizedEncoding.adaptivePtime = encoding.adaptivePtime;
+          }
+          if (encoding.priority != null) {
+            normalizedEncoding.priority = encoding.priority;
+          }
+          if (encoding.networkPriority != null) {
+            normalizedEncoding.networkPriority = encoding.networkPriority;
+          }
+
+          return normalizedEncoding;
+        }).toList();
+      }
+
+      HandlerSendResult sendResult = await _handler.send(HandlerSendOptions(
+        track: arguments.track,
+        encodings: normalizedEncodings,
+        codecOptions: arguments.codecOptions,
+        codec: arguments.codec,
+        stream: arguments.stream,
+      ));
+
+      try {
+        // This will fill rtpParameters's missing fields with default values.
+        Ortc.validateRtpParameters(sendResult.rtpParameters);
+
+        String id = await safeEmitAsFuture('produce', {
+          'kind': arguments.track.kind,
+          'rtpParameters': sendResult.rtpParameters,
+          'appData': appData,
+        });
+
+        Producer producer = Producer(
+          id: id,
+          localId: sendResult.localId,
+          rtpSender: sendResult.rtpSender,
+          track: arguments.track,
+          rtpParameters: sendResult.rtpParameters,
+          stopTracks: arguments.stopTracks,
+          disableTrackOnPause: arguments.disableTrackOnPause,
+          zeroRtpOnPause: arguments.zeroRtpOnPause,
+          appData: appData,
+          stream: arguments.stream,
+          source: arguments.source,
+        );
+
+        _producers[producer.id] = producer;
+        _handleProducer(producer);
+
+        // Emit observer event.
+        _observer.safeEmit('newProducer', {
+          'producer': producer,
+        });
+
+        this?.producerCallback(producer);
+      } catch (error) {
+        _handler.stopSending(sendResult.localId);
+
+        throw error;
+      }
+    } catch (error) {
+      // This catch is needed to stop the given track if the command above
+      // failed due to closed Transport.
+      if (arguments.stopTracks) {
+        try {
+          arguments.track.stop();
+        } catch (error2) {}
+      }
+      throw error;
+    }
+  }
+
   /// Create a Producer.
   /// use producerCallback to receive a new Producer.
   void produce({
@@ -796,112 +944,85 @@ class Transport extends EnhancedEventEmitter {
       throw ('no "pruduce" listener set into this transport');
     }
 
-    _flexQueue.addTask(FlexTaskAdd(
-      id: '',
-      message: 'transport.produce()',
-      execFun: () async {
-        try {
-          List<RtpEncodingParameters> normalizedEncodings = [];
+    _flexQueue.addTask(
+      FlexTaskAdd(
+        id: '',
+        message: 'transport.produce()',
+        execFun: _produce,
+        argument: ProduceArguments(
+          track: track,
+          stream: stream,
+          encodings: encodings,
+          codecOptions: codecOptions,
+          codec: codec,
+          stopTracks: stopTracks,
+          disableTrackOnPause: disableTrackOnPause,
+          zeroRtpOnPause: zeroRtpOnPause,
+          appData: appData,
+          source: source,
+        ),
+      ),
+    );
+  }
 
-          if (encodings != null && encodings.isEmpty) {
-            normalizedEncodings = null;
-          } else if (encodings != null && encodings.isNotEmpty) {
-            normalizedEncodings =
-                encodings.map((RtpEncodingParameters encoding) {
-              RtpEncodingParameters normalizedEncoding =
-                  RtpEncodingParameters(active: true);
+  Future<void> _consume(ConsumeArguments arguments) async {
+    // Unsure the device can consume it.
+    bool canConsume =
+        Ortc.canReceive(arguments.rtpParameters, _extendedRtpCapabilities);
 
-              if (encoding.active == false) {
-                normalizedEncoding.active = false;
-              }
-              if (encoding.dtx != null) {
-                normalizedEncoding.dtx = encoding.dtx;
-              }
-              if (encoding.scalabilityMode != null) {
-                normalizedEncoding.scalabilityMode = encoding.scalabilityMode;
-              }
-              if (encoding.scaleResolutionDownBy != null) {
-                normalizedEncoding.scaleResolutionDownBy =
-                    encoding.scaleResolutionDownBy;
-              }
-              if (encoding.maxBitrate != null) {
-                normalizedEncoding.maxBitrate = encoding.maxBitrate;
-              }
-              if (encoding.maxFramerate != null) {
-                normalizedEncoding.maxFramerate = encoding.maxFramerate;
-              }
-              if (encoding.adaptivePtime != null) {
-                normalizedEncoding.adaptivePtime = encoding.adaptivePtime;
-              }
-              if (encoding.priority != null) {
-                normalizedEncoding.priority = encoding.priority;
-              }
-              if (encoding.networkPriority != null) {
-                normalizedEncoding.networkPriority = encoding.networkPriority;
-              }
+    if (!canConsume) {
+      throw ('cannot consume this Producer');
+    }
 
-              return normalizedEncoding;
-            }).toList();
-          }
-
-          HandlerSendResult sendResult = await _handler.send(HandlerSendOptions(
-            track: track,
-            encodings: normalizedEncodings,
-            codecOptions: codecOptions,
-            codec: codec,
-            stream: stream,
-          ));
-
-          try {
-            // This will fill rtpParameters's missing fields with default values.
-            Ortc.validateRtpParameters(sendResult.rtpParameters);
-
-            String id = await safeEmitAsFuture('produce', {
-              'kind': track.kind,
-              'rtpParameters': sendResult.rtpParameters,
-              'appData': appData,
-            });
-
-            Producer producer = Producer(
-              id: id,
-              localId: sendResult.localId,
-              rtpSender: sendResult.rtpSender,
-              track: track,
-              rtpParameters: sendResult.rtpParameters,
-              stopTracks: stopTracks,
-              disableTrackOnPause: disableTrackOnPause,
-              zeroRtpOnPause: zeroRtpOnPause,
-              appData: appData,
-              stream: stream,
-              source: source,
-            );
-
-            _producers[producer.id] = producer;
-            _handleProducer(producer);
-
-            // Emit observer event.
-            _observer.safeEmit('newProducer', {
-              'producer': producer,
-            });
-
-            this?.producerCallback(producer);
-          } catch (error) {
-            _handler.stopSending(sendResult.localId);
-
-            throw error;
-          }
-        } catch (error) {
-          // This catch is needed to stop the given track if the command above
-          // failed due to closed Transport.
-          if (stopTracks) {
-            try {
-              track.stop();
-            } catch (error2) {}
-          }
-          throw error;
-        }
-      },
+    HandlerReceiveResult receiveResult =
+        await _handler.receive(HandlerReceiveOptions(
+      trackId: id,
+      kind: arguments.kind,
+      rtpParameters: arguments.rtpParameters,
     ));
+
+    Consumer consumer = Consumer(
+      id: id,
+      localId: receiveResult.localId,
+      producerId: arguments.producerId,
+      rtpParameters: arguments.rtpParameters,
+      appData: Map<String, dynamic>.from(arguments.appData),
+      track: receiveResult.track,
+      rtpReceiver: receiveResult.rtpReceiver,
+      stream: receiveResult.stream,
+    );
+
+    _consumers[consumer.id] = consumer;
+
+    _handleConsumer(consumer);
+
+    // If this is the first video Consumer and the Consumer for RTP probation
+    // has not yet been created, create it now.
+    if (!_probatorConsumerCreated &&
+        arguments.kind == RTCRtpMediaType.RTCRtpMediaTypeVideo) {
+      try {
+        RtpParameters probatorRtpParameters =
+            Ortc.generateProbatorRtpparameters(consumer.rtpParameters);
+
+        await _handler.receive(HandlerReceiveOptions(
+          trackId: 'probator',
+          kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
+          rtpParameters: probatorRtpParameters,
+        ));
+
+        _logger.debug('consume() | Consumer for RTP probation created');
+
+        _probatorConsumerCreated = true;
+      } catch (error) {
+        _logger.error(
+            'consume() | failed to create Consumer for RTP probation:${error.toString()}');
+      }
+    }
+
+    // Emit observer event.
+    _observer.safeEmit('newconsumer', {'consumer': consumer});
+
+    consumerCallback(consumer, arguments.accept);
   }
 
   /// Create a Consumer to consume a remote Producer.
@@ -933,68 +1054,21 @@ class Transport extends EnhancedEventEmitter {
       throw ('no "connect" listener set into this transport');
     }
 
-    _flexQueue.addTask(FlexTaskAdd(
+    _flexQueue.addTask(
+      FlexTaskAdd(
         id: id,
         message: 'transport.consume()',
-        execFun: () async {
-          // Unsure the device can consume it.
-          bool canConsume =
-              Ortc.canReceive(rtpParameters, _extendedRtpCapabilities);
-
-          if (!canConsume) {
-            throw ('cannot consume this Producer');
-          }
-
-          HandlerReceiveResult receiveResult =
-              await _handler.receive(HandlerReceiveOptions(
-            trackId: id,
-            kind: kind,
-            rtpParameters: rtpParameters,
-          ));
-
-          Consumer consumer = Consumer(
-            id: id,
-            localId: receiveResult.localId,
-            producerId: producerId,
-            rtpParameters: rtpParameters,
-            appData: Map<String, dynamic>.from(appData),
-            track: receiveResult.track,
-            rtpReceiver: receiveResult.rtpReceiver,
-            stream: receiveResult.stream,
-          );
-
-          _consumers[consumer.id] = consumer;
-
-          _handleConsumer(consumer);
-
-          // If this is the first video Consumer and the Consumer for RTP probation
-          // has not yet been created, create it now.
-          if (!_probatorConsumerCreated &&
-              kind == RTCRtpMediaType.RTCRtpMediaTypeVideo) {
-            try {
-              RtpParameters probatorRtpParameters =
-                  Ortc.generateProbatorRtpparameters(consumer.rtpParameters);
-
-              await _handler.receive(HandlerReceiveOptions(
-                trackId: 'probator',
-                kind: RTCRtpMediaType.RTCRtpMediaTypeVideo,
-                rtpParameters: probatorRtpParameters,
-              ));
-
-              _logger.debug('consume() | Consumer for RTP probation created');
-
-              _probatorConsumerCreated = true;
-            } catch (error) {
-              _logger.error(
-                  'consume() | failed to create Consumer for RTP probation:${error.toString()}');
-            }
-          }
-
-          // Emit observer event.
-          _observer.safeEmit('newconsumer', {'consumer': consumer});
-
-          consumerCallback(consumer, accept);
-        }));
+        execFun: _consume,
+        argument: ConsumeArguments(
+          id: id,
+          producerId: producerId,
+          kind: kind,
+          rtpParameters: rtpParameters,
+          appData: appData,
+          accept: accept,
+        ),
+      ),
+    );
   }
 
   /// Create a DataProducer
