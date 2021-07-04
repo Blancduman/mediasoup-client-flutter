@@ -10,12 +10,7 @@ part 'peers_state.dart';
 
 class PeersBloc extends Bloc<dynamic, PeersState> {
   final ConsumersBloc consumersBloc;
-  StreamSubscription<ConsumersEvent> subscription;
-  PeersBloc({this.consumersBloc}) : super(PeersState()) {
-    subscription = consumersBloc.subs.stream.listen((event) {
-      add(event);
-    });
-  }
+  PeersBloc({this.consumersBloc}) : super(PeersState());
 
   @override
   Stream<PeersState> mapEventToState(
@@ -25,9 +20,9 @@ class PeersBloc extends Bloc<dynamic, PeersState> {
       yield* _mapPeerAddToState(event);
     } else if (event is PeerRemove) {
       yield* _mapPeerRemoveToState(event);
-    } else if (event is ConsumerAdd) {
+    } else if (event is PeerAddConsumer) {
       yield* _mapConsumerAddToState(event);
-    } else if (event is ConsumerRemove) {
+    } else if (event is PeerRemoveConsumer) {
       yield* _mapConsumerRemoveToState(event);
     }
   }
@@ -47,35 +42,31 @@ class PeersBloc extends Bloc<dynamic, PeersState> {
     yield PeersState(peers: newPeers);
   }
 
-  Stream<PeersState> _mapConsumerAddToState(ConsumerAdd event) async* {
+  Stream<PeersState> _mapConsumerAddToState(PeerAddConsumer event) async* {
     final Map<String, Peer> newPeers = Map<String, Peer>.of(state.peers);
-    newPeers[event.consumer.appData['peerId']] =
-        Peer.copy(newPeers[event.consumer.appData['peerId']]);
-    newPeers[event.consumer.appData['peerId']].consumers.add(event.consumer.id);
+    newPeers[event.peerId] =
+        Peer.copy(newPeers[event.peerId]);
+    newPeers[event.peerId].consumers.add(event.consumerId);
 
     yield PeersState(peers: newPeers);
   }
 
-  Stream<PeersState> _mapConsumerRemoveToState(ConsumerRemove event) async* {
-    final Map<String, Peer> newPeers = state.peers.map((key, value) {
-      if (value.consumers.contains(event.consumerId)) {
-        return MapEntry(key, Peer.copy(
-          value,
-          consumers: value
-              .consumers
-              .where((c) => c != event.consumerId)
-              .toList(),
-        ));
-      }
-      return MapEntry(key, value);
-    });
+  Stream<PeersState> _mapConsumerRemoveToState(PeerRemoveConsumer event) async* {
+    final Map<String, Peer> newPeers = Map<String, Peer>.of(state.peers);
+    newPeers[event.peerId]?.consumers?.removeWhere?.call((c) => c == event.consumerId);
+    // final Map<String, Peer> newPeers = state.peers.map((key, value) {
+    //   if (value.consumers.contains(event.consumerId)) {
+    //     return MapEntry(key, Peer.copy(
+    //       value,
+    //       consumers: value
+    //           .consumers
+    //           .where((c) => c != event.consumerId)
+    //           .toList(),
+    //     ));
+    //   }
+    //   return MapEntry(key, value);
+    // });
 
     yield PeersState(peers: newPeers);
-  }
-
-  @override
-  Future<void> close() async {
-    await subscription?.cancel();
-    return super.close();
   }
 }

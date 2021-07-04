@@ -90,9 +90,10 @@ class FlexQueue {
         } catch (error) {
           print(error);
           task.errorCallbackFun?.call(error);
+        } finally {
+          isBusy = false;
+          _runTask();
         }
-        isBusy = false;
-        _runTask();
       }
     }
   }

@@ -144,7 +144,7 @@ class RoomClientRepository {
     producersBloc.add(ProducerAdd(producer: producer));
   }
 
-  void _consumerCallback(dynamic consumer, dynamic accept) {
+  void _consumerCallback(Consumer consumer, [dynamic accept]) {
     consumer.on('transportclose', () {
       // consumersBloc.add(ConsumerRemove(consumerId: consumer.id));
     });
@@ -155,6 +155,7 @@ class RoomClientRepository {
     accept({});
 
     consumersBloc.add(ConsumerAdd(consumer: consumer));
+    peersBloc.add(PeerAddConsumer(peerId: consumer.peerId, consumerId: consumer.id));
   }
 
   Future<MediaStream> createAudioStream() async {
@@ -443,6 +444,7 @@ class RoomClientRepository {
                 rtpParameters:
                 RtpParameters.fromMap(request['data']['rtpParameters']),
                 appData: Map<dynamic, dynamic>.from(request['data']['appData']),
+                peerId: request['data']['peerId'],
                 accept: accept,
               );
             } catch (error) {
@@ -466,6 +468,7 @@ class RoomClientRepository {
         case 'consumerClosed': {
           String consumerId = notification['data']['consumerId'];
           consumersBloc.add(ConsumerRemove(consumerId: consumerId));
+          peersBloc.add(PeerRemoveConsumer(peerId: notification['data']['peerId'], consumerId: consumerId));
 
           break;
         }

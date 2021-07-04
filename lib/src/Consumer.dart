@@ -37,6 +37,8 @@ class Consumer extends EnhancedEventEmitter {
   MediaStream _stream;
   /// Observer instance.
   EnhancedEventEmitter _observer = EnhancedEventEmitter();
+  /// Peer id.
+  String _peerId;
 
   /// @emits transportclose
   /// @emits trackended
@@ -51,6 +53,7 @@ class Consumer extends EnhancedEventEmitter {
     RtpParameters rtpParameters,
     Map<String, dynamic> appData,
     MediaStream stream,
+    String peerId,
   }) : this._appData = appData, super() {
     _logger.debug('constructor()');
 
@@ -62,6 +65,7 @@ class Consumer extends EnhancedEventEmitter {
     _rtpParameters = rtpParameters;
     _paused = !track.enabled;
     _stream = stream;
+    _peerId = peerId;
     _handleTrack();
   }
 
@@ -94,6 +98,8 @@ class Consumer extends EnhancedEventEmitter {
   /// @emits resume
   /// @emits trackended
   EnhancedEventEmitter get observer => _observer;
+  /// Peer id.
+  String get peerId => _peerId;
 
   /// Closes the Consumer.
   Future<void> close() async {

@@ -63,6 +63,7 @@ class ConsumeArguments {
   final RtpParameters rtpParameters;
   final Map<dynamic, dynamic> appData;
   final Function accept;
+  final String peerId;
 
   const ConsumeArguments({
     this.id,
@@ -71,6 +72,7 @@ class ConsumeArguments {
     this.rtpParameters,
     this.appData,
     this.accept,
+    this.peerId,
   });
 }
 
@@ -976,13 +978,13 @@ class Transport extends EnhancedEventEmitter {
 
     HandlerReceiveResult receiveResult =
         await _handler.receive(HandlerReceiveOptions(
-      trackId: id,
+      trackId: arguments.id,
       kind: arguments.kind,
       rtpParameters: arguments.rtpParameters,
     ));
 
     Consumer consumer = Consumer(
-      id: id,
+      id: arguments.id,
       localId: receiveResult.localId,
       producerId: arguments.producerId,
       rtpParameters: arguments.rtpParameters,
@@ -990,6 +992,7 @@ class Transport extends EnhancedEventEmitter {
       track: receiveResult.track,
       rtpReceiver: receiveResult.rtpReceiver,
       stream: receiveResult.stream,
+      peerId: arguments.peerId,
     );
 
     _consumers[consumer.id] = consumer;
@@ -1030,6 +1033,7 @@ class Transport extends EnhancedEventEmitter {
   void consume({
     String id,
     String producerId,
+    String peerId,
     RTCRtpMediaType kind,
     RtpParameters rtpParameters,
     Map<dynamic, dynamic> appData,
@@ -1066,6 +1070,7 @@ class Transport extends EnhancedEventEmitter {
           rtpParameters: rtpParameters,
           appData: appData,
           accept: accept,
+          peerId: peerId,
         ),
       ),
     );
