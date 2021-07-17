@@ -988,7 +988,7 @@ class Transport extends EnhancedEventEmitter {
       localId: receiveResult.localId,
       producerId: arguments.producerId,
       rtpParameters: arguments.rtpParameters,
-      appData: Map<String, dynamic>.from(arguments.appData),
+      appData: Map<String, dynamic>.from(arguments.appData ?? {}),
       track: receiveResult.track,
       rtpReceiver: receiveResult.rtpReceiver,
       stream: receiveResult.stream,
