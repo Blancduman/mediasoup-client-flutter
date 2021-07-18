@@ -260,7 +260,7 @@ class Device {
           .map((iceCandidate) => IceCandidate.fromMap(iceCandidate))
           .toList()),
       dtlsParameters: DtlsParameters.fromMap(data['dtlsParameters']),
-      sctpParameters: SctpParameters.fromMap(data['sctpParameters']),
+      sctpParameters: SctpParameters.fromMap(data['sctpParameters'] ?? {}),
       iceServers: [],
       proprietaryConstraints: Map<String, dynamic>.from({
         'optional': [
