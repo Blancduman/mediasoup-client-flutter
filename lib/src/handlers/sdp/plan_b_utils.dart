@@ -1,6 +1,6 @@
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:mediasoup_client_flutter/src/RtpParameters.dart';
-import 'package:mediasoup_client_flutter/src/handlers/sdp/MediaSection.dart';
+import 'package:mediasoup_client_flutter/src/rtp_parameters.dart';
+import 'package:mediasoup_client_flutter/src/handlers/sdp/media_section.dart';
 
 class PlanBUtils {
   static List<RtpEncodingParameters> getRtpEncodings(
@@ -8,7 +8,7 @@ class PlanBUtils {
     MediaStreamTrack track,
   ) {
     // First media SSRC (or the only one).
-    int firstSsrc;
+    int? firstSsrc;
     Set<int> ssrcs = Set<int>();
 
     for (Ssrc line in offerMediaObject.ssrcs ?? []) {
@@ -19,7 +19,7 @@ class PlanBUtils {
       String trackId = line.value.split(' ')[1];
 
       if (trackId == track.id) {
-        int ssrc = line.id;
+        int ssrc = line.id!;
 
         ssrcs.add(ssrc);
 
@@ -43,12 +43,12 @@ class PlanBUtils {
 
       List<String> tokens = line.ssrcs.split(' ');
 
-      int ssrc;
+      int? ssrc;
       if (tokens.length > 0) {
         ssrc = int.parse(tokens.first);
       }
 
-      int rtxSsrc;
+      int? rtxSsrc;
       if (tokens.length > 1) {
         rtxSsrc = int.parse(tokens.last);
       }
@@ -98,12 +98,12 @@ class PlanBUtils {
       throw ('numStreams must be greater than 1');
     }
 
-    int firstSsrc;
-    int firstRtxSsrc;
-    String streamId;
+    int? firstSsrc;
+    int? firstRtxSsrc;
+    String? streamId;
 
     // Get the SSRC.
-    Ssrc ssrcMsidLine = (offerMediaObject.ssrcs ?? []).firstWhere(
+    Ssrc? ssrcMsidLine = (offerMediaObject.ssrcs ?? []).firstWhere(
       (Ssrc line) {
         if (line.attribute != 'msid') {
           return false;
@@ -120,7 +120,7 @@ class PlanBUtils {
           return false;
         }
       },
-      orElse: () => null,
+      orElse: () => null as Ssrc,
     );
 
     if (ssrcMsidLine == null) {
@@ -144,9 +144,9 @@ class PlanBUtils {
       }
     });
 
-    Ssrc ssrcCnameLine = offerMediaObject.ssrcs.firstWhere(
+    Ssrc? ssrcCnameLine = offerMediaObject.ssrcs!.firstWhere(
       (Ssrc line) => line.attribute == 'cname' && line.id == firstSsrc,
-      orElse: () => null,
+      orElse: () => null as Ssrc,
     );
 
     if (ssrcCnameLine == null) {
@@ -158,17 +158,17 @@ class PlanBUtils {
     List<int> rtxSsrcs = <int>[];
 
     for (int i = 0; i < numStreams; ++i) {
-      ssrcs.add(firstSsrc + i);
+      ssrcs.add(firstSsrc! + i);
 
       if (firstRtxSsrc != null) {
-        rtxSsrcs.add(firstRtxSsrc + i);
+        rtxSsrcs.add(firstRtxSsrc! + i);
       }
     }
 
     offerMediaObject.ssrcGroups = offerMediaObject.ssrcGroups ?? [];
     offerMediaObject.ssrcs = offerMediaObject.ssrcs ?? [];
 
-    offerMediaObject.ssrcGroups.add(SsrcGroup(
+    offerMediaObject.ssrcGroups!.add(SsrcGroup(
       semantics: 'SIM',
       ssrcs: ssrcs.join(' '),
     ));
@@ -176,13 +176,13 @@ class PlanBUtils {
     for (int i = 0; i < ssrcs.length; ++i) {
       int ssrc = ssrcs[i];
 
-      offerMediaObject.ssrcs.add(Ssrc(
+      offerMediaObject.ssrcs!.add(Ssrc(
         id: ssrc,
         attribute: 'cname',
         value: cname,
       ));
 
-      offerMediaObject.ssrcs.add(Ssrc(
+      offerMediaObject.ssrcs!.add(Ssrc(
         id: ssrc,
         attribute: 'msid',
         value: '$streamId ${track.id}',
@@ -193,19 +193,19 @@ class PlanBUtils {
       int ssrc = ssrcs[i];
       int rtxSsrc = rtxSsrcs[i];
 
-      offerMediaObject.ssrcs.add(Ssrc(
+      offerMediaObject.ssrcs!.add(Ssrc(
         id: rtxSsrc,
         attribute: 'cname',
         value: cname,
       ));
 
-      offerMediaObject.ssrcs.add(Ssrc(
+      offerMediaObject.ssrcs!.add(Ssrc(
         id: rtxSsrc,
         attribute: 'msid',
         value: '$streamId ${track.id}',
       ));
 
-      offerMediaObject.ssrcGroups.add(SsrcGroup(
+      offerMediaObject.ssrcGroups!.add(SsrcGroup(
         semantics: 'FID',
         ssrcs: '$ssrc $rtxSsrc',
       ));

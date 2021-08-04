@@ -1,19 +1,21 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:mediasoup_client_flutter/src/RtpParameters.dart';
-import 'package:mediasoup_client_flutter/src/common/EnhancedEventEmitter.dart';
-import 'package:mediasoup_client_flutter/src/common/Logger.dart';
+
+import 'package:mediasoup_client_flutter/src/rtp_parameters.dart';
+import 'package:mediasoup_client_flutter/src/common/enhanced_event_emitter.dart';
+import 'package:mediasoup_client_flutter/src/common/logger.dart';
 
 // https://mediasoup.org/documentation/v3/mediasoup-client/api/#ProducerCodecOptions
 class ProducerCodecOptions {
-  int opusStereo;
-  int opusFec;
-  int opusDtx;
-  int opusMaxPlaybackRate;
-  int opusMaxAverageBitrate;
-  int opusPtime;
-  int videoGoogleStartBitrate;
-  int videoGoogleMaxBitrate;
-  int videoGoogleMinBitrate;
+  final int? opusStereo;
+  final int? opusFec;
+  final int? opusDtx;
+  final int? opusMaxPlaybackRate;
+  final int? opusMaxAverageBitrate;
+  final int? opusPtime;
+  final int? videoGoogleStartBitrate;
+  final int? videoGoogleMaxBitrate;
+  final int? videoGoogleMinBitrate;
 
   ProducerCodecOptions({
     this.opusStereo,
@@ -29,47 +31,43 @@ class ProducerCodecOptions {
 
   Map<String, dynamic> toMap() {
     return {
-      if (opusStereo != null)
-      'opusStereo': opusStereo,
-      if (opusFec != null)
-      'opusFec': opusFec,
-      if (opusDtx != null)
-      'opusDtx': opusDtx,
+      if (opusStereo != null) 'opusStereo': opusStereo,
+      if (opusFec != null) 'opusFec': opusFec,
+      if (opusDtx != null) 'opusDtx': opusDtx,
       if (opusMaxPlaybackRate != null)
-      'opusMaxPlaybackRate': opusMaxPlaybackRate,
+        'opusMaxPlaybackRate': opusMaxPlaybackRate,
       if (opusMaxAverageBitrate != null)
-      'opusMaxAverageBitrate': opusMaxAverageBitrate,
-      if (opusPtime != null)
-      'opusPtime': opusPtime,
+        'opusMaxAverageBitrate': opusMaxAverageBitrate,
+      if (opusPtime != null) 'opusPtime': opusPtime,
       if (videoGoogleStartBitrate != null)
-      'videoGoogleStartBitrate': videoGoogleStartBitrate,
+        'videoGoogleStartBitrate': videoGoogleStartBitrate,
       if (videoGoogleMaxBitrate != null)
-      'videoGoogleMaxBitrate': videoGoogleMaxBitrate,
+        'videoGoogleMaxBitrate': videoGoogleMaxBitrate,
       if (videoGoogleMinBitrate != null)
-      'videoGoogleMinBitrate': videoGoogleMinBitrate,
+        'videoGoogleMinBitrate': videoGoogleMinBitrate,
     };
   }
 }
 
 class ProducerOptions {
-  MediaStreamTrack track;
-  List<RtpEncodingParameters> encodings;
-  ProducerCodecOptions codecOptions;
-  RtpCodecCapability codec;
-  bool stopTracks;
-  bool disableTrackOnPause;
-  bool zeroRtpOnPause;
-  Map<String, dynamic> appData;
+  final MediaStreamTrack track;
+  final List<RtpEncodingParameters> encodings;
+  final ProducerCodecOptions codecOptions;
+  final RtpCodecCapability codec;
+  final bool stopTracks;
+  final bool disableTrackOnPause;
+  final bool zeroRtpOnPause;
+  final Map<String, dynamic> appData;
 
   ProducerOptions({
-    this.track,
-    this.encodings,
-    this.codecOptions,
-    this.codec,
-    this.stopTracks,
-    this.disableTrackOnPause,
-    this.zeroRtpOnPause,
-    this.appData,
+    required this.track,
+    required this.encodings,
+    required this.codecOptions,
+    required this.codec,
+    required this.stopTracks,
+    required this.disableTrackOnPause,
+    required this.zeroRtpOnPause,
+    required this.appData,
   });
 
   // Map<String, dynamic> toMap() {
@@ -90,65 +88,66 @@ Logger _logger = Logger('Producer');
 
 class Producer extends EnhancedEventEmitter {
   // Id.
-  String _id;
+  late String _id;
   // Local id.
-  String _localId;
+  late String _localId;
   // Closed flag.
-  bool _closed;
+  late bool _closed;
   // Associated RTCRtpSender.
-  RTCRtpSender _rtpSender;
+  RTCRtpSender? _rtpSender;
   // Local track.
-  MediaStreamTrack _track;
+  late MediaStreamTrack _track;
   // Producer kind.
-  String _kind;
+  late String _kind;
   // RTP parameters.
-  RtpParameters _rtpParameters;
+  late RtpParameters _rtpParameters;
   // Paused flag.
-  bool _paused;
+  late bool _paused;
   // Video max spatial layer.
-  int _maxSpatialLayer;
+  late int? _maxSpatialLayer;
   // Whether the Producer should call stop() in given tracks.
-  bool _stopTracks;
+  late bool _stopTracks;
   // Whether the Producer should set track.enabled = false when paused.
-  bool _disableTrackOnPause;
+  late bool _disableTrackOnPause;
   // Whether we should replace the RTCRtpSender.track with null when paused.
-  bool _zeroRtpOnPause;
+  late bool _zeroRtpOnPause;
   // App custom data.
   final Map<String, dynamic> _appData;
   // Observer instance.
-  EnhancedEventEmitter _observer = EnhancedEventEmitter();
+  final EnhancedEventEmitter _observer = EnhancedEventEmitter();
   // Stream
-  MediaStream _stream;
+  late MediaStream _stream;
   // Source
-  String _source;
+  late String _source;
 
-	/// @emits transportclose
-	/// @emits trackended
-	/// @emits @replacetrack - (track: MediaStreamTrack | null)
-	/// @emits @setmaxspatiallayer - (spatialLayer: string)
-	/// @emits @setrtpencodingparameters - (params: any)
-	/// @emits @getstats
-	/// @emits @close
+  /// @emits transportclose
+  /// @emits trackended
+  /// @emits @replacetrack - (track: MediaStreamTrack | null)
+  /// @emits @setmaxspatiallayer - (spatialLayer: string)
+  /// @emits @setrtpencodingparameters - (params: any)
+  /// @emits @getstats
+  /// @emits @close
   Producer({
-    String id,
-    String localId,
-    RTCRtpSender rtpSender,
-    MediaStreamTrack track,
-    RtpParameters rtpParameters,
-    bool stopTracks,
-    bool disableTrackOnPause,
-    bool zeroRtpOnPause,
-    Map<String, dynamic> appData,
-    MediaStream stream,
-    String source,
-  }) : this._appData = appData, super() {
+    required String id,
+    required String localId,
+    RTCRtpSender? rtpSender,
+    required MediaStreamTrack track,
+    required RtpParameters rtpParameters,
+    required bool stopTracks,
+    required bool disableTrackOnPause,
+    required bool zeroRtpOnPause,
+    required Map<String, dynamic> appData,
+    required MediaStream stream,
+    required String source,
+  })  : this._appData = appData,
+        super() {
     _logger.debug('constructor()');
 
     _id = id;
     _localId = localId;
     _rtpSender = rtpSender;
     _track = track;
-    _kind = track.kind;
+    _kind = track.kind!;
     _rtpParameters = rtpParameters;
     _paused = disableTrackOnPause ? !track.enabled : false;
     _maxSpatialLayer = null;
@@ -162,28 +161,38 @@ class Producer extends EnhancedEventEmitter {
 
   /// Producer id.
   String get id => _id;
+
   /// Local id.
   String get localId => _localId;
+
   /// Whether the Producer is closed.
   bool get closed => _closed;
+
   /// Media kind.
   String get kind => _kind;
+
   /// Associated RTCRtpSender.
-  RTCRtpSender get rtpSender => _rtpSender;
+  RTCRtpSender? get rtpSender => _rtpSender;
+
   /// The associated track.
   MediaStreamTrack get track => _track;
+
   /// RTP parameters.
   RtpParameters get rtpParameters => _rtpParameters;
+
   /// Whether the Producer is paused.
   bool get paused => _paused;
+
   /// Max spatial layer.
-  /// 
-  /// @type {int}
-  int get maxSpatiallayer => _maxSpatialLayer;
+  ///
+  /// @type {int?}
+  int? get maxSpatiallayer => _maxSpatialLayer;
+
   /// App custom data.
   Map<String, dynamic> get appData => _appData;
+
   /// Observer.
-  /// 
+  ///
   /// @emits close
   /// @emits pause
   /// @emits resume
@@ -192,10 +201,9 @@ class Producer extends EnhancedEventEmitter {
 
   /// Stream
   MediaStream get stream => _stream;
+
   /// Source of stream
   String get source => _source;
-
-
 
   /// Closes the Producer.
   void close() {
@@ -248,12 +256,12 @@ class Producer extends EnhancedEventEmitter {
 
     _paused = true;
 
-    if (_track != null && _disableTrackOnPause) {
+    if (_disableTrackOnPause) {
       _track.enabled = false;
     }
 
     if (_zeroRtpOnPause) {
-      safeEmitAsFuture('@replacetrack').catchError(() {});
+      safeEmitAsFuture('@replacetrack').catchError((error, stackTrace) {});
     }
 
     // Emit observer event.
@@ -261,30 +269,30 @@ class Producer extends EnhancedEventEmitter {
   }
 
   /// Resumes sending media.
-   void resume() {
-     _logger.debug('resume()');
+  void resume() {
+    _logger.debug('resume()');
 
-     if (_closed) {
-       _logger.error('resume() | Producer closed');
+    if (_closed) {
+      _logger.error('resume() | Producer closed');
 
-       return;
-     }
+      return;
+    }
 
-     _paused = false;
+    _paused = false;
 
-     if (_track != null && _disableTrackOnPause) {
-       _track.enabled = true;
-     }
+    if (_disableTrackOnPause) {
+      _track.enabled = true;
+    }
 
-     if (_zeroRtpOnPause) {
-       safeEmitAsFuture('@replacetrack', {
-         '_track': _track,
-       }).catchError((){});
-     }
+    if (_zeroRtpOnPause) {
+      safeEmitAsFuture('@replacetrack', {
+        '_track': _track,
+      }).catchError((error, stackTrace) {});
+    }
 
-     // Emit observer event.
-     _observer.safeEmit('resume');
-   }
+    // Emit observer event.
+    _observer.safeEmit('resume');
+  }
 
   /// Replaces the current track with a new one.
   Future<void> replaceTrack(MediaStreamTrack track) async {
@@ -292,17 +300,17 @@ class Producer extends EnhancedEventEmitter {
 
     if (_closed) {
       // Thus must be done here. Otherwise there is no chance to stop the given track.
-      if (track != null && _stopTracks) {
+      if (_stopTracks) {
         try {
           track.stop();
         } catch (error) {}
       }
       throw 'closed';
-    } 
+    }
 
     // flutter_webrtc, как получить состояние? : )
     // else if (track != null && track.readyState == 'ended'))
-    
+
     // Do nothing if this is the same track as the current handled one.
     if (track == _track) {
       _logger.debug('replaceTrack() | same track, ignored.');
@@ -321,10 +329,10 @@ class Producer extends EnhancedEventEmitter {
 
     // Set the new track.
     _track = track;
-    
+
     // If this Producer was paused/resumed and the state of the new
     // track does not match, fix it.
-    if (_track != null && _disableTrackOnPause) {
+    if (_disableTrackOnPause) {
       if (!_paused) {
         _track.enabled = true;
       } else if (_paused) {
@@ -338,25 +346,24 @@ class Producer extends EnhancedEventEmitter {
 
   /// Sets the video max spatial layer to be sent.
   Future<void> setMaxSpatialLayer(int spatialLayer) async {
-    if (_closed) throw 'closed';
-    else if (_kind != 'video')
-      throw 'not a video Producer';
-    
-    if (spatialLayer == _maxSpatialLayer)
-      return;
+    if (_closed)
+      throw 'closed';
+    else if (_kind != 'video') throw 'not a video Producer';
 
-      await safeEmitAsFuture('@setmaxspatiallayer', {
-        'spatialLayer': spatialLayer,
-      });
+    if (spatialLayer == _maxSpatialLayer) return;
 
-      _maxSpatialLayer = spatialLayer;
+    await safeEmitAsFuture('@setmaxspatiallayer', {
+      'spatialLayer': spatialLayer,
+    });
+
+    _maxSpatialLayer = spatialLayer;
   }
 
   /// Sets the DSCP value.
   Future<void> setRtpEncodingParameters(RtpEncodingParameters params) async {
-    if (_closed) throw 'closed';
-    else if (params == null)
-      throw 'invalid params';
+    if (_closed)
+      throw 'closed';
+    else if (params == null) throw 'invalid params';
 
     await safeEmitAsFuture('@setrtpencodingparameters', {
       'params': params,
@@ -373,14 +380,10 @@ class Producer extends EnhancedEventEmitter {
   }
 
   void _handleTrack() {
-    if (_track == null) return;
-
     _track.onEnded = _onTrackEnded;
   }
 
   void _destroyTrack() {
-    if (_track == null) return;
-
     try {
       _track.onEnded = null;
 
@@ -389,5 +392,46 @@ class Producer extends EnhancedEventEmitter {
         _stream.dispose();
       }
     } catch (error) {}
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is Producer &&
+        other._id == _id &&
+        other._localId == _localId &&
+        other._closed == _closed &&
+        other._rtpSender == _rtpSender &&
+        other._track == _track &&
+        other._kind == _kind &&
+        other._rtpParameters == _rtpParameters &&
+        other._paused == _paused &&
+        other._maxSpatialLayer == _maxSpatialLayer &&
+        other._stopTracks == _stopTracks &&
+        other._disableTrackOnPause == _disableTrackOnPause &&
+        other._zeroRtpOnPause == _zeroRtpOnPause &&
+        mapEquals(other._appData, _appData) &&
+        other._stream == _stream &&
+        other._source == _source;
+  }
+
+  @override
+  int get hashCode {
+    return _id.hashCode ^
+        _localId.hashCode ^
+        _closed.hashCode ^
+        _rtpSender.hashCode ^
+        _track.hashCode ^
+        _kind.hashCode ^
+        _rtpParameters.hashCode ^
+        _paused.hashCode ^
+        _maxSpatialLayer.hashCode ^
+        _stopTracks.hashCode ^
+        _disableTrackOnPause.hashCode ^
+        _zeroRtpOnPause.hashCode ^
+        _appData.hashCode ^
+        _stream.hashCode ^
+        _source.hashCode;
   }
 }

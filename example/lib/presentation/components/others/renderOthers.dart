@@ -26,7 +26,7 @@ class RenderOther extends StatelessWidget {
       children: peers.values.map((Peer peer) {
         if (peer.consumers.isNotEmpty) {
           String id = peer.consumers
-              .firstWhere((cId) => consumers[cId].kind == 'video', orElse: () => null,);
+              .firstWhere((cId) => consumers[cId]?.kind == 'video', orElse: () => null,);
           if (id != null) {
             return Other(
               key: Key(peer.id + id),

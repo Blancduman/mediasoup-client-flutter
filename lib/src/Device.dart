@@ -1,11 +1,11 @@
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:mediasoup_client_flutter/src/Ortc.dart';
-import 'package:mediasoup_client_flutter/src/RtpParameters.dart';
-import 'package:mediasoup_client_flutter/src/SctpParameters.dart';
-import 'package:mediasoup_client_flutter/src/Transport.dart';
-import 'package:mediasoup_client_flutter/src/common/EnhancedEventEmitter.dart';
-import 'package:mediasoup_client_flutter/src/common/Logger.dart';
-import 'package:mediasoup_client_flutter/src/handlers/HandlerInterface.dart';
+import 'package:mediasoup_client_flutter/src/ortc.dart';
+import 'package:mediasoup_client_flutter/src/rtp_parameters.dart';
+import 'package:mediasoup_client_flutter/src/sctp_parameters.dart';
+import 'package:mediasoup_client_flutter/src/transport.dart';
+import 'package:mediasoup_client_flutter/src/common/enhanced_event_emitter.dart';
+import 'package:mediasoup_client_flutter/src/common/logger.dart';
+import 'package:mediasoup_client_flutter/src/handlers/handler_interface.dart';
 
 Logger _logger = Logger('Device');
 
@@ -13,14 +13,14 @@ class Device {
   // Loaded flag.
   bool _loaded = false;
   // Extended RTP capabilities.
-  ExtendedRtpCapabilities _extendedRtpCapabilities;
+  late ExtendedRtpCapabilities _extendedRtpCapabilities;
   // Local RTP capabilities for receiving media.
-  RtpCapabilities _recvRtpCapabilities;
+  late RtpCapabilities _recvRtpCapabilities;
   // Whether we can produce audio/video based on computed extended RTP
   // capabilities.
-  CanProduceByKind _canProduceByKind;
+  late CanProduceByKind _canProduceByKind;
   // Local SCTP capabilities.
-  SctpCapabilities _sctpCapabilities;
+  late SctpCapabilities _sctpCapabilities;
   // Observer instance.
   EnhancedEventEmitter _observer = EnhancedEventEmitter();
 
@@ -53,7 +53,7 @@ class Device {
 
   /// Initialize the Device.
   Future<void> load({
-    RtpCapabilities routerRtpCapabilities,
+    required RtpCapabilities routerRtpCapabilities,
   }) async {
     _logger.debug(
         'load() [routerRtpCapabilities:${routerRtpCapabilities.toString()}]');
@@ -61,7 +61,7 @@ class Device {
     routerRtpCapabilities = RtpCapabilities.copy(routerRtpCapabilities);
 
     // Temporal handler to get its capabilities.
-    HandlerInterface handler;
+    HandlerInterface? handler;
 
     try {
       if (_loaded) {
@@ -154,33 +154,34 @@ class Device {
   }
 
   Transport _createTransport({
-    Direction direction,
-    String id,
-    IceParameters iceParameters,
-    List<IceCandidate> iceCandidates,
-    DtlsParameters dtlsParameters,
-    SctpParameters sctpParameters,
-    List<RTCIceServer> iceServers,
-    RTCIceTransportPolicy iceTransportPolicy,
-    Map<String, dynamic> additionalSettings,
-    Map<String, dynamic> proprietaryConstraints,
-    Map<String, dynamic> appData,
-    Function producerCallback,
-    Function consumerCallback,
-    Function dataProducerCallback,
-    Function dataConsumerCallback,
+    required Direction direction,
+    required String id,
+    required IceParameters iceParameters,
+    required List<IceCandidate> iceCandidates,
+    required DtlsParameters dtlsParameters,
+    SctpParameters? sctpParameters,
+    List<RTCIceServer> iceServers = const <RTCIceServer>[],
+    RTCIceTransportPolicy? iceTransportPolicy,
+    Map<String, dynamic> additionalSettings = const <String, dynamic>{},
+    Map<String, dynamic> proprietaryConstraints = const <String, dynamic>{},
+    Map<String, dynamic> appData = const <String, dynamic>{},
+    Function? producerCallback,
+    Function? consumerCallback,
+    Function? dataProducerCallback,
+    Function? dataConsumerCallback,
   }) {
     if (!_loaded) {
       throw ('not loaded');
-    } else if (id == null) {
-      throw ('missing id');
-    } else if (iceParameters == null) {
-      throw ('missing iceParameters');
-    } else if (iceCandidates == null) {
-      throw ('missing iceCandidates');
-    } else if (dtlsParameters == null) {
-      throw ('missing dtlsParameters');
     }
+    // else if (id == null) {
+    //   throw ('missing id');
+    // } else if (iceParameters == null) {
+    //   throw ('missing iceParameters');
+    // } else if (iceCandidates == null) {
+    //   throw ('missing iceCandidates');
+    // } else if (dtlsParameters == null) {
+    //   throw ('missing dtlsParameters');
+    // }
 
     // Create a new Transport.
     Transport transport = Transport(
@@ -216,18 +217,18 @@ class Device {
   /// @throws {InvalidStateError} if not loaded.
   /// @throws {TypeError} if wrong arguments.
   Transport createSendTransport({
-    String id,
-    IceParameters iceParameters,
-    List<IceCandidate> iceCandidates,
-    DtlsParameters dtlsParameters,
-    SctpParameters sctpParameters,
-    List<RTCIceServer> iceServers,
-    RTCIceTransportPolicy iceTransportPolicy,
-    Map<String, dynamic> additionalSettings,
-    Map<String, dynamic> proprietaryConstraints,
-    Map<String, dynamic> appData,
-    Function producerCallback,
-    Function dataProducerCallback,
+    required String id,
+    required IceParameters iceParameters,
+    required List<IceCandidate> iceCandidates,
+    required DtlsParameters dtlsParameters,
+    SctpParameters? sctpParameters,
+    List<RTCIceServer> iceServers = const <RTCIceServer>[],
+    RTCIceTransportPolicy? iceTransportPolicy,
+    Map<String, dynamic> additionalSettings = const <String, dynamic>{},
+    Map<String, dynamic> proprietaryConstraints = const <String, dynamic>{},
+    Map<String, dynamic> appData = const <String, dynamic>{},
+    Function? producerCallback,
+    Function? dataProducerCallback,
   }) {
     _logger.debug('createSendTransport()');
 
@@ -250,8 +251,8 @@ class Device {
 
   Transport createSendTransportFromMap(
     Map data, {
-    Function producerCallback,
-    Function dataProducerCallback,
+    Function? producerCallback,
+    Function? dataProducerCallback,
   }) {
     return createSendTransport(
       id: data['id'],
@@ -260,7 +261,7 @@ class Device {
           .map((iceCandidate) => IceCandidate.fromMap(iceCandidate))
           .toList()),
       dtlsParameters: DtlsParameters.fromMap(data['dtlsParameters']),
-      sctpParameters: SctpParameters.fromMap(data['sctpParameters'] ?? {}),
+      sctpParameters: data['sctpParameters'] != null ? SctpParameters.fromMap(data['sctpParameters']) : null,
       iceServers: [],
       proprietaryConstraints: Map<String, dynamic>.from({
         'optional': [
@@ -282,18 +283,18 @@ class Device {
   /// @throws {InvalidStateError} if not loaded.
   /// @throws {TypeError} if wrong arguments.
   Transport createRecvTransport({
-    String id,
-    IceParameters iceParameters,
-    List<IceCandidate> iceCandidates,
-    DtlsParameters dtlsParameters,
-    SctpParameters sctpParameters,
-    List<RTCIceServer> iceServers,
-    RTCIceTransportPolicy iceTransportPolicy,
-    Map<String, dynamic> additionalSettings,
-    Map<String, dynamic> proprietaryConstraints,
-    Map<String, dynamic> appData,
-    Function consumerCallback,
-    Function dataConsumerCallback,
+    required String id,
+    required IceParameters iceParameters,
+    required List<IceCandidate> iceCandidates,
+    required DtlsParameters dtlsParameters,
+    SctpParameters? sctpParameters,
+    List<RTCIceServer> iceServers = const <RTCIceServer>[],
+    RTCIceTransportPolicy? iceTransportPolicy,
+    Map<String, dynamic> additionalSettings = const <String, dynamic>{},
+    Map<String, dynamic> proprietaryConstraints = const <String, dynamic>{},
+    Map<String, dynamic> appData = const <String, dynamic>{},
+    Function? consumerCallback,
+    Function? dataConsumerCallback,
   }) {
     _logger.debug('createRecvTransport()');
 
@@ -316,8 +317,8 @@ class Device {
 
   Transport createRecvTransportFromMap(
     Map data, {
-    Function consumerCallback,
-    Function dataConsumerCallback,
+    Function? consumerCallback,
+    Function? dataConsumerCallback,
   }) {
     return createRecvTransport(
       id: data['id'],

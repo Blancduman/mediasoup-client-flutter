@@ -1,41 +1,41 @@
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:mediasoup_client_flutter/src/Consumer.dart';
-import 'package:mediasoup_client_flutter/src/DataConsumer.dart';
-import 'package:mediasoup_client_flutter/src/DataProducer.dart';
-import 'package:mediasoup_client_flutter/src/FlexQueue/FlexQueue.dart';
-import 'package:mediasoup_client_flutter/src/Ortc.dart';
-import 'package:mediasoup_client_flutter/src/Producer.dart';
-import 'package:mediasoup_client_flutter/src/RtpParameters.dart';
-import 'package:mediasoup_client_flutter/src/SctpParameters.dart';
-import 'package:mediasoup_client_flutter/src/common/EnhancedEventEmitter.dart';
-import 'package:mediasoup_client_flutter/src/common/Logger.dart';
+import 'package:mediasoup_client_flutter/src/consumer.dart';
+import 'package:mediasoup_client_flutter/src/data_consumer.dart';
+import 'package:mediasoup_client_flutter/src/data_producer.dart';
+import 'package:mediasoup_client_flutter/src/FlexQueue/flex_queue.dart';
+import 'package:mediasoup_client_flutter/src/ortc.dart';
+import 'package:mediasoup_client_flutter/src/producer.dart';
+import 'package:mediasoup_client_flutter/src/rtp_parameters.dart';
+import 'package:mediasoup_client_flutter/src/sctp_parameters.dart';
+import 'package:mediasoup_client_flutter/src/common/enhanced_event_emitter.dart';
+import 'package:mediasoup_client_flutter/src/common/logger.dart';
 import 'package:mediasoup_client_flutter/src/common/index.dart';
-import 'package:mediasoup_client_flutter/src/handlers/HandlerInterface.dart';
+import 'package:mediasoup_client_flutter/src/handlers/handler_interface.dart';
 
 enum Protocol { upd, tcp }
 
 extension ProtocolExtension on Protocol {
   static const Map<String, Protocol> types = {
     'tcp': Protocol.tcp,
-    'upd': Protocol.upd,
+    'udp': Protocol.upd,
   };
 
   static const Map<Protocol, String> values = {
     Protocol.tcp: 'tcp',
-    Protocol.upd: 'upd',
+    Protocol.upd: 'udp',
   };
 
-  static Protocol fromString(String type) => types[type];
+  static Protocol fromString(String type) => types[type]!;
 
-  String get value => values[this];
+  String get value => values[this]!;
 }
 
 class ProduceArguments {
   final MediaStreamTrack track;
   final MediaStream stream;
   final List<RtpEncodingParameters> encodings;
-  final ProducerCodecOptions codecOptions;
-  final RtpCodecCapability codec;
+  final ProducerCodecOptions? codecOptions;
+  final RtpCodecCapability? codec;
   final bool stopTracks;
   final bool disableTrackOnPause;
   final bool zeroRtpOnPause;
@@ -43,16 +43,16 @@ class ProduceArguments {
   final String source;
 
   const ProduceArguments({
-    this.track,
-    this.stream,
-    this.encodings,
+    required this.track,
+    required this.stream,
+    required this.encodings,
     this.codecOptions,
     this.codec,
     this.stopTracks = true,
     this.disableTrackOnPause = true,
     this.zeroRtpOnPause = false,
-    this.appData,
-    this.source,
+    this.appData = const <String, dynamic>{},
+    required this.source,
   });
 }
 
@@ -61,18 +61,18 @@ class ConsumeArguments {
   final String producerId;
   final RTCRtpMediaType kind;
   final RtpParameters rtpParameters;
-  final Map<dynamic, dynamic> appData;
-  final Function accept;
+  final Map<String, dynamic> appData;
+  final Function? accept;
   final String peerId;
 
   const ConsumeArguments({
-    this.id,
-    this.producerId,
-    this.kind,
-    this.rtpParameters,
-    this.appData,
+    required this.id,
+    required this.producerId,
+    required this.kind,
+    required this.rtpParameters,
+    required this.appData,
     this.accept,
-    this.peerId,
+    required this.peerId,
   });
 }
 
@@ -98,9 +98,9 @@ extension IceCandidateTypeExtension on IceCandidateType {
     IceCandidateType.srflx: 'srflx',
   };
 
-  static IceCandidateType fromString(String type) => types[type];
+  static IceCandidateType fromString(String type) => types[type]!;
 
-  String get value => values[this];
+  String get value => values[this]!;
 }
 
 class IceParameters {
@@ -114,16 +114,15 @@ class IceParameters {
   bool iceLite;
 
   IceParameters({
-    this.usernameFragment,
-    this.password,
-    this.iceLite,
+    required this.usernameFragment,
+    required this.password,
+    required this.iceLite,
   });
 
-  IceParameters.fromMap(Map data) {
-    usernameFragment = data['usernameFragment'];
-    password = data['password'];
-    iceLite = data['iceLite'];
-  }
+  IceParameters.fromMap(Map data)
+      : usernameFragment = data['usernameFragment'],
+        password = data['password'],
+        iceLite = data['iceLite'];
 }
 
 enum TcpType {
@@ -145,9 +144,9 @@ extension TcpTypeExtension on TcpType {
     TcpType.so: 'so',
   };
 
-  static TcpType fromString(String type) => types[type];
+  static TcpType fromString(String type) => types[type]!;
 
-  String get value => values[this];
+  String get value => values[this]!;
 }
 
 class IceCandidate {
@@ -166,7 +165,7 @@ class IceCandidate {
   String ip;
 
   /// The protocol of the candidate.
-  Protocol protocol;
+  Protocol? protocol;
 
   /// The port for the candidate.
   int port;
@@ -175,7 +174,7 @@ class IceCandidate {
   IceCandidateType type;
 
   /// The type of TCP candidate.
-  TcpType tcpType;
+  TcpType? tcpType;
 
   String transport;
 
@@ -192,88 +191,58 @@ class IceCandidate {
   IceCandidate({
     this.component = 1,
     this.foundation,
-    this.priority,
-    this.ip,
+    required this.priority,
+    required this.ip,
     this.protocol,
-    this.port,
-    this.type,
+    required this.port,
+    required this.type,
     this.tcpType,
-    this.transport,
-    this.raddr,
-    this.rport,
+    required this.transport,
+    required this.raddr,
+    required this.rport,
     this.generation,
     this.networkId,
     this.networkCost,
   });
 
-  IceCandidate.fromMap(Map data) {
-    component = data['component'] ?? 1;
-    foundation = data['foundation'];
-    // foundation = data['foundation'] is int ? data['foundation'] : data['foundation'].substring(0,3);
-    ip = data['ip'];
-    port = data['port'];
-    priority = data['priority'];
-    if (data['protocol'] != null) {
-      protocol = ProtocolExtension.fromString(data['protocol']);
-    }
-    if (data['type'] != null) {
-      type = IceCandidateTypeExtension.fromString(data['type']);
-    }
-    if (data['tcpType'] != null) {
-      tcpType = TcpTypeExtension.fromString(data['tcpType']);
-    }
-    transport = data['transport'] ?? 'udp';
-    raddr = data['raddr'];
-    rport = data['rport'];
-    generation = data['generation'];
-    networkId = data['network-id'];
-    networkCost = data['network-cost'];
-  }
+  IceCandidate.fromMap(Map data)
+      : component = data['component'] ?? 1,
+        foundation = data['foundation'],
+        // foundation = data['foundation'] is int ? data['foundation'] : data['foundation'].substring(0,3);
+        ip = data['ip'],
+        port = data['port'],
+        priority = data['priority'],
+        type = IceCandidateTypeExtension.fromString(data['type']),
+        protocol = data['protocol'] != null
+            ? ProtocolExtension.fromString(data['protocol'])
+            : null,
+        tcpType = data['tcpType'] != null
+            ? TcpTypeExtension.fromString(data['tcpType'])
+            : null,
+        transport = data['transport'] ?? 'udp',
+        raddr = data['raddr'],
+        rport = data['rport'],
+        generation = data['generation'],
+        networkId = data['network-id'],
+        networkCost = data['network-cost'];
 
   Map<String, dynamic> toMap() {
     Map<String, dynamic> result = {};
-    if (component != null) {
-      result['component'] = component;
-    }
+    result['component'] = component;
     if (foundation != null) {
       result['foundation'] = foundation;
     }
-    if (priority != null) {
-      result['priority'] = priority;
-    }
-    if (ip != null) {
-      result['ip'] = ip;
-    }
+    result['priority'] = priority;
+    result['ip'] = ip;
     if (protocol != null) {
-      result['protocol'] = protocol.value;
+      result['protocol'] = protocol?.value;
     }
-    if (port != null) {
-      result['port'] = port;
-    }
-    if (type != null) {
-      result['type'] = type.value;
-    }
+    result['port'] = port;
+    result['type'] = type.value;
     if (tcpType != null) {
-      result['tcptype'] = tcpType.value;
+      result['tcptype'] = tcpType?.value;
     }
-    if (transport != null) {
-      result['transport'] = transport;
-    }
-    // if (raddr != null) {
-    //   result['raddr'] = raddr;
-    // }
-    // if (rport != null) {
-    //   result['rport'] = rport;
-    // }
-    // if (generation != null) {
-    //   result['generation'] = generation;
-    // }
-    // if (networkId != null) {
-    //   result['network-id'] = networkId;
-    // }
-    // if (networkCost != null) {
-    //   result['network-cost'] = networkCost;
-    // }
+    result['transport'] = transport;
 
     return result;
   }
@@ -317,21 +286,41 @@ extension DtlsRoleExtension on DtlsRole {
     DtlsRole.server: 'server',
   };
 
-  static DtlsRole fromString(String type) => types[type];
+  static DtlsRole fromString(String type) => types[type]!;
 
-  String get value => values[this];
+  String get value => values[this]!;
+}
+
+class SendDataChannelArguments {
+  bool? ordered;
+  final int? maxPacketLifeTime;
+  final int? maxRetransmits;
+  final Priority? priority;
+  final String? label;
+  final String? protocol;
+
+  SendDataChannelArguments({
+    this.ordered,
+    this.maxPacketLifeTime,
+    this.maxRetransmits,
+    this.priority,
+    this.label,
+    this.protocol,
+  });
 }
 
 class DtlsFingerprint {
-  String algorithm;
-  String value;
+  final String algorithm;
+  final String value;
 
-  DtlsFingerprint({this.algorithm, this.value});
+  DtlsFingerprint({
+    required this.algorithm,
+    required this.value,
+  });
 
-  DtlsFingerprint.fromMap(Map data) {
-    algorithm = data['algorithm'];
-    value = data['value'];
-  }
+  DtlsFingerprint.fromMap(Map data)
+      : algorithm = data['algorithm'],
+        value = data['value'];
 
   Map<String, String> toMap() {
     return {
@@ -343,16 +332,18 @@ class DtlsFingerprint {
 
 class DtlsParameters {
   DtlsRole role;
-  List<DtlsFingerprint> fingerprints;
+  final List<DtlsFingerprint> fingerprints;
 
-  DtlsParameters({this.role, this.fingerprints});
+  DtlsParameters({
+    required this.role,
+    this.fingerprints = const [],
+  });
 
-  DtlsParameters.fromMap(Map data) {
-    role = DtlsRoleExtension.fromString(data['role']);
-    fingerprints = List<DtlsFingerprint>.from(data['fingerprints']
-        .map((fingerP) => DtlsFingerprint.fromMap(fingerP))
-        .toList());
-  }
+  DtlsParameters.fromMap(Map data)
+      : role = DtlsRoleExtension.fromString(data['role']),
+        fingerprints = List<DtlsFingerprint>.from((data['fingerprints'] ?? [])
+            .map((fingerP) => DtlsFingerprint.fromMap(fingerP))
+            .toList());
 
   Map<String, dynamic> toMap() {
     return {
@@ -377,8 +368,11 @@ class PlainRtpParameters {
     _ipVersion = ip;
   }
 
-  PlainRtpParameters({this.ip, this.port, int ipVersion})
-      : this._ipVersion = ipVersion,
+  PlainRtpParameters({
+    required this.ip,
+    required this.port,
+    required int ipVersion,
+  })  : this._ipVersion = ipVersion,
         assert(ipVersion != 4 || ipVersion != 6, 'Only 4 or 6');
 }
 
@@ -400,9 +394,9 @@ extension DirectionExtension on Direction {
     Direction.send: 'send',
   };
 
-  static Direction fromString(String type) => types[type];
+  static Direction fromString(String type) => types[type]!;
 
-  String get value => values[this];
+  String get value => values[this]!;
 }
 
 class CanProduceByKind {
@@ -412,7 +406,11 @@ class CanProduceByKind {
   // TODO: what is that?
   Map<String, bool> tmp;
 
-  CanProduceByKind({this.audio, this.video, this.tmp});
+  CanProduceByKind({
+    required this.audio,
+    required this.video,
+    this.tmp = const <String, bool>{},
+  });
 
   bool canIt(RTCRtpMediaType kind) {
     if (kind == RTCRtpMediaType.RTCRtpMediaTypeAudio) {
@@ -425,13 +423,13 @@ class CanProduceByKind {
 
 class Transport extends EnhancedEventEmitter {
   // Id.
-  String _id;
+  late String _id;
 
   // Closed flag.
   bool _closed = false;
 
   // Direction
-  Direction _direction;
+  late Direction _direction;
 
   // Extended RTP capabilities.
   // TODO: make class ExtendedRtpCapabilities;
@@ -439,19 +437,19 @@ class Transport extends EnhancedEventEmitter {
 
   // Whether we can produce audio/video based on computed extended RTP
   // capabilities.
-  CanProduceByKind _canProduceByKind;
+  late CanProduceByKind _canProduceByKind;
 
   // SCTP max message size if enabled, null otherwise.
-  int _maxSctpMessageSize;
+  int? _maxSctpMessageSize;
 
   // RTC handler instance.
-  HandlerInterface _handler;
+  late HandlerInterface _handler;
 
   // Transport connection state.
   String _connectionState = 'new';
 
   // App custom data.
-  Map<String, dynamic> _appData;
+  late Map<String, dynamic> _appData;
 
   // Map of Producers indexed by id.
   Map<String, Producer> _producers = <String, Producer>{};
@@ -474,29 +472,29 @@ class Transport extends EnhancedEventEmitter {
   // Observer instance.
   EnhancedEventEmitter _observer = EnhancedEventEmitter();
 
-  Function producerCallback;
-  Function consumerCallback;
-  Function dataProducerCallback;
-  Function dataConsumerCallback;
+  Function? producerCallback;
+  Function? consumerCallback;
+  Function? dataProducerCallback;
+  Function? dataConsumerCallback;
 
   /// @emits connect - (transportLocalParameters: any, callback: Function, errback: Function)
   /// @emits connectionstatechange - (connectionState: ConnectionState)
   /// @emits produce - (producerLocalParameters: any, callback: Function, errback: Function)
   /// @emits producedata - (dataProducerLocalParameters: any, callback: Function, errback: Function)
   Transport({
-    Direction direction,
-    String id,
-    IceParameters iceParameters,
-    List<IceCandidate> iceCandidates,
-    DtlsParameters dtlsParameters,
-    SctpParameters sctpParameters,
-    List<RTCIceServer> iceServers,
-    RTCIceTransportPolicy iceTransportPolicy,
-    Map<String, dynamic> additionalSettings,
-    Map<String, dynamic> proprietaryConstraints,
-    Map<String, dynamic> appData,
-    ExtendedRtpCapabilities extendedRtpCapabilities,
-    CanProduceByKind canProduceByKind,
+    required Direction direction,
+    required String id,
+    required IceParameters iceParameters,
+    required List<IceCandidate> iceCandidates,
+    required DtlsParameters dtlsParameters,
+    SctpParameters? sctpParameters,
+    List<RTCIceServer> iceServers = const <RTCIceServer>[],
+    RTCIceTransportPolicy? iceTransportPolicy,
+    Map<String, dynamic> additionalSettings = const <String, dynamic>{},
+    Map<String, dynamic> proprietaryConstraints = const <String, dynamic>{},
+    Map<String, dynamic> appData = const <String, dynamic>{},
+    ExtendedRtpCapabilities? extendedRtpCapabilities,
+    required CanProduceByKind canProduceByKind,
     this.producerCallback,
     this.consumerCallback,
     this.dataProducerCallback,
@@ -604,7 +602,7 @@ class Transport extends EnhancedEventEmitter {
   String get connectionState => _connectionState;
 
   /// App custom data.
-  Map<dynamic, dynamic> get appData => _appData;
+  Map<String, dynamic> get appData => _appData;
 
   /// Invalid setter.
   set appData(Map<dynamic, dynamic> newAppData) {
@@ -818,7 +816,7 @@ class Transport extends EnhancedEventEmitter {
       List<RtpEncodingParameters> normalizedEncodings = [];
 
       if (arguments.encodings != null && arguments.encodings.isEmpty) {
-        normalizedEncodings = null;
+        normalizedEncodings = [];
       } else if (arguments.encodings != null &&
           arguments.encodings.isNotEmpty) {
         normalizedEncodings =
@@ -899,7 +897,7 @@ class Transport extends EnhancedEventEmitter {
           'producer': producer,
         });
 
-        this?.producerCallback(producer);
+        producerCallback?.call(producer);
       } catch (error) {
         _handler.stopSending(sendResult.localId);
 
@@ -920,25 +918,24 @@ class Transport extends EnhancedEventEmitter {
   /// Create a Producer.
   /// use producerCallback to receive a new Producer.
   void produce({
-    MediaStreamTrack track,
-    MediaStream stream,
-    List<RtpEncodingParameters> encodings,
-    ProducerCodecOptions codecOptions,
-    RtpCodecCapability codec,
+    required MediaStreamTrack track,
+    required MediaStream stream,
+    List<RtpEncodingParameters> encodings = const <RtpEncodingParameters>[],
+    ProducerCodecOptions? codecOptions,
+    RtpCodecCapability? codec,
     bool stopTracks = true,
     bool disableTrackOnPause = true,
     bool zeroRtpOnPause = false,
-    Map<String, dynamic> appData,
-    String source,
+    Map<String, dynamic> appData = const <String, dynamic>{},
+    required String source,
   }) {
     _logger.debug('produce() [track:${track.toString()}');
 
-    if (track == null) {
-      throw ('missing track');
-    } else if (_direction != Direction.send) {
+    if (_direction != Direction.send) {
       throw ('not a sending Transport');
-    } else if (!_canProduceByKind
-        .canIt(RTCRtpMediaTypeExtension.fromString(track.kind))) {
+    } else if (track.kind == null ||
+        !_canProduceByKind
+            .canIt(RTCRtpMediaTypeExtension.fromString(track.kind!))) {
       throw ('cannot produce ${track.kind}');
     } else if (listeners('connect').isEmpty && _connectionState == 'new') {
       throw ('no "connect" listener set into this transport');
@@ -1025,19 +1022,19 @@ class Transport extends EnhancedEventEmitter {
     // Emit observer event.
     _observer.safeEmit('newconsumer', {'consumer': consumer});
 
-    consumerCallback(consumer, arguments.accept);
+    consumerCallback?.call(consumer, arguments.accept);
   }
 
   /// Create a Consumer to consume a remote Producer.
   /// use consumerCallback to receive a new Consumer.
   void consume({
-    String id,
-    String producerId,
-    String peerId,
-    RTCRtpMediaType kind,
-    RtpParameters rtpParameters,
-    Map<dynamic, dynamic> appData,
-    Function accept,
+    required String id,
+    required String producerId,
+    required String peerId,
+    required RTCRtpMediaType kind,
+    required RtpParameters rtpParameters,
+    Map<String, dynamic> appData = const <String, dynamic>{},
+    Function? accept,
   }) {
     _logger.debug('consume()');
 
@@ -1047,10 +1044,6 @@ class Transport extends EnhancedEventEmitter {
       throw ('closed');
     } else if (_direction != Direction.recv) {
       throw ('not a receiving Transport');
-    } else if (id == null) {
-      throw ('missing id');
-    } else if (producerId == null) {
-      throw ('missing producerId');
     } else if (kind != RTCRtpMediaType.RTCRtpMediaTypeAudio &&
         kind != RTCRtpMediaType.RTCRtpMediaTypeVideo) {
       throw ('invalid kind ${RTCRtpMediaTypeExtension.value(kind)}');
@@ -1080,12 +1073,12 @@ class Transport extends EnhancedEventEmitter {
   /// use dataProducerCallback to receive a new ProducerData.
   void produceData({
     bool ordered = true,
-    int maxPacketLife,
-    int maxRetransmits,
+    required int maxPacketLife,
+    required int maxRetransmits,
     Priority priority = Priority.Low,
     String label = '',
     String protocol = '',
-    Map<dynamic, dynamic> appData,
+    Map<String, dynamic> appData = const <String, dynamic>{},
   }) {
     _logger.debug('produceData()');
 
@@ -1093,15 +1086,13 @@ class Transport extends EnhancedEventEmitter {
       throw ('not a sending Transport');
     } else if (_maxSctpMessageSize == null) {
       throw ('SCTP not enabled by remote Transport');
-    } else if (priority == null) {
-      throw ('wrong priority');
-    } else if (listeners('connect').isEmpty && _connectionState == 'new') {
+    } if (listeners('connect').isEmpty && _connectionState == 'new') {
       throw ('no "connect" listener set into this transport');
     } else if (listeners('producedata').isEmpty) {
       throw ('no "producedata" listener set into this transport');
     }
 
-    if (maxPacketLife != null || maxRetransmits != null) {
+    if (maxPacketLife != 0 || maxRetransmits != 0) {
       ordered = false;
     }
 
@@ -1110,14 +1101,16 @@ class Transport extends EnhancedEventEmitter {
         id: '',
         execFun: () async {
           HandlerSendDataChannelResult sendDataResult =
-              await _handler.sendDataChannel(SctpStreamParameters(
-            ordered: ordered,
-            maxPacketLifeTime: maxPacketLife,
-            maxRetransmits: maxRetransmits,
-            priority: priority,
-            label: label,
-            protocol: protocol,
-          ));
+              await _handler.sendDataChannel(
+            SendDataChannelArguments(
+              ordered: ordered,
+              maxPacketLifeTime: maxPacketLife,
+              maxRetransmits: maxRetransmits,
+              priority: priority,
+              label: label,
+              protocol: protocol,
+            ),
+          );
 
           // This will fill sctpStreamParameters's missing fields with default values.
           Ortc.validateSctpStreamParameters(
@@ -1145,19 +1138,19 @@ class Transport extends EnhancedEventEmitter {
             'dataProducer': dataProducer,
           });
 
-          dataProducerCallback(dataProducer);
+          dataProducerCallback?.call(dataProducer);
         }));
   }
 
   // Create a DataConsumer
   // use dataConsuemrCallback to receive a new DataConsumer.
   void consumeData({
-    String id,
-    String dataProducerId,
-    SctpStreamParameters sctpStreamParameters,
+    required String id,
+    required String dataProducerId,
+    required SctpStreamParameters sctpStreamParameters,
     String label = '',
     String protocol = '',
-    Map<dynamic, dynamic> appData,
+    Map<String, dynamic> appData = const <String, dynamic>{},
   }) {
     _logger.debug('consumeData()');
 
@@ -1169,10 +1162,6 @@ class Transport extends EnhancedEventEmitter {
       throw ('not a receiving Transport');
     } else if (_maxSctpMessageSize == null) {
       throw ('SCTP not enabled by remote Transport');
-    } else if (id == null) {
-      throw ('missing id');
-    } else if (dataProducerId == null) {
-      throw ('missing dataProducerId');
     } else if (listeners('connect').isEmpty && _connectionState == 'new') {
       throw ('no "connect" listener set into this transport');
     }
@@ -1208,7 +1197,7 @@ class Transport extends EnhancedEventEmitter {
           'dataConsumer': dataConsumer,
         });
 
-        dataConsumerCallback(dataConsumer);
+        dataConsumerCallback?.call(dataConsumer);
       },
     ));
   }

@@ -1,3 +1,6 @@
-## [0.0.1] - TODO: Add release date.
+# Changelog
 
-* TODO: Describe initial release.
+--------------------------------------------
+[0.2.0] - 2021.08.04
+
+* Initial release.

@@ -6,13 +6,16 @@ class NumSctpStreams {
   /*
 	 * Initially requested number of outgoing SCTP streams.
 	 */
-  int os;
+  final int os;
   /*
 	 * Maximum number of incoming SCTP streams.
 	 */
-  int mis;
+  final int mis;
 
-  NumSctpStreams({this.os, this.mis});
+  NumSctpStreams({
+    required this.os,
+    required this.mis,
+  });
 
   Map<String, int> toMap() {
     return {
@@ -23,8 +26,8 @@ class NumSctpStreams {
 }
 
 class SctpCapabilities {
-  NumSctpStreams numStreams;
-  SctpCapabilities({this.numStreams});
+  final NumSctpStreams numStreams;
+  SctpCapabilities({required this.numStreams});
 
   Map<String, dynamic> toMap() {
     return {
@@ -37,21 +40,26 @@ class SctpParameters {
   /*
 	 * Must always equal 5000.
 	 */
-  int port;
+  final int port;
   /*
 	 * Initially requested number of outgoing SCTP streams.
 	 */
-  int os;
+  final int os;
   /*
 	 * Maximum number of incoming SCTP streams.
 	 */
-  int mis;
+  final int mis;
   /*
 	 * Maximum allowed size for SCTP messages.
 	 */
-  int maxMessageSize;
+  final int maxMessageSize;
 
-  SctpParameters({this.port = 5000,this.os,this.mis,this.maxMessageSize,});
+  SctpParameters({
+    this.port = 5000,
+    required this.os,
+    required this.mis,
+    required this.maxMessageSize,
+  });
 
   Map<String, int> toMap() {
     return {
@@ -83,37 +91,37 @@ class SctpStreamParameters {
   /*
 	 * SCTP stream id.
 	 */
-  int streamId;
+  final int streamId;
   /*
 	 * Whether data messages must be received in order. if true the messages will
 	 * be sent reliably. Default true.
 	 */
-  bool ordered;
+  bool? ordered;
   /*
 	 * When ordered is false indicates the time (in milliseconds) after which a
 	 * SCTP packet will stop being retransmitted.
 	 */
-  int maxPacketLifeTime;
+  final int? maxPacketLifeTime;
   /*
 	 * When ordered is false indicates the maximum number of times a packet will
 	 * be retransmitted.
 	 */
-  int maxRetransmits;
+  final int? maxRetransmits;
   /*
 	 * DataChannel priority.
 	 */
-  Priority priority;
+  final Priority? priority;
   /*
 	 * A label which can be used to distinguish this DataChannel from others.
 	 */
-  String label;
+  final String? label;
   /*
 	 * Name of the sub-protocol used by this DataChannel.
 	 */
-  String protocol;
+  final String? protocol;
 
   SctpStreamParameters({
-    this.streamId,
+    required this.streamId,
     this.ordered,
     this.maxPacketLifeTime,
     this.maxRetransmits,
@@ -140,7 +148,7 @@ class SctpStreamParameters {
       'ordered': ordered,
       'maxPacketLifeTime': maxPacketLifeTime,
       'maxRetransmits': maxRetransmits,
-      'priority': priority.value,
+      'priority': priority?.value,
       'label': label,
       'protocol': protocol,
     };

@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:mediasoup_client_flutter/src/Producer.dart';
-import 'package:mediasoup_client_flutter/src/SctpParameters.dart';
-import 'package:mediasoup_client_flutter/src/Transport.dart';
-import 'package:mediasoup_client_flutter/src/common/EnhancedEventEmitter.dart';
-import 'package:mediasoup_client_flutter/src/RtpParameters.dart';
-import 'package:mediasoup_client_flutter/src/handlers/Browser.dart';
-import 'package:mediasoup_client_flutter/src/handlers/Native.dart';
+import 'package:mediasoup_client_flutter/src/producer.dart';
+import 'package:mediasoup_client_flutter/src/sctp_parameters.dart';
+import 'package:mediasoup_client_flutter/src/transport.dart';
+import 'package:mediasoup_client_flutter/src/common/enhanced_event_emitter.dart';
+import 'package:mediasoup_client_flutter/src/rtp_parameters.dart';
+import 'package:mediasoup_client_flutter/src/handlers/browser.dart';
+import 'package:mediasoup_client_flutter/src/handlers/native.dart';
 
 class SCTP_NUM_STREAMS {
   static const int OS = 1024;
@@ -14,12 +14,18 @@ class SCTP_NUM_STREAMS {
 }
 
 class RTCOAuthCredential {
-  String accessToken;
-  String macKey;
+  final String accessToken;
+  final String macKey;
+
+  const RTCOAuthCredential({
+    required this.accessToken,
+    required this.macKey,
+  });
 }
 
 enum RTCIceCredentialType {
-  oauth, password,
+  oauth,
+  password,
 }
 
 extension RTCIceCredentialTypeToString on RTCIceCredentialType {
@@ -34,11 +40,12 @@ extension RTCIceCredentialTypeToString on RTCIceCredentialType {
   };
 
   operator [](String i) => types[i];
-  String get value => values[this];
+  String get value => values[this]!;
 }
 
 enum RTCIceTransportPolicy {
-  all, relay,
+  all,
+  relay,
 }
 
 extension RTCIceTransportPolicyToString on RTCIceTransportPolicy {
@@ -53,27 +60,28 @@ extension RTCIceTransportPolicyToString on RTCIceTransportPolicy {
   };
 
   operator [](String i) => types[i];
-  String get value => values[this];
+  String get value => values[this]!;
 }
 
 class RTCIceServer {
   /// String or RTCOAuthCredential.
-  var credential;
-  RTCIceCredentialType credentialType;
-  List<String> urls;
-  String username;
+  final credential;
+  final RTCIceCredentialType credentialType;
+  final List<String> urls;
+  final String username;
 
-  RTCIceServer({this.credential, this.credentialType, this.urls, this.username,});
+  RTCIceServer({
+    this.credential,
+    required this.credentialType,
+    this.urls = const [],
+    required this.username,
+  });
 
   Map<String, dynamic> toMap() {
     return {
-      if (credential != null)
-        'credential': credential,
-      if (credentialType != null)
+      if (credential != null) 'credential': credential,
       'credentialType': credentialType.value,
-      if (urls != null)
       'urls': urls,
-      if (username != null)
       'username': username,
     };
   }
@@ -84,93 +92,100 @@ class HandlerRunOptions {
   IceParameters iceParameters;
   List<IceCandidate> iceCandidates;
   DtlsParameters dtlsParameters;
-  SctpParameters sctpParameters;
+  SctpParameters? sctpParameters;
   List<RTCIceServer> iceServers;
-  RTCIceTransportPolicy iceTransportPolicy;
+  RTCIceTransportPolicy? iceTransportPolicy;
   var additionalSettings;
   Map<String, dynamic> proprietaryConstraints;
   var extendedRtpCapabilities;
 
   HandlerRunOptions({
-    this.direction,
-    this.iceParameters,
-    this.iceCandidates,
-    this.dtlsParameters,
+    required this.direction,
+    required this.iceParameters,
+    required this.iceCandidates,
+    required this.dtlsParameters,
     this.sctpParameters,
-    this.iceServers,
+    required this.iceServers,
     this.iceTransportPolicy,
     this.additionalSettings,
-    this.proprietaryConstraints,
+    required this.proprietaryConstraints,
     this.extendedRtpCapabilities,
   });
 }
 
 class HandlerSendResult {
-  String localId;
-  RtpParameters rtpParameters;
-  RTCRtpSender rtpSender;
+  final String localId;
+  final RtpParameters rtpParameters;
+  final RTCRtpSender? rtpSender;
 
-  HandlerSendResult({this.localId, this.rtpParameters, this.rtpSender,});
+  const HandlerSendResult({
+    required this.localId,
+    required this.rtpParameters,
+    this.rtpSender,
+  });
 }
 
 class HandlerSendOptions {
-  MediaStreamTrack track;
-  List<RtpEncodingParameters> encodings;
-  ProducerCodecOptions codecOptions;
-  RtpCodecCapability codec;
-  MediaStream stream;
+  final MediaStreamTrack track;
+  final List<RtpEncodingParameters> encodings;
+  final ProducerCodecOptions? codecOptions;
+  final RtpCodecCapability? codec;
+  final MediaStream stream;
 
-  HandlerSendOptions({
-    this.track,
-    this.encodings,
+  const HandlerSendOptions({
+    required this.track,
+    this.encodings = const [],
     this.codecOptions,
     this.codec,
-    this.stream,
+    required this.stream,
   });
 }
 
 class HandlerSendDataChannelResult {
-  RTCDataChannel dataChannel;
-  SctpStreamParameters sctpStreamParameters;
+  final RTCDataChannel dataChannel;
+  final SctpStreamParameters sctpStreamParameters;
 
-  HandlerSendDataChannelResult({this.dataChannel, this.sctpStreamParameters,});
+  const HandlerSendDataChannelResult({
+    required this.dataChannel,
+    required this.sctpStreamParameters,
+  });
 }
 
 class HandlerReceiveResult {
-  String localId;
-  MediaStreamTrack track;
-  MediaStream stream;
-  RTCRtpReceiver rtpReceiver;
+  final String localId;
+  final MediaStreamTrack track;
+  final RTCRtpReceiver? rtpReceiver;
+  final MediaStream stream;
 
-  HandlerReceiveResult({
-    this.localId,
-    this.track,
+  const HandlerReceiveResult({
+    required this.localId,
+    required this.track,
     this.rtpReceiver,
-    this.stream,
+    required this.stream,
   });
 }
 
 class HandlerReceiveOptions {
-  String trackId;
-  RTCRtpMediaType kind;
-  RtpParameters rtpParameters;
+  final String trackId;
+  final RTCRtpMediaType kind;
+  final RtpParameters rtpParameters;
 
   HandlerReceiveOptions({
-    this.trackId,
-    this.kind,
-    this.rtpParameters,
+    required this.trackId,
+    required this.kind,
+    required this.rtpParameters,
   });
 }
 
 class HandlerReceiveDataChannelOptions {
-  SctpStreamParameters sctpStreamParameters;
-  String label;
-  String protocol;
+  final SctpStreamParameters sctpStreamParameters;
+  final String label;
+  final String protocol;
 
   HandlerReceiveDataChannelOptions({
-    this.sctpStreamParameters,
-    this.label,
-    this.protocol,
+    required this.sctpStreamParameters,
+    required this.label,
+    required this.protocol,
   });
 }
 
@@ -178,27 +193,36 @@ class ReplaceTrackOptions {
   final String localId;
   final MediaStreamTrack track;
 
-  ReplaceTrackOptions({this.localId, this.track});
+  const ReplaceTrackOptions({
+    required this.localId,
+    required this.track,
+  });
 }
 
 class HandlerReceiveDataChannelResult {
-  RTCDataChannel dataChannel;
+  final RTCDataChannel dataChannel;
 
-  HandlerReceiveDataChannelResult({this.dataChannel});
+  const HandlerReceiveDataChannelResult({required this.dataChannel});
 }
 
 class SetMaxSpatialLayerOptions {
   final String localId;
   final int spatialLayer;
 
-  SetMaxSpatialLayerOptions({this.localId, this.spatialLayer});
+  const SetMaxSpatialLayerOptions({
+    required this.localId,
+    required this.spatialLayer,
+  });
 }
 
 class SetRtpEncodingParametersOptions {
   final String localId;
   final RtpEncodingParameters params;
 
-  SetRtpEncodingParametersOptions({this.localId, this.params});
+  const SetRtpEncodingParametersOptions({
+    required this.localId,
+    required this.params,
+  });
 }
 
 abstract class HandlerInterface extends EnhancedEventEmitter {
@@ -211,6 +235,7 @@ abstract class HandlerInterface extends EnhancedEventEmitter {
       return Native();
     }
   }
+
   ///@emits @connect - (
   ///    { dtlsParameters: DtlsParameters },
   ///    callback: Function,
@@ -222,7 +247,7 @@ abstract class HandlerInterface extends EnhancedEventEmitter {
   Future<RtpCapabilities> getNativeRtpCapabilities();
   // Future<SctpCapabilities> getNativeSctpCapabilities();
   SctpCapabilities getNativeSctpCapabilities();
-  void run({HandlerRunOptions options});
+  void run({required HandlerRunOptions options});
   Future<void> updateIceServers(List<RTCIceServer> iceServers);
   Future<void> restartIce(IceParameters iceParameters);
   // TODO: RTCStatsReport
@@ -231,9 +256,11 @@ abstract class HandlerInterface extends EnhancedEventEmitter {
   Future<void> stopSending(String localId);
   Future<void> replaceTrack(ReplaceTrackOptions options);
   Future<void> setMaxSpatialLayer(SetMaxSpatialLayerOptions options);
-  Future<void> setRtpEncodingParameters(SetRtpEncodingParametersOptions options);
+  Future<void> setRtpEncodingParameters(
+      SetRtpEncodingParametersOptions options);
   Future<List<StatsReport>> getSenderStats(String localId);
-  Future<HandlerSendDataChannelResult> sendDataChannel(SctpStreamParameters options);
+  Future<HandlerSendDataChannelResult> sendDataChannel(
+      SendDataChannelArguments options);
   Future<HandlerReceiveResult> receive(HandlerReceiveOptions options);
   Future<void> stopReceiving(
     String localId,

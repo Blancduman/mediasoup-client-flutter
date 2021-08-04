@@ -12,7 +12,7 @@ class RoomBloc extends Bloc<RoomEvent, RoomState> {
       : super(
           RoomState(
             url: url != null && url.isNotEmpty
-                ? url
+                ? url.replaceAll('roomid', 'roomId')
                 : 'https://v3demo.mediasoup.org/?roomId=${randomAlpha(8).toLowerCase()}',
           ),
         );

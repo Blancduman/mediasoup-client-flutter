@@ -20,6 +20,6 @@ extension PriorityExtension on Priority {
     Priority.High: 'high',
   };
 
-  static Priority fromString(String i) => types[i];
-  String get value => values[this];
+  static Priority fromString(String i) => types[i]!;
+  String get value => values[this]!;
 }

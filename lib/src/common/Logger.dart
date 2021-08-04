@@ -5,9 +5,9 @@ typedef void LoggerDebug(dynamic message);
 class Logger {
   final String _prefix;
 
-  LoggerDebug debug;
-  LoggerDebug warn;
-  LoggerDebug error;
+  late LoggerDebug debug;
+  late LoggerDebug warn;
+  late LoggerDebug error;
 
   Logger(this._prefix) {
     if (_prefix is String) {
