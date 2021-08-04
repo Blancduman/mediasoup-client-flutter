@@ -1,47 +1,59 @@
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:mediasoup_client_flutter/src/SctpParameters.dart';
-import 'package:mediasoup_client_flutter/src/common/EnhancedEventEmitter.dart';
-import 'package:mediasoup_client_flutter/src/common/Logger.dart';
+
+import 'package:mediasoup_client_flutter/src/sctp_parameters.dart';
+import 'package:mediasoup_client_flutter/src/common/enhanced_event_emitter.dart';
+import 'package:mediasoup_client_flutter/src/common/logger.dart';
 
 class DataProducerOptions {
-  bool ordered;
-  int maxPacketLifeTime;
-  int maxRetransmits;
-  Priority priority;
-  String label;
-  String protocol;
-  Map<String, dynamic> appData;
+  final bool ordered;
+  final int maxPacketLifeTime;
+  final int maxRetransmits;
+  final Priority priority;
+  final String label;
+  final String protocol;
+  final Map<String, dynamic> appData;
+
+  DataProducerOptions({
+    required this.ordered,
+    required this.maxPacketLifeTime,
+    required this.maxRetransmits,
+    required this.priority,
+    required this.label,
+    required this.protocol,
+    required this.appData,
+  });
 }
 
 Logger _logger = Logger('DataProducer');
 
 class DataProducer extends EnhancedEventEmitter {
   // Id.
-  String _id;
+  late String _id;
   // The underlying RTCDataChannel instance.
-  RTCDataChannel _dataChannel;
+  late RTCDataChannel _dataChannel;
   // Closed flag.
   bool _closed = false;
   // SCTP stream parameters.
-  SctpStreamParameters _sctpStreamParameters;
+  late SctpStreamParameters _sctpStreamParameters;
   // App custom data.
-  Map<String, dynamic> _appData;
+  late final Map<String, dynamic> _appData;
   // Observer instance.
-  EnhancedEventEmitter _observer = EnhancedEventEmitter();
+  final EnhancedEventEmitter _observer = EnhancedEventEmitter();
 
-	/// @emits transportclose
-	/// @emits open
-	/// @emits error - (error: Error)
-	/// @emits close
-	/// @emits bufferedamountlow
-	/// @emits @close
+  /// @emits transportclose
+  /// @emits open
+  /// @emits error - (error: Error)
+  /// @emits close
+  /// @emits bufferedamountlow
+  /// @emits @close
   DataProducer({
-    String id,
-    RTCDataChannel dataChannel,
-    SctpStreamParameters sctpStreamParameters,
-    Map<String, dynamic> appData,
-  }) : _appData = appData, super() {
+    required String id,
+    required RTCDataChannel dataChannel,
+    required SctpStreamParameters sctpStreamParameters,
+    required Map<String, dynamic> appData,
+  })  : _appData = appData,
+        super() {
     _logger.debug('constructor()');
 
     _id = id;
@@ -53,14 +65,19 @@ class DataProducer extends EnhancedEventEmitter {
 
   /// DataProducer id.
   String get id => _id;
+
   /// Whether the DataProducer is closed.
   bool get closed => _closed;
+
   /// SCTP stream parameters.
   SctpStreamParameters get sctpStreamParameters => _sctpStreamParameters;
+
   /// DataChannel readyState.
-  RTCDataChannelState get readyState => _dataChannel.state;
+  RTCDataChannelState? get readyState => _dataChannel.state;
+
   /// App custom data.
   Map<String, dynamic> get appData => _appData;
+
   /// Observer.
   EnhancedEventEmitter get observer => _observer;
 
@@ -133,5 +150,26 @@ class DataProducer extends EnhancedEventEmitter {
         'DataChannel "message" event is a DataProducer, message discarded',
       );
     };
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is DataProducer &&
+        other._id == _id &&
+        other._dataChannel == _dataChannel &&
+        other._closed == _closed &&
+        other._sctpStreamParameters == _sctpStreamParameters &&
+        other._appData == _appData;
+  }
+
+  @override
+  int get hashCode {
+    return _id.hashCode ^
+        _dataChannel.hashCode ^
+        _closed.hashCode ^
+        _sctpStreamParameters.hashCode ^
+        _appData.hashCode;
   }
 }

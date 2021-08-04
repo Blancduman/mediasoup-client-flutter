@@ -1,60 +1,81 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:mediasoup_client_flutter/src/RtpParameters.dart';
-import 'package:mediasoup_client_flutter/src/common/EnhancedEventEmitter.dart';
-import 'package:mediasoup_client_flutter/src/common/Logger.dart';
+
+import 'package:mediasoup_client_flutter/src/rtp_parameters.dart';
+import 'package:mediasoup_client_flutter/src/common/enhanced_event_emitter.dart';
+import 'package:mediasoup_client_flutter/src/common/logger.dart';
 
 Logger _logger = Logger('Consumer');
 
 class ConsumerOptions {
-  String id;
-  String producerId;
-  RTCRtpMediaType kind;
-  RtpParameters rtpParameters;
+  final String id;
+  final String producerId;
+  final RTCRtpMediaType kind;
+  final RtpParameters rtpParameters;
+
+  ConsumerOptions({
+    required this.id,
+    required this.producerId,
+    required this.kind,
+    required this.rtpParameters,
+  });
 }
 
 typedef void ConsumerOnTrackEnded();
 
 class Consumer extends EnhancedEventEmitter {
   /// Id.
-  String _id;
+  late String _id;
+
   /// Local id.
-  String _localId;
+  late String _localId;
+
   /// Associated Producer id.
-  String _producerId;
+  late String _producerId;
+
   /// Closed flag.
   bool _closed = false;
+
   /// Associated RTCRtpReceiver.
-  RTCRtpReceiver _rtpReceiver;
+  RTCRtpReceiver? _rtpReceiver;
+
   /// Remote track.
-  MediaStreamTrack _track;
+  late MediaStreamTrack _track;
+
   /// RTP parameters.
-  RtpParameters _rtpParameters;
+  late RtpParameters _rtpParameters;
+
   /// Paused flag.
-  bool _paused;
+  late bool _paused;
+
   /// App custom data.
   final Map<String, dynamic> _appData;
+
   /// Stream.
-  MediaStream _stream;
+  late MediaStream _stream;
+
   /// Observer instance.
-  EnhancedEventEmitter _observer = EnhancedEventEmitter();
+  final EnhancedEventEmitter _observer = EnhancedEventEmitter();
+
   /// Peer id.
-  String _peerId;
+  late String _peerId;
 
   /// @emits transportclose
   /// @emits trackended
   /// @emits @getstats
   /// @emits @close
   Consumer({
-    String id,
-    String localId,
-    String producerId,
-    RTCRtpReceiver rtpReceiver,
-    MediaStreamTrack track,
-    RtpParameters rtpParameters,
-    Map<String, dynamic> appData,
-    MediaStream stream,
-    String peerId,
-  }) : this._appData = appData, super() {
+    required String id,
+    required String localId,
+    required String producerId,
+    RTCRtpReceiver? rtpReceiver,
+    required MediaStreamTrack track,
+    required RtpParameters rtpParameters,
+    required Map<String, dynamic> appData,
+    required MediaStream stream,
+    required String peerId,
+  })  : this._appData = appData,
+        super() {
     _logger.debug('constructor()');
 
     _id = id;
@@ -71,33 +92,45 @@ class Consumer extends EnhancedEventEmitter {
 
   /// Consumer id.
   String get id => _id;
+
   /// Local id.
   String get localId => _localId;
+
   /// Associated Producer id.
   String get producerId => _producerId;
+
   /// Wheter the Consumer is closed.
   bool get closed => _closed;
+
   /// Media kind.
-  String get kind => _track.kind;
+  String? get kind => _track.kind;
+
   /// Associated RTCRtpReceiver.
-  RTCRtpReceiver get rtpReceiver => _rtpReceiver;
+  RTCRtpReceiver? get rtpReceiver => _rtpReceiver;
+
   /// The associated track.
   MediaStreamTrack get track => _track;
+
   /// RTP parameters.
   RtpParameters get rtpParameters => _rtpParameters;
+
   /// Whether the Consumer is paused.
   bool get paused => _paused;
+
   /// App custom data.
   Map<String, dynamic> get appData => _appData;
+
   /// Stream.
   MediaStream get stream => _stream;
+
   /// Observer.
-  /// 
+  ///
   /// @emits close
   /// @emits pause
   /// @emits resume
   /// @emits trackended
   EnhancedEventEmitter get observer => _observer;
+
   /// Peer id.
   String get peerId => _peerId;
 
@@ -127,9 +160,8 @@ class Consumer extends EnhancedEventEmitter {
 
   /// Get associated RTCRtpReceiver stats.
   Future<dynamic> getStats() async {
-    if (_closed)
-      throw 'Closed';
-    
+    if (_closed) throw 'Closed';
+
     return safeEmitAsFuture('@getstats');
   }
 
@@ -183,5 +215,38 @@ class Consumer extends EnhancedEventEmitter {
       _track.onEnded = null;
       await _track.stop();
     } catch (error) {}
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is Consumer &&
+        other._id == _id &&
+        other._localId == _localId &&
+        other._producerId == _producerId &&
+        other._closed == _closed &&
+        other._rtpReceiver == _rtpReceiver &&
+        other._track == _track &&
+        other._rtpParameters == _rtpParameters &&
+        other._paused == _paused &&
+        mapEquals(other._appData, _appData) &&
+        other._stream == _stream &&
+        other._peerId == _peerId;
+  }
+
+  @override
+  int get hashCode {
+    return _id.hashCode ^
+        _localId.hashCode ^
+        _producerId.hashCode ^
+        _closed.hashCode ^
+        _rtpReceiver.hashCode ^
+        _track.hashCode ^
+        _rtpParameters.hashCode ^
+        _paused.hashCode ^
+        _appData.hashCode ^
+        _stream.hashCode ^
+        _peerId.hashCode;
   }
 }

@@ -32,13 +32,13 @@ class Peer {
     String id,
   }) {
     return Peer(
-      consumers: consumers != null ? List<String>.of(consumers) : old.consumers,
-      displayName: displayName ?? old.displayName,
+      consumers: consumers != null ? List<String>.of(consumers) : old?.consumers ?? [],
+      displayName: displayName ?? old?.displayName,
       dataConsumers: dataConsumers != null
           ? List<String>.of(dataConsumers)
-          : old.consumers,
-      device: device ?? old.device,
-      id: id ?? old.id,
+          : old?.dataConsumers ?? [],
+      device: device ?? old?.device,
+      id: id ?? old?.id,
     );
   }
 }

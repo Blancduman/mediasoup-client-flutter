@@ -1,14 +1,14 @@
 class ProfileLevelId {
-  int profile;
-  int level;
-  ProfileLevelId({this.profile, this.level});
+  final int profile;
+  final int level;
+  ProfileLevelId({required this.profile, required this.level});
 }
 
 // Class for converting between profile_idc/profile_iop to Profile.
 class ProfilePattern {
-  final profile_idc;
+  final int profile_idc;
   final BitPattern profile_iop;
-  final profile;
+  final int profile;
 
   const ProfilePattern(
     this.profile_idc,
@@ -32,7 +32,7 @@ class BitPattern {
 }
 
 // This is from https://tools.ietf.org/html/rfc6184#section-8.1.
-List<ProfilePattern> ProfilePatterns = [
+List<ProfilePattern> profilePatterns = [
   ProfilePattern(
       0x42, BitPattern('x1xx0000'), H264Utils.ProfileConstrainedBaseline),
   ProfilePattern(
@@ -106,22 +106,22 @@ class H264Utils {
     );
   }
 
-  static ProfileLevelId parseProfileLevelId(String str) {
+  static ProfileLevelId? parseProfileLevelId(String? str) {
     // The string should consist of 3 bytes in hexadecimal format.
     if (str == null || str.length != 6) {
       return null;
     }
 
-    int profile_level_id_numeric = int.parse(str, radix: 16);
+    final int profile_level_id_numeric = int.parse(str, radix: 16);
 
     if (profile_level_id_numeric == 0) {
       return null;
     }
 
     // Separate into three bytes.
-    int level_idc = profile_level_id_numeric & 0xFF;
-    int profile_iop = (profile_level_id_numeric >> 8) & 0xFF;
-    int profile_idc = (profile_level_id_numeric >> 16) & 0xFF;
+    final int level_idc = profile_level_id_numeric & 0xFF;
+    final int profile_iop = (profile_level_id_numeric >> 8) & 0xFF;
+    final int profile_idc = (profile_level_id_numeric >> 16) & 0xFF;
 
     // Prase level based on level_idc and constraint set 3 flag.
     var level;
@@ -162,7 +162,7 @@ class H264Utils {
     }
 
     // Parse profile_idc/profile_iop into a Profile enum.
-    for (ProfilePattern pattern in ProfilePatterns) {
+    for (ProfilePattern pattern in profilePatterns) {
       if (profile_idc == pattern.profile_idc &&
           pattern.profile_iop.isMatch(profile_iop)) {
         return ProfileLevelId(profile: pattern.profile, level: level);
@@ -181,7 +181,7 @@ class H264Utils {
     return (level_asymmetry_allowed == 1 || level_asymmetry_allowed == '1');
   }
 
-  static ProfileLevelId parseSdpProfileLevelId(Map<dynamic, dynamic> params) {
+  static ProfileLevelId? parseSdpProfileLevelId(Map<dynamic, dynamic> params) {
     var profile_level_id = params['profile-level-id'];
 
     return profile_level_id == null
@@ -190,8 +190,8 @@ class H264Utils {
   }
 
   static bool isSameProfile(Map<dynamic, dynamic> params1, Map<dynamic, dynamic> params2) {
-    var profile_level_id_1 = parseSdpProfileLevelId(params1);
-    var profile_level_id_2 = parseSdpProfileLevelId(params2);
+    final ProfileLevelId? profile_level_id_1 = parseSdpProfileLevelId(params1);
+    final ProfileLevelId? profile_level_id_2 = parseSdpProfileLevelId(params2);
 
     return profile_level_id_1 != null && profile_level_id_2 != null && profile_level_id_1.profile == profile_level_id_2.profile;
   }
@@ -217,7 +217,7 @@ class H264Utils {
   /// level id, or returns nothing for invalid profile level ids.
   /// @param {ProfileLevelId} profile_level_id
   /// @returns {String}
-  static String profileLevelIdToString(ProfileLevelId profile_level_id) {
+  static String? profileLevelIdToString(ProfileLevelId profile_level_id) {
     // Handle special case level == 1b.
     if (profile_level_id.level == Level1_b) {
       switch (profile_level_id.profile) {
@@ -272,7 +272,7 @@ class H264Utils {
     return '$profile_idc_iop_string$levelStr';
   }
 
-  static String generateProfileLevelIdForAnswer({
+  static String? generateProfileLevelIdForAnswer({
     Map<dynamic, dynamic> local_supported_params = const {},
     Map<dynamic, dynamic> remote_offered_params = const {},
   }) {
@@ -285,8 +285,8 @@ class H264Utils {
     }
 
     // Parse profile-level-ids.
-    var local_profile_level_id = parseSdpProfileLevelId(local_supported_params);
-    var remote_profile_level_id = parseSdpProfileLevelId(remote_offered_params);
+    final ProfileLevelId? local_profile_level_id = parseSdpProfileLevelId(local_supported_params);
+    final ProfileLevelId? remote_profile_level_id = parseSdpProfileLevelId(remote_offered_params);
 
     // The local and remote codec must have valid and equal H264 Profiles.
     if (local_profile_level_id == null) {
@@ -301,18 +301,18 @@ class H264Utils {
     }
 
     // Parse level information.
-    bool level_asymmetry_allowed = (isLevelAsymmetryAllowed(params: local_supported_params) && isLevelAsymmetryAllowed(params: remote_offered_params));
+    final bool level_asymmetry_allowed = (isLevelAsymmetryAllowed(params: local_supported_params) && isLevelAsymmetryAllowed(params: remote_offered_params));
 
-    int local_level = local_profile_level_id.level;
-    int remote_level = remote_profile_level_id.level;
-    int min_level = minLevel(local_level, remote_level);
+    final int local_level = local_profile_level_id.level;
+    final int remote_level = remote_profile_level_id.level;
+    final int min_level = minLevel(local_level, remote_level);
 
     // Determine answer level. When level asymmetry is not allowed, level upgrade
 	  // is not allowed, i.e., the level in the answer must be equal to or lower
 	  // than the level in the offer.
-    int answer_level = level_asymmetry_allowed ? local_level : min_level;
+    final int answer_level = level_asymmetry_allowed ? local_level : min_level;
 
-    print('generateProfileLevelIdForAnswer() | result: [profile:${local_profile_level_id.profile}, level:${answer_level}');
+    print('generateProfileLevelIdForAnswer() | result: [profile:${local_profile_level_id.profile}, level:$answer_level');
 
     // Return the resulting profile-level-id for the answer parameters.
     return profileLevelIdToString(ProfileLevelId(profile: local_profile_level_id.profile, level: answer_level,));

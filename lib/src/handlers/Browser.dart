@@ -1,34 +1,32 @@
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:mediasoup_client_flutter/SdpTransform/SdpTransform.dart';
-import 'package:mediasoup_client_flutter/src/Ortc.dart';
-import 'package:mediasoup_client_flutter/src/ScalabilityModes.dart';
-import 'package:mediasoup_client_flutter/src/SdpObject.dart';
-import 'package:mediasoup_client_flutter/src/Transport.dart';
-import 'package:mediasoup_client_flutter/src/SctpParameters.dart';
-import 'package:mediasoup_client_flutter/src/RtpParameters.dart';
-import 'package:mediasoup_client_flutter/src/common/Logger.dart';
-import 'package:mediasoup_client_flutter/src/handlers/HandlerInterface.dart';
-import 'package:mediasoup_client_flutter/src/handlers/sdp/CommonUtils.dart';
-import 'package:mediasoup_client_flutter/src/handlers/sdp/MediaSection.dart';
-import 'package:mediasoup_client_flutter/src/handlers/sdp/RemoteSdp.dart';
-import 'package:mediasoup_client_flutter/src/handlers/sdp/UnifiedPlanUtils.dart';
+import 'package:sdp_transform/sdp_transform.dart';
+import 'package:mediasoup_client_flutter/src/ortc.dart';
+import 'package:mediasoup_client_flutter/src/scalability_modes.dart';
+import 'package:mediasoup_client_flutter/src/sdp_object.dart';
+import 'package:mediasoup_client_flutter/src/transport.dart';
+import 'package:mediasoup_client_flutter/src/sctp_parameters.dart';
+import 'package:mediasoup_client_flutter/src/rtp_parameters.dart';
+import 'package:mediasoup_client_flutter/src/common/logger.dart';
+import 'package:mediasoup_client_flutter/src/handlers/handler_interface.dart';
+import 'package:mediasoup_client_flutter/src/handlers/sdp/common_utils.dart';
+import 'package:mediasoup_client_flutter/src/handlers/sdp/media_section.dart';
+import 'package:mediasoup_client_flutter/src/handlers/sdp/remote_sdp.dart';
+import 'package:mediasoup_client_flutter/src/handlers/sdp/unified_plan_utils.dart';
 
 Logger logger = Logger('Browser');
 
 class Browser extends HandlerInterface {
   // Handler direction.
-  Direction _direction;
+  late Direction _direction;
   // Remote SDP handler.
-  RemoteSdp _remoteSdp;
+  late RemoteSdp _remoteSdp;
   // Generic sending RTP parameters for audio and video.
-  Map<RTCRtpMediaType, RtpParameters> _sendingRtpParametersByKind;
+  late Map<RTCRtpMediaType, RtpParameters> _sendingRtpParametersByKind;
   // Generic sending RTP parameters for audio and video suitable for the SDP
   // remote answer.
-  Map<RTCRtpMediaType, RtpParameters> _sendingRemoteRtpParametersByKind;
+  late Map<RTCRtpMediaType, RtpParameters> _sendingRemoteRtpParametersByKind;
   // RTCPeerConnection instance.
-  RTCPeerConnection _pc;
-  // Local stream for sending.
-  MediaStream _sendStream;
+  late RTCPeerConnection _pc;
   // Map of RTCTransceivers indexed by MID.
   Map<String, RTCRtpTransceiver> _mapMidTransceiver = {};
   // Whether a DataChannel m=application section has been created.
@@ -41,12 +39,12 @@ class Browser extends HandlerInterface {
   Browser() : super();
 
   Future<void> _setupTransport({
-    DtlsRole localDtlsRole,
-    SdpObject localSdpObject,
+    required DtlsRole localDtlsRole,
+    SdpObject? localSdpObject,
   }) async {
     if (localSdpObject == null) {
       localSdpObject =
-          SdpObject.fromMap(parse((await _pc.getLocalDescription()).sdp));
+          SdpObject.fromMap(parse((await _pc.getLocalDescription())!.sdp!));
 
       // Get our local DTLS parameters.
       DtlsParameters dtlsParameters =
@@ -152,7 +150,7 @@ class Browser extends HandlerInterface {
       }
 
       RTCSessionDescription offer = await pc.createOffer();
-      final parsedOffer = parse(offer.sdp);
+      final parsedOffer = parse(offer.sdp!);
       print('parsed: ' + parsedOffer.toString());
       SdpObject sdpObject = SdpObject.fromMap(parsedOffer);
 
@@ -184,7 +182,7 @@ class Browser extends HandlerInterface {
   Future<List<StatsReport>> getReceiverStats(String localId) async {
     _assertRecvDirection();
 
-    RTCRtpTransceiver transceiver = _mapMidTransceiver[localId];
+    RTCRtpTransceiver? transceiver = _mapMidTransceiver[localId];
 
     if (transceiver == null) {
       throw ('associated RTCRtpTransceiver not found');
@@ -197,7 +195,7 @@ class Browser extends HandlerInterface {
   Future<List<StatsReport>> getSenderStats(String localId) async {
     _assertSendRirection();
 
-    RTCRtpTransceiver transceiver = _mapMidTransceiver[localId];
+    RTCRtpTransceiver? transceiver = _mapMidTransceiver[localId];
 
     if (transceiver == null) {
       throw ('associated RTCRtpTransceiver not found');
@@ -228,7 +226,7 @@ class Browser extends HandlerInterface {
       mid: localId,
       kind: options.kind,
       offerRtpParameters: options.rtpParameters,
-      streamId: options.rtpParameters.rtcp.cname,
+      streamId: options.rtpParameters.rtcp!.cname,
       trackId: options.trackId,
     );
 
@@ -244,11 +242,11 @@ class Browser extends HandlerInterface {
 
     RTCSessionDescription answer = await _pc.createAnswer();
 
-    SdpObject localSdpObject = SdpObject.fromMap(parse(answer.sdp));
+    SdpObject localSdpObject = SdpObject.fromMap(parse(answer.sdp!));
 
     MediaObject answerMediaObject = localSdpObject.media.firstWhere(
       (MediaObject m) => m.mid == localId,
-      orElse: () => null,
+      orElse: () => null as MediaObject,
     );
 
     // May need to modify codec parameters in the answer based on codec
@@ -272,8 +270,10 @@ class Browser extends HandlerInterface {
 
     await _pc.setLocalDescription(answer);
 
-    RTCRtpTransceiver transceiver = (await _pc.getTransceivers())
-        .firstWhere((RTCRtpTransceiver t) => t.mid == localId);
+    RTCRtpTransceiver transceiver = (await _pc.getTransceivers()).firstWhere(
+      (RTCRtpTransceiver t) => t.mid == localId,
+      orElse: () => null as RTCRtpTransceiver,
+    );
 
     if (transceiver == null) {
       throw ('new RTCRtpTransceiver not found');
@@ -284,8 +284,15 @@ class Browser extends HandlerInterface {
 
     return HandlerReceiveResult(
       localId: localId,
-      track: transceiver.receiver.track,
+      track: transceiver.receiver.track!,
       rtpReceiver: transceiver.receiver,
+      stream: (_pc.getRemoteStreams().where((s) => s != null).toList()
+              as List<MediaStream>)
+          .firstWhere(
+        (element) =>
+            element.getTracks().first.id == transceiver.receiver.track!.id,
+        orElse: () => null as MediaStream,
+      ),
     );
   }
 
@@ -297,10 +304,13 @@ class Browser extends HandlerInterface {
     RTCDataChannelInit initOptions = RTCDataChannelInit();
     initOptions.negotiated = true;
     initOptions.id = options.sctpStreamParameters.streamId;
-    initOptions.ordered = options.sctpStreamParameters.ordered;
+    initOptions.ordered =
+        options.sctpStreamParameters.ordered ?? initOptions.ordered;
     initOptions.maxRetransmitTime =
-        options.sctpStreamParameters.maxPacketLifeTime;
-    initOptions.maxRetransmits = options.sctpStreamParameters.maxRetransmits;
+        options.sctpStreamParameters.maxPacketLifeTime ??
+            initOptions.maxRetransmitTime;
+    initOptions.maxRetransmits = options.sctpStreamParameters.maxRetransmits ??
+        initOptions.maxRetransmits;
     initOptions.protocol = options.protocol;
 
     logger.debug('receiveDataChannel() [options:${initOptions.toMap()}]');
@@ -324,7 +334,7 @@ class Browser extends HandlerInterface {
       RTCSessionDescription answer = await _pc.createAnswer();
 
       if (_transportReady) {
-        SdpObject localSdpObject = SdpObject.fromMap(parse(answer.sdp));
+        SdpObject localSdpObject = SdpObject.fromMap(parse(answer.sdp!));
 
         await _setupTransport(
             localDtlsRole: DtlsRole.client, localSdpObject: localSdpObject);
@@ -352,7 +362,7 @@ class Browser extends HandlerInterface {
       logger.debug('replaceTrack() [localId:${options.localId}, no track');
     }
 
-    RTCRtpTransceiver transceiver = _mapMidTransceiver[options.localId];
+    RTCRtpTransceiver? transceiver = _mapMidTransceiver[options.localId];
 
     if (transceiver == null) {
       throw ('associated RTCRtpTransceiver not found');
@@ -407,7 +417,7 @@ class Browser extends HandlerInterface {
   }
 
   @override
-  void run({HandlerRunOptions options}) async {
+  void run({required HandlerRunOptions options}) async {
     logger.debug('run()');
 
     _direction = options.direction;
@@ -441,9 +451,7 @@ class Browser extends HandlerInterface {
       'iceServers': options.iceServers != null
           ? options.iceServers.map((RTCIceServer i) => i.toMap()).toList()
           : [],
-      'iceTransportPolicy': options.iceTransportPolicy != null
-          ? options.iceTransportPolicy.value
-          : 'all',
+      'iceTransportPolicy': options.iceTransportPolicy?.value ?? 'all',
       'bundlePolicy': 'max-bundle',
       'rtcpMuxPolicy': 'require',
       'sdpSemantics': 'unified-plan',
@@ -461,22 +469,22 @@ class Browser extends HandlerInterface {
         case RTCIceConnectionState.RTCIceConnectionStateConnected:
         case RTCIceConnectionState.RTCIceConnectionStateCompleted:
           {
-            emit('@connectionstatechange', {'state':'connected'});
+            emit('@connectionstatechange', {'state': 'connected'});
             break;
           }
         case RTCIceConnectionState.RTCIceConnectionStateFailed:
           {
-            emit('@connectionstatechange', {'state':'failed'});
+            emit('@connectionstatechange', {'state': 'failed'});
             break;
           }
         case RTCIceConnectionState.RTCIceConnectionStateDisconnected:
           {
-            emit('@connectionstatechange', {'state':'disconnected'});
+            emit('@connectionstatechange', {'state': 'disconnected'});
             break;
           }
         case RTCIceConnectionState.RTCIceConnectionStateClosed:
           {
-            emit('@connectionstatechange', {'state':'closed'});
+            emit('@connectionstatechange', {'state': 'closed'});
             break;
           }
 
@@ -503,7 +511,7 @@ class Browser extends HandlerInterface {
 
     RtpParameters sendingRtpParameters = RtpParameters.copy(
         _sendingRtpParametersByKind[
-            RTCRtpMediaTypeExtension.fromString(options.track.kind)]);
+            RTCRtpMediaTypeExtension.fromString(options.track.kind!)]!);
 
     // This may throw.
     sendingRtpParameters.codecs =
@@ -511,7 +519,7 @@ class Browser extends HandlerInterface {
 
     RtpParameters sendingRemoteRtpParameters = RtpParameters.copy(
         _sendingRemoteRtpParametersByKind[
-            RTCRtpMediaTypeExtension.fromString(options.track.kind)]);
+            RTCRtpMediaTypeExtension.fromString(options.track.kind!)]!);
 
     // This may throw.
     sendingRemoteRtpParameters.codecs =
@@ -520,16 +528,16 @@ class Browser extends HandlerInterface {
     MediaSectionIdx mediaSectionIdx = _remoteSdp.getNextMediaSectionIdx();
     RTCRtpTransceiver transceiver = await _pc.addTransceiver(
       track: options.track,
-      kind: RTCRtpMediaTypeExtension.fromString(options.track.kind),
+      kind: RTCRtpMediaTypeExtension.fromString(options.track.kind!),
       init: RTCRtpTransceiverInit(
         direction: TransceiverDirection.SendOnly,
-        streams: [_sendStream],
+        // streams: [_sendStream],
         sendEncodings: options.encodings,
       ),
     );
 
     RTCSessionDescription offer = await _pc.createOffer();
-    SdpObject localSdpObject = SdpObject.fromMap(parse(offer.sdp));
+    SdpObject localSdpObject = SdpObject.fromMap(parse(offer.sdp!));
     MediaObject offerMediaObject;
 
     if (!_transportReady) {
@@ -542,20 +550,20 @@ class Browser extends HandlerInterface {
     // Speacial case for VP9 with SVC.
     bool hackVp9Svc = false;
 
-    ScalabilityMode layers = ScalabilityMode.parse(
-        (options.encodings ?? [RtpEncodingParameters(scalabilityMode: '')])
-            .first
-            .scalabilityMode);
+    ScalabilityMode layers = ScalabilityMode.parse((options.encodings.isNotEmpty
+            ? options.encodings
+            : [RtpEncodingParameters(scalabilityMode: '')])
+        .first
+        .scalabilityMode!);
 
-    if (options.encodings != null &&
-        options.encodings.length == 1 &&
+    if (options.encodings.length == 1 &&
         layers.spatialLayers > 1 &&
         sendingRtpParameters.codecs.first.mimeType.toLowerCase() ==
             'video/vp9') {
       logger.debug('send() | enabling legacy simulcast for VP9 SVC');
 
       hackVp9Svc = true;
-      localSdpObject = SdpObject.fromMap(parse(offer.sdp));
+      localSdpObject = SdpObject.fromMap(parse(offer.sdp!));
       offerMediaObject = localSdpObject.media[mediaSectionIdx.idx];
 
       UnifiedPlanUtils.addLegacySimulcast(
@@ -577,14 +585,14 @@ class Browser extends HandlerInterface {
     sendingRtpParameters.mid = localId;
 
     localSdpObject =
-        SdpObject.fromMap(parse((await _pc.getLocalDescription()).sdp));
+        SdpObject.fromMap(parse((await _pc.getLocalDescription())!.sdp!));
     offerMediaObject = localSdpObject.media[mediaSectionIdx.idx];
 
     // Set RTCP CNAME.
-    sendingRtpParameters.rtcp.cname = CommonUtils.getCname(offerMediaObject);
+    sendingRtpParameters.rtcp!.cname = CommonUtils.getCname(offerMediaObject);
 
     // Set RTP encdoings by parsing the SDP offer if no encoding are given.
-    if (options.encodings == null) {
+    if (options.encodings.isEmpty) {
       sendingRtpParameters.encodings =
           UnifiedPlanUtils.getRtpEncodings(offerMediaObject);
     }
@@ -649,22 +657,24 @@ class Browser extends HandlerInterface {
 
   @override
   Future<HandlerSendDataChannelResult> sendDataChannel(
-      SctpStreamParameters options) async {
+      SendDataChannelArguments options) async {
     _assertSendRirection();
 
     RTCDataChannelInit initOptions = RTCDataChannelInit();
     initOptions.negotiated = true;
-    initOptions.id = options.streamId;
-    initOptions.ordered = options.ordered;
-    initOptions.maxRetransmitTime = options.maxPacketLifeTime;
-    initOptions.maxRetransmits = options.maxRetransmits;
-    initOptions.protocol = options.protocol;
+    initOptions.id = _nextSendSctpStreamId;
+    initOptions.ordered = options.ordered ?? initOptions.ordered;
+    initOptions.maxRetransmitTime =
+        options.maxPacketLifeTime ?? initOptions.maxRetransmitTime;
+    initOptions.maxRetransmits =
+        options.maxRetransmits ?? initOptions.maxRetransmits;
+    initOptions.protocol = options.protocol ?? initOptions.protocol;
     // initOptions.priority = options.priority;
 
     logger.debug('sendDataChannel() [options:${initOptions.toMap()}]');
 
     RTCDataChannel dataChannel =
-        await _pc.createDataChannel(options.label, initOptions);
+        await _pc.createDataChannel(options.label!, initOptions);
 
     // Increase next id.
     _nextSendSctpStreamId = ++_nextSendSctpStreamId % SCTP_NUM_STREAMS.MIS;
@@ -673,10 +683,10 @@ class Browser extends HandlerInterface {
     // m=application section.
     if (!_hasDataChannelMediaSection) {
       RTCSessionDescription offer = await _pc.createOffer();
-      SdpObject localSdpObject = SdpObject.fromMap(parse(offer.sdp));
-      MediaObject offerMediaObject = localSdpObject.media.firstWhere(
+      SdpObject localSdpObject = SdpObject.fromMap(parse(offer.sdp!));
+      MediaObject? offerMediaObject = localSdpObject.media.firstWhere(
         (MediaObject m) => m.type == 'application',
-        orElse: () => null,
+        orElse: () => null as MediaObject,
       );
 
       if (!_transportReady) {
@@ -724,7 +734,7 @@ class Browser extends HandlerInterface {
     logger.debug(
         'setMaxSpatialLayer() [localId:${options.localId}, spatialLayer:${options.spatialLayer}');
 
-    RTCRtpTransceiver transceiver = _mapMidTransceiver[options.localId];
+    RTCRtpTransceiver? transceiver = _mapMidTransceiver[options.localId];
 
     if (transceiver == null) {
       throw ('associated RTCRtpTransceiver not found');
@@ -733,7 +743,7 @@ class Browser extends HandlerInterface {
     RTCRtpParameters parameters = transceiver.sender.parameters;
 
     int idx = 0;
-    parameters.encodings.forEach((RTCRtpEncoding encoding) {
+    parameters.encodings!.forEach((RTCRtpEncoding encoding) {
       if (idx <= options.spatialLayer) {
         encoding.active = true;
       } else {
@@ -753,7 +763,7 @@ class Browser extends HandlerInterface {
     logger.debug(
         'setRtpEncodingParameters() [localId:${options.localId}, params:${options.params}]');
 
-    RTCRtpTransceiver transceiver = _mapMidTransceiver[options.localId];
+    RTCRtpTransceiver? transceiver = _mapMidTransceiver[options.localId];
 
     if (transceiver == null) {
       throw ('associated RTCRtpTransceiver not found');
@@ -762,8 +772,8 @@ class Browser extends HandlerInterface {
     RTCRtpParameters parameters = transceiver.sender.parameters;
 
     int idx = 0;
-    parameters.encodings.forEach((RTCRtpEncoding encoding) {
-      parameters.encodings[idx] = RTCRtpEncoding(
+    parameters.encodings!.forEach((RTCRtpEncoding encoding) {
+      parameters.encodings![idx] = RTCRtpEncoding(
         active: options.params.active != null
             ? options.params.active
             : encoding.active,
@@ -789,7 +799,7 @@ class Browser extends HandlerInterface {
 
     logger.debug('stopReceiving() [localId:$localId');
 
-    RTCRtpTransceiver transceiver = _mapMidTransceiver[localId];
+    RTCRtpTransceiver? transceiver = _mapMidTransceiver[localId];
 
     if (transceiver == null) {
       throw ('associated RTCRtpTransceiveer not found');
@@ -819,13 +829,13 @@ class Browser extends HandlerInterface {
 
     logger.debug('stopSending() [localId:$localId]');
 
-    RTCRtpTransceiver transceiver = _mapMidTransceiver[localId];
+    RTCRtpTransceiver? transceiver = _mapMidTransceiver[localId];
 
     if (transceiver == null) {
       throw ('associated RTCRtpTransceiver not found');
     }
 
-    await transceiver.sender.replaceTrack(null);
+    // await transceiver.sender.replaceTrack(null);
     await _pc.removeTrack(transceiver.sender);
     _remoteSdp.closeMediaSection(transceiver.mid);
 

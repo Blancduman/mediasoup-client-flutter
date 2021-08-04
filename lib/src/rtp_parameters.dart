@@ -5,53 +5,46 @@ import 'package:mediasoup_client_flutter/src/common/index.dart';
 /// media level.
 class RtpCapabilities {
   /// Supported media and RTX codecs.
-  List<RtpCodecCapability> codecs;
+  final List<RtpCodecCapability> codecs;
 
   /// Supported RTP header extensions.
-  List<RtpHeaderExtension> headerExtensions;
+  final List<RtpHeaderExtension> headerExtensions;
 
   /// Supported FEC mechanisms.
-  List<String> fecMechanisms;
+  final List<String> fecMechanisms;
 
   RtpCapabilities({
-    this.codecs,
-    this.headerExtensions,
-    this.fecMechanisms,
+    this.codecs = const [],
+    this.headerExtensions = const [],
+    this.fecMechanisms = const [],
   });
 
-  RtpCapabilities.fromMap(Map data) {
-    codecs = data['codecs']
-        .map<RtpCodecCapability>((codec) => RtpCodecCapability.fromMap(codec))
-        .toList();
-    headerExtensions = (data['headerExtensions'] as List<dynamic>)
-        .map<RtpHeaderExtension>(
-            (headExt) => RtpHeaderExtension.fromMap(headExt))
-        .toList();
-    fecMechanisms = data['fecMechanisms'];
-  }
+  RtpCapabilities.fromMap(Map data)
+      : codecs = data['codecs']
+            .map<RtpCodecCapability>(
+                (codec) => RtpCodecCapability.fromMap(codec))
+            .toList(),
+        headerExtensions = (data['headerExtensions'] as List<dynamic>)
+            .map<RtpHeaderExtension>(
+                (headExt) => RtpHeaderExtension.fromMap(headExt))
+            .toList(),
+        fecMechanisms = data['fecMechanisms'] ?? [];
 
   static RtpCapabilities copy(
     RtpCapabilities old, {
-    List<RtpCodecCapability> codecs,
-    List<RtpHeaderExtension> headerExtensions,
-    List<String> fecMechanisms,
+    List<RtpCodecCapability>? codecs,
+    List<RtpHeaderExtension>? headerExtensions,
+    List<String>? fecMechanisms,
   }) {
     return RtpCapabilities(
-      codecs: codecs != null
-          ? codecs
-          : old.codecs != null
-              ? List<RtpCodecCapability>.from(old.codecs)
-              : null,
+      codecs:
+          codecs != null ? codecs : List<RtpCodecCapability>.from(old.codecs),
       headerExtensions: headerExtensions != null
           ? headerExtensions
-          : old.headerExtensions != null
-              ? List<RtpHeaderExtension>.from(old.headerExtensions)
-              : null,
+          : List<RtpHeaderExtension>.from(old.headerExtensions),
       fecMechanisms: fecMechanisms != null
           ? fecMechanisms
-          : old.fecMechanisms != null
-              ? List<String>.from(old.fecMechanisms)
-              : null,
+          : List<String>.from(old.fecMechanisms),
     );
   }
 
@@ -85,9 +78,9 @@ extension RtpHeaderDirectionExtension on RtpHeaderDirection {
     RtpHeaderDirection.Inactive: 'inactive',
   };
 
-  static RtpHeaderDirection fromString(String type) => types[type];
+  static RtpHeaderDirection fromString(String type) => types[type]!;
 
-  String get value => values[this];
+  String get value => values[this]!;
 }
 
 extension RTCRtpMediaTypeExtension on RTCRtpMediaType {
@@ -103,9 +96,9 @@ extension RTCRtpMediaTypeExtension on RTCRtpMediaType {
     RTCRtpMediaType.RTCRtpMediaTypeData: 'data',
   };
 
-  static RTCRtpMediaType fromString(String type) => types[type];
+  static RTCRtpMediaType fromString(String type) => types[type]!;
 
-  static String value(RTCRtpMediaType type) => values[type];
+  static String value(RTCRtpMediaType type) => values[type]!;
 }
 
 /*
@@ -115,15 +108,17 @@ extension RTCRtpMediaTypeExtension on RTCRtpMediaType {
  * supportedRtpCapabilities.ts file.
  */
 class RtcpFeedback {
-  String type;
+  final String type;
   String parameter;
 
-  RtcpFeedback({this.type, this.parameter});
+  RtcpFeedback({
+    required this.type,
+    this.parameter = '',
+  });
 
-  RtcpFeedback.fromMap(Map<String, dynamic> map) {
-    this.type = map['type'];
-    this.parameter = map['parameter'];
-  }
+  RtcpFeedback.fromMap(Map<String, dynamic> map)
+      : type = map['type'],
+        parameter = map['parameter'] ?? '';
 
   Map<String, String> toMap() {
     return {
@@ -137,48 +132,48 @@ class ExtendedRtpCodec {
   /*
  * Media kind.
  */
-  RTCRtpMediaType kind;
+  final RTCRtpMediaType kind;
 
 /*
  * The codec MIME media type/subtype (e.g. 'audio/opus', 'video/VP8').
  */
-  String mimeType;
+  final String mimeType;
 
 /*
  * Codec clock rate expressed in Hertz.
  */
-  int clockRate;
+  final int clockRate;
 
 /*
  * The number of channels supported (e.g. two for stereo). Just for audio.
  * Default 1.
  */
-  int channels;
+  final int? channels;
 
 /*
  * Transport layer and codec-specific feedback messages for this codec.
  */
-  List<RtcpFeedback> rtcpFeedback;
+  final List<RtcpFeedback> rtcpFeedback;
 
-  int localPayloadType;
-  int localRtxPayloadType;
-  int remotePayloadType;
-  int remoteRtxPayloadType;
+  int? localPayloadType;
+  int? localRtxPayloadType;
+  int? remotePayloadType;
+  int? remoteRtxPayloadType;
   Map<dynamic, dynamic> localParameters;
   Map<dynamic, dynamic> remoteParameters;
 
   ExtendedRtpCodec({
-    this.kind,
-    this.mimeType,
-    this.clockRate,
+    required this.kind,
+    required this.mimeType,
+    required this.clockRate,
     this.channels = 1,
-    this.rtcpFeedback,
+    this.rtcpFeedback = const [],
     this.localPayloadType,
     this.localRtxPayloadType,
     this.remotePayloadType,
     this.remoteRtxPayloadType,
-    this.localParameters,
-    this.remoteParameters,
+    required this.localParameters,
+    required this.remoteParameters,
   });
 }
 
@@ -191,23 +186,23 @@ class RtpCodecCapability {
   /*
 	 * The codec MIME media type/subtype (e.g. 'audio/opus', 'video/VP8').
 	 */
-  String mimeType;
+  final String mimeType;
 
   /*
 	 * The preferred RTP payload type.
 	 */
-  int preferredPayloadType;
+  final int? preferredPayloadType;
 
   /*
 	 * Codec clock rate expressed in Hertz.
 	 */
-  int clockRate;
+  final int clockRate;
 
   /*
 	 * The number of channels supported (e.g. two for stereo). Just for audio.
 	 * Default 1.
 	 */
-  int channels;
+  int? channels;
 
   /*
 	 * Codec specific parameters. Some parameters (such as 'packetization-mode'
@@ -219,29 +214,28 @@ class RtpCodecCapability {
   /*
 	 * Transport layer and codec-specific feedback messages for this codec.
 	 */
-  List<RtcpFeedback> rtcpFeedback;
+  final List<RtcpFeedback> rtcpFeedback;
 
   RtpCodecCapability({
-    this.kind,
-    this.mimeType,
+    required this.kind,
+    this.mimeType = '',
     this.preferredPayloadType,
-    this.clockRate,
+    required this.clockRate,
     this.channels = 1,
-    this.parameters,
-    this.rtcpFeedback,
+    this.parameters = const {},
+    this.rtcpFeedback = const [],
   });
 
-  RtpCodecCapability.fromMap(Map<String, dynamic> data) {
-    kind = RTCRtpMediaTypeExtension.fromString(data['kind']);
-    mimeType = data['mimeType'];
-    preferredPayloadType = data['preferredPayloadType'];
-    clockRate = data['clockRate'];
-    channels = data['channels'];
-    parameters = data['parameters'];
-    rtcpFeedback = data['rtcpFeedback']
-        .map<RtcpFeedback>((rtcpFb) => RtcpFeedback.fromMap(rtcpFb))
-        .toList();
-  }
+  RtpCodecCapability.fromMap(Map<String, dynamic> data)
+      : kind = RTCRtpMediaTypeExtension.fromString(data['kind']),
+        mimeType = data['mimeType'],
+        preferredPayloadType = data['preferredPayloadType'],
+        clockRate = data['clockRate'],
+        channels = data['channels'],
+        parameters = data['parameters'],
+        rtcpFeedback = data['rtcpFeedback']
+            .map<RtcpFeedback>((rtcpFb) => RtcpFeedback.fromMap(rtcpFb))
+            .toList();
 
   Map<String, dynamic> toMap() {
     return {
@@ -258,20 +252,20 @@ class RtpCodecCapability {
 }
 
 class ExtendedRtpHeaderExtension {
-  RTCRtpMediaType kind;
-  String uri;
-  int sendId;
-  int recvId;
-  bool encrypt;
+  final RTCRtpMediaType kind;
+  final String uri;
+  final int sendId;
+  final int recvId;
+  final bool encrypt;
   RtpHeaderDirection direction;
 
   ExtendedRtpHeaderExtension({
-    this.kind,
-    this.uri,
-    this.sendId,
-    this.recvId,
-    this.encrypt,
-    this.direction,
+    required this.kind,
+    required this.uri,
+    required this.sendId,
+    required this.recvId,
+    required this.encrypt,
+    required this.direction,
   });
 }
 
@@ -280,61 +274,58 @@ class RtpHeaderExtension {
 	 * Media kind. If empty string, it's valid for all kinds.
 	 * Default any media kind.
 	 */
-  RTCRtpMediaType kind;
+  final RTCRtpMediaType? kind;
 
   /*
   * The URI of the RTP header extension, as defined in RFC 5285.
   */
-  String uri;
+  final String? uri;
 
   /*
   * The preferred numeric identifier that goes in the RTP packet. Must be
   * unique.
   */
-  int preferredId;
+  final int? preferredId;
 
   /*
   * If true, it is preferred that the value in the header be encrypted as per
   * RFC 6904. Default false.
   */
-  bool preferredEncrypt;
+  bool? preferredEncrypt;
 
   /*
 	 * If 'sendrecv', mediasoup supports sending and receiving this RTP extension.
 	 * 'sendonly' means that mediasoup can send (but not receive) it. 'recvonly'
 	 * means that mediasoup can receive (but not send) it.
 	 */
-  RtpHeaderDirection direction;
+  RtpHeaderDirection? direction;
 
   RtpHeaderExtension({
-    this.kind,
+    required this.kind,
     this.uri,
     this.preferredId,
     this.preferredEncrypt,
     this.direction,
   });
 
-  RtpHeaderExtension.fromMap(Map data) {
-    kind = RTCRtpMediaTypeExtension.fromString(data['kind']);
-    uri = data['uri'];
-    preferredId = data['preferredId'];
-    preferredEncrypt = data['preferredEncrypt'];
-    direction = RtpHeaderDirectionExtension.fromString(data['direction']);
-  }
+  RtpHeaderExtension.fromMap(Map data)
+      : kind = RTCRtpMediaTypeExtension.fromString(data['kind']),
+        uri = data['uri'],
+        preferredId = data['preferredId'],
+        preferredEncrypt = data['preferredEncrypt'],
+        direction = RtpHeaderDirectionExtension.fromString(data['direction']);
 }
 
 class RtxSsrc {
-  int ssrc;
+  final int? ssrc;
 
   RtxSsrc(this.ssrc);
 
-  RtxSsrc.fromMap(Map data) {
-    ssrc = data['ssrc'];
-  }
+  RtxSsrc.fromMap(Map data) : ssrc = data['ssrc'];
 
   Map<String, int> toMap() {
     return {
-      'ssrc': ssrc,
+      'ssrc': ssrc!,
     };
   }
 }
@@ -347,30 +338,29 @@ class RtxSsrc {
 /// parameters are currently considered.
 class RtpHeaderExtensionParameters {
   /// The URI of the RTP header extension, as defined in RFC 5285.
-  String uri;
+  final String? uri;
 
   /// The numeric identifier that goes in the RTP packet. Must be unique.
-  int id;
+  final int? id;
 
   /// If true, the value in the header is encrypted as per RFC 6904. Default false.
-  bool encrypt;
+  bool? encrypt;
 
   /// Configuration parameters for the header extension.
-  Map<dynamic, dynamic> parameters;
+  final Map<dynamic, dynamic> parameters;
 
   RtpHeaderExtensionParameters({
     this.uri,
     this.id,
     this.encrypt,
-    this.parameters,
+    this.parameters = const {},
   });
 
-  RtpHeaderExtensionParameters.fromMap(Map data) {
-    uri = data['uri'];
-    id = data['id'];
-    encrypt = data['encrypt'];
-    parameters = Map<dynamic, dynamic>.from(data['parameters']);
-  }
+  RtpHeaderExtensionParameters.fromMap(Map data)
+      : uri = data['uri'],
+        id = data['id'],
+        encrypt = data['encrypt'],
+        parameters = Map<dynamic, dynamic>.from(data['parameters']);
 
   Map<String, dynamic> toMap() {
     return {
@@ -387,13 +377,13 @@ class RtpEncodingParameters extends RTCRtpEncoding {
 	 * Codec payload type this encoding affects. If unset, first media codec is
 	 * chosen.
 	 */
-  int codecPayloadType;
+  final int? codecPayloadType;
 
   /*
 	 * RTX stream information. It must contain a numeric ssrc field indicating
 	 * the RTX SSRC.
 	 */
-  RtxSsrc rtx;
+  RtxSsrc? rtx;
 
   /*
 	 * It indicates whether discontinuous RTP transmission will be used. Useful
@@ -401,20 +391,20 @@ class RtpEncodingParameters extends RTCRtpEncoding {
 	 * static content is being transmitted, this option disables the RTP
 	 * inactivity checks in mediasoup). Default false.
 	 */
-  bool dtx;
+  bool? dtx;
 
   /*
 	 * Number of spatial and temporal layers in the RTP stream (e.g. 'L1T3').
 	 * See webrtc-svc.
 	 */
-  String scalabilityMode;
+  String? scalabilityMode;
 
   /*
    * Others.
    */
-  bool adaptivePtime;
-  Priority priority;
-  Priority networkPriority;
+  bool? adaptivePtime;
+  Priority? priority;
+  Priority? networkPriority;
 
   RtpEncodingParameters({
     this.codecPayloadType,
@@ -424,14 +414,14 @@ class RtpEncodingParameters extends RTCRtpEncoding {
     this.adaptivePtime,
     this.priority,
     this.networkPriority,
-    bool active,
-    int maxBitrate,
-    int maxFramerate,
-    int minBitrate,
-    int numTemporalLayers,
-    String rid,
-    double scaleResolutionDownBy,
-    int ssrc,
+    bool active = true,
+    int? maxBitrate,
+    int? maxFramerate,
+    int? minBitrate,
+    int? numTemporalLayers,
+    String? rid,
+    double? scaleResolutionDownBy,
+    int? ssrc,
   }) : super(
           active: active,
           maxBitrate: maxBitrate,
@@ -477,7 +467,7 @@ class RtpEncodingParameters extends RTCRtpEncoding {
       adaptivePtime: next.adaptivePtime ?? prev.adaptivePtime,
       priority: next.priority ?? prev.priority,
       networkPriority: next.networkPriority ?? prev.networkPriority,
-      active: next.active ?? prev.active,
+      active: next.active,
       maxBitrate: next.maxBitrate ?? prev.maxBitrate,
       maxFramerate: next.maxFramerate ?? prev.maxFramerate,
       minBitrate: next.minBitrate ?? prev.minBitrate,
@@ -491,19 +481,21 @@ class RtpEncodingParameters extends RTCRtpEncoding {
 }
 
 class CodecParameters {
-  int spropStereo; // sprop-stereo;
-  int useinbandfec;
-  int usedtx;
-  int maxplaybackrate;
-  int maxaveragebitrate;
-  int ptime;
-  int xGoogleStartBitrate; // x-google-start-bitrate;
-  int xGoogleMaxBitrate; // x-google-max-bitrate;
-  int xGoogleMinBitrate; // x-google-min-bitrate;
+  int? spropStereo; // sprop-stereo;
+  final int? useinbandfec;
+  final int? usedtx;
+  final int? maxplaybackrate;
+  final int? maxaveragebitrate;
+  final int? ptime;
+  final int? xGoogleStartBitrate; // x-google-start-bitrate;
+  final int? xGoogleMaxBitrate; // x-google-max-bitrate;
+  final int? xGoogleMinBitrate; // x-google-min-bitrate;
 
-  int get stereo => spropStereo;
+  int? get stereo {
+    return spropStereo;
+  }
 
-  set stereo(int value) => spropStereo = value;
+  set stereo(int? value) => spropStereo = value;
 
   CodecParameters({
     this.spropStereo,
@@ -572,15 +564,17 @@ class CodecParameters {
 
   Map<String, int> toMap([bool stereoInMap = false]) {
     return {
-      stereoInMap ? 'stereo' : 'sprop-stereo': spropStereo,
-      'useinbandfec': useinbandfec,
-      'usedtx': usedtx,
-      'maxplaybackrate': maxplaybackrate,
-      'maxaveragebitrate': maxaveragebitrate,
-      'ptime': ptime,
-      'x-google-start-bitrate': xGoogleStartBitrate,
-      'x-google-max-bitrate': xGoogleMaxBitrate,
-      'x-google-min-bitrate': xGoogleMinBitrate,
+      if (spropStereo != null)
+        stereoInMap ? 'stereo' : 'sprop-stereo': spropStereo!,
+      if (useinbandfec != null) 'useinbandfec': useinbandfec!,
+      if (usedtx != null) 'usedtx': usedtx!,
+      if (maxplaybackrate != null) 'maxplaybackrate': maxplaybackrate!,
+      if (maxaveragebitrate != null) 'maxaveragebitrate': maxaveragebitrate!,
+      if (ptime != null) 'ptime': ptime!,
+      if (xGoogleStartBitrate != null)
+        'x-google-start-bitrate': xGoogleStartBitrate!,
+      if (xGoogleMaxBitrate != null) 'x-google-max-bitrate': xGoogleMaxBitrate!,
+      if (xGoogleMinBitrate != null) 'x-google-min-bitrate': xGoogleMinBitrate!,
     };
   }
 }
@@ -590,43 +584,47 @@ class CodecParameters {
 /// supportedRtpCapabilities.ts file.
 class RtpCodecParameters {
   /// The codec MIME media type/subtype (e.g. 'audio/opus', 'video/VP8').
-  String mimeType;
+  final String mimeType;
 
   /// The value that goes in the RTP Payload Type Field. Must be unique.
   int payloadType;
 
   /// Codec clock rate expressed in Hertz.
-  int clockRate;
+  final int clockRate;
 
   /// The number of channels supported (e.g. two for stereo). Just for audio.
   /// Default 1.
-  int channels;
+  int? channels;
 
   /// Codec-specific parameters available for signaling. Some parameters (such
   /// as 'packetization-mode' and 'profile-level-id' in H264 or 'profile-id' in
   /// VP9) are critical for codec matching.
   // CodecParameters parameters;
-  Map<dynamic, dynamic> parameters;
+  final Map<dynamic, dynamic> parameters;
 
   /// Transport layer and codec-specific feedback messages for this codec.
   List<RtcpFeedback> rtcpFeedback;
 
   RtpCodecParameters({
-    this.mimeType,
-    this.payloadType,
-    this.clockRate,
+    required this.mimeType,
+    required this.payloadType,
+    required this.clockRate,
     this.channels = 1,
-    this.parameters,
-    this.rtcpFeedback,
+    this.parameters = const {},
+    this.rtcpFeedback = const [],
   });
 
-  RtpCodecParameters.fromMap(Map data) {
-    mimeType = data['mimeType'];
-    payloadType = data['payloadType'];
-    clockRate = data['clockRate'];
-    channels = data['channels'];
-    parameters = Map<dynamic, dynamic>.from(data['parameters']);
-  }
+  RtpCodecParameters.fromMap(Map data)
+      : mimeType = data['mimeType'],
+        payloadType = data['payloadType'],
+        clockRate = data['clockRate'],
+        channels = data['channels'],
+        parameters = Map<dynamic, dynamic>.from(data['parameters']),
+        rtcpFeedback = data['rtcpFeedback'] != null
+            ? data['rtcpFeedback']
+                .map<RtcpFeedback>((e) => RtcpFeedback.fromMap(e))
+                .toList()
+            : [];
 
   Map<String, dynamic> toMap() {
     return {
@@ -672,7 +670,7 @@ class RtpCodecParameters {
 /// rid set.
 class RtpParameters {
   /// The MID RTP extension value as defined in the BUNDLE specification.
-  String mid;
+  String? mid;
 
   /// Media and RTX codecs in use.
   List<RtpCodecParameters> codecs;
@@ -684,39 +682,39 @@ class RtpParameters {
   List<RtpEncodingParameters> encodings;
 
   /// Parameters used for RTCP.
-  RtcpParameters rtcp;
+  RtcpParameters? rtcp;
 
   RtpParameters({
     this.mid,
-    this.codecs,
-    this.headerExtensions,
-    this.encodings,
+    this.codecs = const [],
+    this.headerExtensions = const [],
+    this.encodings = const [],
     this.rtcp,
   });
 
-  RtpParameters.fromMap(Map data) {
-    mid = data['mid'];
+  RtpParameters.fromMap(Map data) :
+    mid = data['mid'],
     codecs = List<RtpCodecParameters>.from(data['codecs']
         .map((codec) => RtpCodecParameters.fromMap(codec))
-        .toList());
+        .toList()),
     headerExtensions = List<RtpHeaderExtensionParameters>.from(
         data['headerExtensions']
             .map((headerExtension) =>
                 RtpHeaderExtensionParameters.fromMap(headerExtension))
-            .toList());
+            .toList()),
     encodings = List<RtpEncodingParameters>.from(data['encodings']
         .map((encoding) => RtpEncodingParameters.fromMap(encoding))
-        .toList());
+        .toList()),
     rtcp = RtcpParameters.fromMap(data['rtcp']);
-  }
+
 
   static RtpParameters copy(
     RtpParameters old, {
-    String mid,
-    List<RtpCodecParameters> codecs,
-    List<RtpHeaderExtensionParameters> headerExtensions,
-    List<RtpEncodingParameters> encodings,
-    RtcpParameters rtcp,
+    String? mid,
+    List<RtpCodecParameters>? codecs,
+    List<RtpHeaderExtensionParameters>? headerExtensions,
+    List<RtpEncodingParameters>? encodings,
+    RtcpParameters? rtcp,
   }) {
     return RtpParameters(
       codecs:
@@ -728,7 +726,7 @@ class RtpParameters {
           ? headerExtensions
           : List<RtpHeaderExtensionParameters>.from(old.headerExtensions),
       mid: mid ?? old.mid,
-      rtcp: rtcp != null ? rtcp : RtcpParameters.copy(old.rtcp),
+      rtcp: rtcp != null ? rtcp : old.rtcp != null ? RtcpParameters.copy(old.rtcp!) : null,
     );
   }
 
@@ -744,7 +742,7 @@ class RtpParameters {
       'encodings': encodings
           .map((RtpEncodingParameters encoding) => encoding.toMap())
           .toList(),
-      'rtcp': rtcp.toMap(),
+      'rtcp': rtcp?.toMap(),
     };
   }
 }
@@ -760,10 +758,13 @@ class RtcpParameters extends RTCRTCPParameters {
   /*
 	 * Whether RTCP-mux is used. Default true.
 	 */
-  final bool mux;
+  bool? mux;
 
-  RtcpParameters({this.mux, String cname, bool reducedSize})
-      : super(cname, reducedSize);
+  RtcpParameters({
+    this.mux,
+    String cname = '',
+    bool reducedSize = true,
+  }) : super(cname, reducedSize);
 
   factory RtcpParameters.fromMap(Map<dynamic, dynamic> map) {
     return RtcpParameters(
@@ -775,14 +776,14 @@ class RtcpParameters extends RTCRTCPParameters {
 
   static RtcpParameters copy(
     RtcpParameters old, {
-    bool mux,
-    String cname,
-    bool reducedSize,
+    bool? mux,
+    String? cname,
+    bool? reducedSize,
   }) {
     return RtcpParameters(
-      mux: mux != null ? mux : old?.mux,
-      cname: cname != null ? cname : old?.cname,
-      reducedSize: reducedSize != null ? reducedSize : old?.reducedSize,
+      mux: mux != null ? mux : old.mux,
+      cname: cname != null ? cname : old.cname,
+      reducedSize: reducedSize != null ? reducedSize : old.reducedSize,
     );
   }
 

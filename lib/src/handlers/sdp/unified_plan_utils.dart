@@ -1,5 +1,5 @@
-import 'package:mediasoup_client_flutter/src/RtpParameters.dart';
-import 'package:mediasoup_client_flutter/src/handlers/sdp/MediaSection.dart';
+import 'package:mediasoup_client_flutter/src/rtp_parameters.dart';
+import 'package:mediasoup_client_flutter/src/handlers/sdp/media_section.dart';
 
 class UnifiedPlanUtils {
   static List<RtpEncodingParameters> getRtpEncodings(
@@ -8,7 +8,7 @@ class UnifiedPlanUtils {
     Set<int> ssrcs = Set<int>();
 
     for (Ssrc line in offerMediaObject.ssrcs ?? []) {
-      int ssrc = line.id;
+      int ssrc = line.id!;
 
       ssrcs.add(ssrc);
     }
@@ -27,8 +27,8 @@ class UnifiedPlanUtils {
 
       List<String> tokens = line.ssrcs.split(' ');
 
-      int ssrc;
-      int rtxSsrc;
+      int? ssrc;
+      int? rtxSsrc;
 
       if (tokens.length > 0) {
         ssrc = int.parse(tokens[0]);
@@ -81,9 +81,9 @@ class UnifiedPlanUtils {
     }
 
     // Get the SSRC.
-    Ssrc ssrcMsidLine = (offerMediaObject.ssrcs ?? []).firstWhere(
+    Ssrc? ssrcMsidLine = (offerMediaObject.ssrcs ?? []).firstWhere(
       (Ssrc line) => line.attribute == 'msid',
-      orElse: () => null,
+      orElse: () => null as Ssrc,
     );
 
     if (ssrcMsidLine == null) {
@@ -92,8 +92,8 @@ class UnifiedPlanUtils {
 
     List<String> tmp = ssrcMsidLine.value.split(' ');
 
-    String streamId;
-    String trackId;
+    String streamId = '';
+    String trackId = '';
 
     if (tmp.length > 0) {
       streamId = tmp[0];
@@ -102,8 +102,8 @@ class UnifiedPlanUtils {
       trackId = tmp[1];
     }
 
-    int firstSsrc = ssrcMsidLine.id;
-    int firstRtxSsrc;
+    int? firstSsrc = ssrcMsidLine.id;
+    int? firstRtxSsrc;
 
     // Get the SSRC for RTX.
     (offerMediaObject.ssrcGroups ?? []).any((SsrcGroup line) {
@@ -122,9 +122,9 @@ class UnifiedPlanUtils {
       }
     });
 
-    Ssrc ssrcCnameLine = offerMediaObject.ssrcs.firstWhere(
+    Ssrc? ssrcCnameLine = offerMediaObject.ssrcs?.firstWhere(
       (Ssrc line) => line.attribute == 'cname',
-      orElse: () => null,
+      orElse: () => null as Ssrc,
     );
 
     if (ssrcCnameLine == null) {
@@ -136,17 +136,17 @@ class UnifiedPlanUtils {
     List<int> rtxSsrcs = <int>[];
 
     for (int i = 0; i < numStreams; ++i) {
-      ssrcs.add(firstSsrc + i);
+      ssrcs.add(firstSsrc! + i);
 
       if (firstRtxSsrc != null) {
-        rtxSsrcs.add(firstRtxSsrc + i);
+        rtxSsrcs.add(firstRtxSsrc! + i);
       }
     }
 
     offerMediaObject.ssrcGroups = <SsrcGroup>[];
     offerMediaObject.ssrcs = <Ssrc>[];
 
-    offerMediaObject.ssrcGroups.add(SsrcGroup(
+    offerMediaObject.ssrcGroups!.add(SsrcGroup(
       semantics: 'SIM',
       ssrcs: ssrcs.join(' '),
     ));
@@ -154,13 +154,13 @@ class UnifiedPlanUtils {
     for (int i = 0; i < ssrcs.length; ++i) {
       int ssrc = ssrcs[i];
 
-      offerMediaObject.ssrcs.add(Ssrc(
+      offerMediaObject.ssrcs!.add(Ssrc(
         id: ssrc,
         attribute: 'cname',
         value: cname,
       ));
 
-      offerMediaObject.ssrcs.add(Ssrc(
+      offerMediaObject.ssrcs!.add(Ssrc(
         id: ssrc,
         attribute: 'msid',
         value: '$streamId $trackId',
@@ -171,19 +171,19 @@ class UnifiedPlanUtils {
       int ssrc = ssrcs[i];
       int rtxSsrc = rtxSsrcs[i];
 
-      offerMediaObject.ssrcs.add(Ssrc(
+      offerMediaObject.ssrcs!.add(Ssrc(
         id: rtxSsrc,
         attribute: 'cname',
         value: cname,
       ));
 
-      offerMediaObject.ssrcs.add(Ssrc(
+      offerMediaObject.ssrcs!.add(Ssrc(
         id: rtxSsrc,
         attribute: 'msid',
         value: '$streamId $trackId',
       ));
 
-      offerMediaObject.ssrcGroups.add(SsrcGroup(
+      offerMediaObject.ssrcGroups!.add(SsrcGroup(
         semantics: 'FID',
         ssrcs: '$ssrc $rtxSsrc',
       ));

@@ -1,25 +1,27 @@
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:mediasoup_client_flutter/SdpTransform/SdpTransform.dart';
-import 'package:mediasoup_client_flutter/src/Producer.dart';
-import 'package:mediasoup_client_flutter/src/RtpParameters.dart';
-import 'package:mediasoup_client_flutter/src/SctpParameters.dart';
-import 'package:mediasoup_client_flutter/src/SdpObject.dart';
-import 'package:mediasoup_client_flutter/src/Transport.dart';
-import 'package:mediasoup_client_flutter/src/common/Logger.dart';
-import 'package:mediasoup_client_flutter/src/handlers/sdp/MediaSection.dart';
+import 'package:sdp_transform/sdp_transform.dart';
+import 'package:mediasoup_client_flutter/src/producer.dart';
+import 'package:mediasoup_client_flutter/src/rtp_parameters.dart';
+import 'package:mediasoup_client_flutter/src/sctp_parameters.dart';
+import 'package:mediasoup_client_flutter/src/sdp_object.dart';
+import 'package:mediasoup_client_flutter/src/transport.dart';
+import 'package:mediasoup_client_flutter/src/common/logger.dart';
+import 'package:mediasoup_client_flutter/src/handlers/sdp/media_section.dart';
 
 Logger logger = Logger('RemoteSdp');
 
 class MediaSectionIdx {
-  int idx;
-  String reuseMid;
+  final int idx;
+  final String? reuseMid;
 
-  MediaSectionIdx({this.idx, this.reuseMid,});
+  MediaSectionIdx({
+    required this.idx,
+    this.reuseMid,
+  });
 
-  MediaSectionIdx.fromMap(Map data) {
-    idx = data['idx'];
-    reuseMid = data['reuseMid'];
-  }
+  MediaSectionIdx.fromMap(Map data)
+      : idx = data['idx'],
+        reuseMid = data['reuseMid'];
 
   Map<String, dynamic> toMap() {
     return {
@@ -31,33 +33,33 @@ class MediaSectionIdx {
 
 class RemoteSdp {
   // Remote ICE parameters.
-  IceParameters _iceParameters;
+  late IceParameters _iceParameters;
   // Remote ICE candidates.
-  List<IceCandidate> _iceCandidates;
+  late List<IceCandidate> _iceCandidates;
   // Remote DTLS parameters.
-  DtlsParameters _dtlsParameters;
+  late DtlsParameters _dtlsParameters;
   // Remote SCTP parameters.
-  SctpParameters _sctpParameters;
+  late SctpParameters? _sctpParameters;
   // Parameters for plain RTP (no SRTP nor DTLS no BUNDLE).
-  PlainRtpParameters _plainRtpParameters;
+  late PlainRtpParameters? _plainRtpParameters;
   // Whether this is Plan-B SDP.
-  bool _planB;
+  late bool _planB;
   // MediaSection instances with same order as in the SDP.
   List<MediaSection> _mediaSections = <MediaSection>[];
   // MediaSection indices indexed by MID.
   Map<String, int> _midToIndex = <String, int>{};
   // First MID.
-  String _firstMid;
+  String? _firstMid;
   // SDP object.
-  SdpObject _sdpObject;
+  late SdpObject _sdpObject;
 
   RemoteSdp({
-    IceParameters iceParameters,
-    List<IceCandidate> iceCandidates,
-    DtlsParameters dtlsParameters,
-    SctpParameters sctpParameters,
-    PlainRtpParameters plainRtpParameters,
-    bool planB,
+    required IceParameters iceParameters,
+    required List<IceCandidate> iceCandidates,
+    required DtlsParameters dtlsParameters,
+    SctpParameters? sctpParameters,
+    PlainRtpParameters? plainRtpParameters,
+    bool planB = false,
   }) {
     _iceParameters = iceParameters;
     _iceCandidates = iceCandidates;
@@ -76,17 +78,20 @@ class RemoteSdp {
         username: 'mediasoup-client',
       ),
       name: '-',
-      timing: Timing(start: 0, stop: 0,),
+      timing: Timing(
+        start: 0,
+        stop: 0,
+      ),
       media: <MediaObject>[],
     );
 
     // If ICE parameters are given, add ICE-Lite indicator.
-    if (iceParameters != null && iceParameters.iceLite) {
+    if (iceParameters.iceLite) {
       _sdpObject.icelite = 'ice-lite';
     }
 
     // if DTLS parameters are given, assume WebRTC and BUNDLE.
-    if (dtlsParameters != null) {
+    // if (dtlsParameters != null) {
       _sdpObject.msidSemantic = MsidSemantic(
         semantic: 'WMS',
         token: '*',
@@ -100,8 +105,13 @@ class RemoteSdp {
         hash: dtlsParameters.fingerprints[numFingerprints - 1].value,
       );
 
-      _sdpObject.groups = [Group(type: 'BUNDLE', mids: '',),];
-    }
+      _sdpObject.groups = [
+        Group(
+          type: 'BUNDLE',
+          mids: '',
+        ),
+      ];
+    // }
 
     // If there are plain RPT parameters, override SDP origin.
     if (plainRtpParameters != null) {
@@ -124,7 +134,7 @@ class RemoteSdp {
 
     _iceParameters = iceParameters;
     _sdpObject.icelite = iceParameters.iceLite ? 'ice-lite' : null;
-    
+
     for (MediaSection mediaSection in _mediaSections) {
       mediaSection.setIceParameters(iceParameters);
     }
@@ -141,10 +151,10 @@ class RemoteSdp {
   }
 
   void disableMediaSection(String mid) {
-    int idx = _midToIndex[mid];
+    int? idx = _midToIndex[mid];
 
     if (idx == null) {
-      throw('no media section found with mid "$mid"');
+      throw ('no media section found with mid "$mid"');
     }
 
     MediaSection mediaSection = _mediaSections[idx];
@@ -153,10 +163,10 @@ class RemoteSdp {
   }
 
   void closeMediaSection(String mid) {
-    int idx = _midToIndex[mid];
+    int? idx = _midToIndex[mid];
 
     if (idx == null) {
-      throw('no media section found with mid "$mid"');
+      throw ('no media section found with mid "$mid"');
     }
 
     MediaSection mediaSection = _mediaSections[idx];
@@ -183,24 +193,24 @@ class RemoteSdp {
     String mid,
     RtpParameters offerRtpParameters,
   ) {
-    int idx = _midToIndex[mid];
+    int? idx = _midToIndex[mid];
 
     if (idx == null) {
-      throw('no media section found with mid "$mid"');
+      throw ('no media section found with mid "$mid"');
     }
 
-    OfferMediaSection mediaSection = _mediaSections[idx];
+    OfferMediaSection mediaSection = _mediaSections[idx] as OfferMediaSection;
 
     mediaSection.planBStopReceiving(offerRtpParameters: offerRtpParameters);
     _replaceMediaSection(mediaSection, null);
   }
 
   void send({
-    MediaObject offerMediaObject,
-    String reuseMid,
-    RtpParameters offerRtpParameters,
-    RtpParameters answerRtpParameters,
-    ProducerCodecOptions codecOptions,
+    required MediaObject offerMediaObject,
+    String? reuseMid,
+    required RtpParameters offerRtpParameters,
+    required RtpParameters answerRtpParameters,
+    ProducerCodecOptions? codecOptions,
     bool extmapAllowMixed = false,
   }) {
     AnswerMediaSection mediaSection = AnswerMediaSection(
@@ -219,25 +229,27 @@ class RemoteSdp {
     // Unified-Plan with closed media section replacement.
     if (reuseMid != null) {
       _replaceMediaSection(mediaSection, reuseMid);
-    } else if (!_midToIndex.containsKey(mediaSection.mid)) { // Unified-Plann or Plan-B with different media kind.
+    } else if (!_midToIndex.containsKey(mediaSection.mid)) {
+      // Unified-Plann or Plan-B with different media kind.
       _addMediaSection(mediaSection);
-    } else { // Plan-B with same media kind.
+    } else {
+      // Plan-B with same media kind.
       _replaceMediaSection(mediaSection, null);
     }
   }
 
   void receive({
-    String mid,
-    RTCRtpMediaType kind,
-    RtpParameters offerRtpParameters,
-    String streamId,
-    String trackId,
+    required String mid,
+    required RTCRtpMediaType kind,
+    required RtpParameters offerRtpParameters,
+    required String streamId,
+    required String trackId,
   }) {
-    int idx = _midToIndex[mid];
-    OfferMediaSection mediaSection;
+    int? idx = _midToIndex[mid];
+    OfferMediaSection? mediaSection;
 
     if (idx != null) {
-      mediaSection = _mediaSections[idx];
+      mediaSection = _mediaSections[idx] as OfferMediaSection;
     }
 
     // Unified-Plan or different media kind.
@@ -257,14 +269,18 @@ class RemoteSdp {
 
       // Let's try to recycle a closed media section (if any).
       // NOTE: Yes, we can recycle a closed m=audio section with a new m=video.
-      MediaSection oldMediaSection = _mediaSections.firstWhere((MediaSection m) => m.closed, orElse: () => null,);
+      MediaSection? oldMediaSection = _mediaSections.firstWhere(
+        (MediaSection m) => m.closed,
+        orElse: () => null as MediaSection,
+      );
 
       if (oldMediaSection != null) {
         _replaceMediaSection(mediaSection, oldMediaSection.mid);
       } else {
         _addMediaSection(mediaSection);
       }
-    } else { // Plan-B.
+    } else {
+      // Plan-B.
       mediaSection.planBReceive(
         offerRtpParameters: offerRtpParameters,
         streamId: streamId,
@@ -289,7 +305,7 @@ class RemoteSdp {
 
   void receiveSctpAssociation({bool oldDataChannelSpec = false}) {
     OfferMediaSection mediaSection = OfferMediaSection(
-      iceParameters:  _iceParameters,
+      iceParameters: _iceParameters,
       iceCandidates: _iceCandidates,
       dtlsParameters: _dtlsParameters,
       sctpParameters: _sctpParameters,
@@ -308,7 +324,10 @@ class RemoteSdp {
       MediaSection mediaSection = _mediaSections[idx];
 
       if (mediaSection.closed) {
-        return MediaSectionIdx(idx: idx, reuseMid: mediaSection.mid,);
+        return MediaSectionIdx(
+          idx: idx,
+          reuseMid: mediaSection.mid!,
+        );
       }
     }
 
@@ -317,26 +336,26 @@ class RemoteSdp {
   }
 
   void _regenerateBundleMids() {
-    if (_dtlsParameters == null) {
-      return;
-    }
+    // if (_dtlsParameters == null) {
+    //   return;
+    // }
 
     _sdpObject.groups[0].mids = _mediaSections
-      .where((MediaSection mediaSection) => !mediaSection.closed)
-      .map((MediaSection mediaSection) => mediaSection.mid)
-      .join(' ');
+        .where((MediaSection mediaSection) => !mediaSection.closed)
+        .map((MediaSection mediaSection) => mediaSection.mid)
+        .join(' ');
   }
 
   void _addMediaSection(MediaSection newMediaSection) {
     if (_firstMid == null) {
-      _firstMid = newMediaSection.mid;
+      _firstMid = newMediaSection.mid!;
     }
 
     // Add to the vector.
     _mediaSections.add(newMediaSection);
 
     // Add to the map.
-    _midToIndex[newMediaSection.mid] = _mediaSections.length - 1;
+    _midToIndex[newMediaSection.mid!] = _mediaSections.length - 1;
 
     // Add to the SDP object.
     _sdpObject.media.add(newMediaSection.getObject);
@@ -348,20 +367,20 @@ class RemoteSdp {
   void _replaceMediaSection(MediaSection newMediaSection, dynamic reuseMid) {
     // Store it in the map.
     if (reuseMid is String) {
-      int idx = _midToIndex[reuseMid];
+      int? idx = _midToIndex[reuseMid];
 
       if (idx == null) {
-        throw('no media section found for reuseMid "$reuseMid"');
+        throw ('no media section found for reuseMid "$reuseMid"');
       }
 
       MediaSection oldMediaSection = _mediaSections[idx];
 
       // Replace the index in the vector with the new media section.
-      _mediaSections[idx] =newMediaSection;
+      _mediaSections[idx] = newMediaSection;
 
       // Update the map.
       _midToIndex.remove(oldMediaSection.mid);
-      _midToIndex[newMediaSection.mid] = idx;
+      _midToIndex[newMediaSection.mid!] = idx;
 
       // Update the SDP object.
       _sdpObject.media[idx] = newMediaSection.getObject;
@@ -369,10 +388,10 @@ class RemoteSdp {
       // Regenerate BUNDLE mids.
       _regenerateBundleMids();
     } else {
-      int idx = _midToIndex[newMediaSection.mid];
+      int? idx = _midToIndex[newMediaSection.mid];
 
       if (idx == null) {
-        throw('no media section found with mid "${newMediaSection.mid}"');
+        throw ('no media section found with mid "${newMediaSection.mid}"');
       }
 
       // Replace the index in the vector with the new media section.

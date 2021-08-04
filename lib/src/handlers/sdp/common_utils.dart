@@ -1,8 +1,8 @@
-import 'package:mediasoup_client_flutter/SdpTransform/Parser.dart';
-import 'package:mediasoup_client_flutter/src/RtpParameters.dart';
-import 'package:mediasoup_client_flutter/src/SdpObject.dart';
-import 'package:mediasoup_client_flutter/src/handlers/sdp/MediaSection.dart';
-import 'package:mediasoup_client_flutter/src/Transport.dart';
+import 'package:sdp_transform/sdp_transform.dart';
+import 'package:mediasoup_client_flutter/src/rtp_parameters.dart';
+import 'package:mediasoup_client_flutter/src/sdp_object.dart';
+import 'package:mediasoup_client_flutter/src/handlers/sdp/media_section.dart';
+import 'package:mediasoup_client_flutter/src/transport.dart';
 
 class CommonUtils {
   static RtpCapabilities extractRtpCapabilities(SdpObject sdpObject) {
@@ -15,30 +15,33 @@ class CommonUtils {
     bool gotVideo = false;
 
     for (MediaObject m in sdpObject.media) {
-      String kind = m.type;
+      String kind = m.type!;
 
       switch (kind) {
-        case 'audio': {
-          if (gotAudio){
+        case 'audio':
+          {
+            if (gotAudio) {
+              continue;
+            }
+            gotAudio = true;
+            break;
+          }
+        case 'video':
+          {
+            if (gotVideo) {
+              continue;
+            }
+            gotVideo = true;
+            break;
+          }
+        default:
+          {
             continue;
           }
-          gotAudio = true;
-          break;
-          }
-        case 'video': {
-          if (gotVideo) {
-            continue;
-          }
-          gotVideo = true;
-          break;
-        }
-        default: {
-          continue;
-        }
       }
 
       // Get codecs.
-      for (Rtp rtp in m.rtp) {
+      for (Rtp rtp in m.rtp!) {
         RtpCodecCapability codec = RtpCodecCapability(
           kind: RTCRtpMediaTypeExtension.fromString(kind),
           mimeType: '$kind/${rtp.codec}',
@@ -49,20 +52,20 @@ class CommonUtils {
           rtcpFeedback: [],
         );
 
-        codecsMap[codec.preferredPayloadType] = codec;
+        codecsMap[codec.preferredPayloadType!] = codec;
       }
 
       // Get codec parameters.
       for (Fmtp fmtp in m.fmtp ?? []) {
-        Map<dynamic, dynamic> parameters = parseParams(fmtp.config);
-        RtpCodecCapability codec = codecsMap[fmtp.payload];
+        final Map<dynamic, dynamic> parameters = parseParams(fmtp.config);
+        final RtpCodecCapability? codec = codecsMap[fmtp.payload];
 
         if (codec == null) {
           continue;
         }
 
         // Specials case to convert parameter value to string.
-        if (parameters != null && parameters['profile-level-id'] != null) {
+        if (parameters['profile-level-id'] != null) {
           parameters['profile-level-id'] = '${parameters['profile-level-id']}';
         }
 
@@ -71,29 +74,36 @@ class CommonUtils {
 
       // Get RTCP feedback for each codec.
       for (RtcpFb fb in m.rtcpFb ?? []) {
-        RtpCodecCapability codec = codecsMap[fb.payload];
+        RtpCodecCapability? codec = codecsMap[fb.payload];
 
         if (codec == null) {
           continue;
         }
 
-        RtcpFeedback feedback = RtcpFeedback(type: fb.type, parameter: fb.subtype,);
+        RtcpFeedback feedback = RtcpFeedback(
+          type: fb.type,
+          parameter: fb.subtype,
+        );
 
         // if (feedback.parameter == null || feedback.parameter.isEmpty) {
         //   feedback.parameter = null;
         // }
-        
+
         codec.rtcpFeedback.add(feedback);
       }
 
       // Get RTP header extensions.
       for (Ext ext in m.ext ?? []) {
         // Ignore encrypted extensions (not yet supported in mediasoup).
-        if (ext.encryptUri != null && ext.encryptUri.isNotEmpty) {
+        if (ext.encryptUri != null && ext.encryptUri!.isNotEmpty) {
           continue;
         }
 
-        RtpHeaderExtension headerExtension = RtpHeaderExtension(kind: RTCRtpMediaTypeExtension.fromString(kind), uri: ext.uri, preferredId: ext.value,);
+        RtpHeaderExtension headerExtension = RtpHeaderExtension(
+          kind: RTCRtpMediaTypeExtension.fromString(kind),
+          uri: ext.uri,
+          preferredId: ext.value,
+        );
 
         headerExtensions.add(headerExtension);
       }
@@ -101,25 +111,30 @@ class CommonUtils {
 
     RtpCapabilities rtpCapabilities = RtpCapabilities(
       codecs: List<RtpCodecCapability>.of(codecsMap.values),
-      headerExtensions:  headerExtensions,
+      headerExtensions: headerExtensions,
     );
 
     return rtpCapabilities;
   }
 
   static DtlsParameters extractDtlsParameters(SdpObject sdpObject) {
-    MediaObject mediaObject = (sdpObject.media ?? [])
-      .firstWhere((m) =>
-       m.iceUfrag != null && m.iceUfrag.isNotEmpty && m.port != null && m.port != 0,
-       orElse: () => null,
-      );
+    MediaObject? mediaObject = sdpObject.media.firstWhere(
+      (m) =>
+          m.iceUfrag != null &&
+          m.iceUfrag!.isNotEmpty &&
+          m.port != null &&
+          m.port != 0,
+      orElse: () => null as MediaObject,
+    );
+
     if (mediaObject == null) {
-      throw('no active media section found');
+      throw ('no active media section found');
     }
 
-    Fingerprint fingerprint = mediaObject.fingerprint ?? sdpObject.fingerprint;
+    Fingerprint fingerprint =
+        (mediaObject.fingerprint ?? sdpObject.fingerprint)!;
 
-    DtlsRole role;
+    DtlsRole role = DtlsRole.auto;
 
     switch (mediaObject.setup) {
       case 'active':
@@ -147,17 +162,20 @@ class CommonUtils {
   }
 
   static String getCname(MediaObject offerMediaObject) {
-    Ssrc ssrcCnameLine = (offerMediaObject.ssrcs ?? [])
-      .firstWhere((Ssrc ssrc) => ssrc.attribute == 'cname',
+    Ssrc ssrcCnameLine = (offerMediaObject.ssrcs ?? []).firstWhere(
+      (Ssrc ssrc) => ssrc.attribute == 'cname',
       orElse: () => Ssrc(value: ''),
-      );
+    );
 
     return ssrcCnameLine.value;
   }
 
   /// Apply codec parameters in the given SDP m= section answer based on the
   /// given RTP parameters of an offer.
-  static void applyCodecParameters(RtpParameters offerRtpParameters, MediaObject answerMediaObject,) {
+  static void applyCodecParameters(
+    RtpParameters offerRtpParameters,
+    MediaObject? answerMediaObject,
+  ) {
     for (RtpCodecParameters codec in offerRtpParameters.codecs) {
       String mimeType = codec.mimeType.toLowerCase();
 
@@ -166,39 +184,48 @@ class CommonUtils {
         continue;
       }
 
-      Rtp rtp = (answerMediaObject.rtp ?? [])
-        .firstWhere((Rtp r) => r != null && r.payload == codec.payloadType, orElse: () => null,);
+      Rtp? rtp = (answerMediaObject?.rtp ?? []).firstWhere(
+        (Rtp r) => r.payload == codec.payloadType,
+        orElse: () => null as Rtp,
+      );
 
       if (rtp == null) {
         continue;
       }
 
       // Just in case.. ?
-      answerMediaObject.fmtp = answerMediaObject.fmtp ?? [];
+      answerMediaObject!.fmtp = answerMediaObject.fmtp ?? [];
 
-      Fmtp fmtp = answerMediaObject.fmtp
-        .firstWhere((Fmtp f) => f != null && f.payload == codec.payloadType, orElse: () => null,);
-      
+      Fmtp? fmtp = (answerMediaObject.fmtp ?? []).firstWhere(
+        (Fmtp f) => f.payload == codec.payloadType,
+        orElse: () => null as Fmtp,
+      );
+
       if (fmtp == null) {
-        fmtp = Fmtp(payload: codec.payloadType, config: '',);
-        answerMediaObject.fmtp.add(fmtp);
+        fmtp = Fmtp(
+          payload: codec.payloadType,
+          config: '',
+        );
+        answerMediaObject.fmtp!.add(fmtp);
       }
 
       Map<dynamic, dynamic> parameters = parseParams(fmtp.config);
 
       switch (mimeType) {
-        case 'audio/opus': {
-          int spropStereo = codec.parameters['sprop-stereo'];
+        case 'audio/opus':
+          {
+            final int? spropStereo = codec.parameters['sprop-stereo'];
 
-          if (spropStereo != null) {
-            parameters['stereo'] = spropStereo > 0 ? 1 : 0;
+            if (spropStereo != null) {
+              parameters['stereo'] = spropStereo > 0 ? 1 : 0;
+            }
+            break;
           }
+
+        default:
           break;
-        }
-          
-        default: break;
       }
-      
+
       // Write the codec fmtp.config back.
       fmtp.config = '';
 

@@ -373,7 +373,11 @@ class RoomClientRepository {
 
       Map response = await _webSocket.socket.request('join', {
         'displayName': displayName,
-        'device': "It's flutter boy",
+        'device': {
+          'name': "Flutter",
+          'flag': 'flutter',
+          'version': 0.2,
+        },
         'rtpCapabilities': _mediasoupDevice.rtpCapabilities.toMap(),
         'sctpCapabilities': _mediasoupDevice.sctpCapabilities.toMap(),
       });
@@ -443,7 +447,7 @@ class RoomClientRepository {
                     request['data']['kind']),
                 rtpParameters:
                 RtpParameters.fromMap(request['data']['rtpParameters']),
-                appData: Map<dynamic, dynamic>.from(request['data']['appData']),
+                appData: Map<String, dynamic>.from(request['data']['appData']),
                 peerId: request['data']['peerId'],
                 accept: accept,
               );
