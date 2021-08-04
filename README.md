@@ -108,4 +108,4 @@ sendTransport.produce(
 // Producer will return through _producerCallback.
 ```
 
-Check example for more information;
+Check [example](https://github.com/Blancduman/mediasoup-client-flutter/tree/main/example) for more information;
