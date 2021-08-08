@@ -391,8 +391,9 @@ class RoomClientRepository {
         peersBloc.add(PeerAdd(newPeer: value));
       });
 
-      if (_produce) {
-        enableMic();
+      // if (_produce) {
+      if (false) {
+        // enableMic();
         enableWebcam();
 
         _sendTransport.on('connectionstatechange', (connectionState) {

@@ -498,7 +498,7 @@ class MediaObject {
   Simulcast? simulcast;
   Simulcast_03? simulcast_03;
   List<Rid>? rids;
-  String? extmapAllowMixed;
+  bool? extmapAllowMixed;
   String? rtcpRsize;
   int? sctpPort;
   int? maxMessageSize;
@@ -540,7 +540,7 @@ class MediaObject {
     this.rtcpMux,
     this.rtcpFb = const [],
     this.ssrcs = const [],
-    this.extmapAllowMixed,
+    this.extmapAllowMixed = true,
     this.rids = const [],
     this.simulcast,
     this.simulcast_03,
@@ -578,7 +578,7 @@ class MediaObject {
       endOfCandidates = data['endOfCandidates'];
     }
     if (data['iceOptions'] != null) {
-      iceOptions = data['iceOptions'];
+      iceOptions = data['iceOptions'].replaceFirst('renomination', '');
     }
     if (data['setup'] != null) {
       setup = data['setup'];
@@ -1118,8 +1118,8 @@ class AnswerMediaSection extends MediaSection {
 
           // Allow both 1 byte and 2 bytes length header extensions.
           if (extmapAllowMixed == true &&
-              offerMediaObject.extmapAllowMixed == 'extmap-allow-mixed') {
-            _mediaObject.extmapAllowMixed = 'extmap-allow-mixed';
+              offerMediaObject.extmapAllowMixed == true) {
+            _mediaObject.extmapAllowMixed = true;
           }
 
           // Simulcast.

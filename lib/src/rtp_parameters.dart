@@ -457,6 +457,26 @@ class RtpEncodingParameters extends RTCRtpEncoding {
     );
   }
 
+  Map<String, dynamic> toMap() {
+    return {
+      if (rid != null) 'rid': rid,
+      'active': active,
+      if (maxBitrate != null) 'maxBitrate': maxBitrate,
+      if (maxFramerate != null) 'maxFramerate': maxFramerate,
+      if (minBitrate != null) 'minBitrate': minBitrate,
+      'numTemporalLayers': numTemporalLayers,
+      'scaleResolutionDownBy': scaleResolutionDownBy,
+      if (ssrc != null) 'ssrc': ssrc,
+      if (codecPayloadType != null) 'codecPayloadType': codecPayloadType,
+      if (rtx != null) 'rtx': rtx,
+      if (dtx != null) 'dtx': dtx,
+      if (scalabilityMode != null) 'scalabilityMode': scalabilityMode,
+      if (adaptivePtime != null) 'adaptivePtime': adaptivePtime,
+      if (priority != null) 'priority': priority,
+      if (networkPriority != null) 'networkPriority': networkPriority,
+    };
+  }
+
   static RtpEncodingParameters assign(
       RtpEncodingParameters prev, RtpEncodingParameters next) {
     return RtpEncodingParameters(

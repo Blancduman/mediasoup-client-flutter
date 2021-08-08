@@ -277,9 +277,11 @@ class Browser extends HandlerInterface {
 
     await _pc!.setLocalDescription(answer);
 
-    RTCRtpTransceiver? transceiver = (await _pc!.getTransceivers()).firstWhere(
+    final transceivers = await _pc!.getTransceivers();
+
+    RTCRtpTransceiver? transceiver = transceivers.firstWhereOrNull(
       (RTCRtpTransceiver t) => t.mid == localId,
-      orElse: () => null as RTCRtpTransceiver,
+      // orElse: () => null,
     );
 
     if (transceiver == null) {
@@ -297,9 +299,10 @@ class Browser extends HandlerInterface {
               as List<MediaStream>)
           .firstWhere(
         (element) =>
-            element.getTracks().first.id == transceiver.receiver.track!.id,
+           (options.kind == RTCRtpMediaType.RTCRtpMediaTypeAudio ? element.getAudioTracks : element.getVideoTracks )().first.id == transceiver.receiver.track!.id,
         orElse: () => null as MediaStream,
       ),
+
     );
   }
 
@@ -455,19 +458,13 @@ class Browser extends HandlerInterface {
     };
 
     _pc = await createPeerConnection({
-      'iceServers': options.iceServers != null
-          ? options.iceServers.map((RTCIceServer i) => i.toMap()).toList()
-          : [],
+      'iceServers': options.iceServers.map((RTCIceServer i) => i.toMap()).toList(),
       'iceTransportPolicy': options.iceTransportPolicy?.value ?? 'all',
       'bundlePolicy': 'max-bundle',
       'rtcpMuxPolicy': 'require',
       'sdpSemantics': 'unified-plan',
       ...options.additionalSettings,
-    }, options.proprietaryConstraints.isEmpty ? const {
-      'optional': [
-        {'DtlsSrtpKeyAgreement': true},
-      ],
-    } : options.proprietaryConstraints);
+    }, options.proprietaryConstraints);
 
     // Handle RTCPeerConnection connection status.
     _pc!.onIceConnectionState = (RTCIceConnectionState state) {
@@ -515,8 +512,7 @@ class Browser extends HandlerInterface {
     if (options.encodings.length > 1) {
       int idx = 0;
       options.encodings.forEach((RtpEncodingParameters encoding) {
-        encoding.rid = 'r$idx';
-        idx++;
+        encoding.rid = 'r${idx++}';
       });
     }
 
@@ -876,5 +872,14 @@ class Browser extends HandlerInterface {
         iceServers.map((RTCIceServer ice) => ice.toMap()).toList();
 
     await _pc!.setConfiguration(configuration);
+  }
+}
+
+extension FirstWhereOrNullExtension<E> on Iterable<E> {
+  E? firstWhereOrNull(bool Function(E) test) {
+    for (E element in this) {
+      if (test(element)) return element;
+    }
+    return null;
   }
 }
