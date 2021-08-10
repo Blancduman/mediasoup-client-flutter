@@ -27,7 +27,7 @@ final rtpCapabilities = RtpCapabilities.fromMap(routerRtpCapabilities);
 await device.load(routerRtpCapabilities: rtpCapabilities);
 
 // Check wheter we can produce video to the router.
-if (device.canProduce(RTCRtpMediaType.RTCRtpMediaTypeVideo)) {
+if (!device.canProduce(RTCRtpMediaType.RTCRtpMediaTypeVideo)) {
     print('cannot produce video');
     // Abort next steps.
 }
