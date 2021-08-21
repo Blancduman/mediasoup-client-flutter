@@ -7,6 +7,7 @@ import 'package:example/logic/blocs/peers/peers_bloc.dart';
 import 'package:example/logic/blocs/producers/producers_bloc.dart';
 import 'package:example/logic/blocs/room/room_bloc.dart';
 import 'package:example/web_socket.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mediasoup_client_flutter/mediasoup_client_flutter.dart';
 
@@ -48,13 +49,16 @@ class RoomClientRepository {
     this.displayName,
     this.mediaDevicesBloc,
   }) {
-    _mediaDevicesBlocSubscription = mediaDevicesBloc.stream.listen((MediaDevicesState state) async {
-      if (state.selectedAudioInput != null && state.selectedAudioInput.deviceId != audioInputDeviceId) {
+    _mediaDevicesBlocSubscription =
+        mediaDevicesBloc.stream.listen((MediaDevicesState state) async {
+      if (state.selectedAudioInput != null &&
+          state.selectedAudioInput.deviceId != audioInputDeviceId) {
         await disableMic();
         enableMic();
       }
 
-      if (state.selectedVideoInput != null && state.selectedVideoInput.deviceId != videoInputDeviceId) {
+      if (state.selectedVideoInput != null &&
+          state.selectedVideoInput.deviceId != videoInputDeviceId) {
         await disableWebcam();
         enableWebcam();
       }
@@ -93,8 +97,7 @@ class RoomClientRepository {
       await _webSocket.socket.request('closeProducer', {
         'producerId': webcamId,
       });
-    } catch (error) {}
-    finally {
+    } catch (error) {} finally {
       meBloc.add(MeSetWebcamInProgress(progress: false));
     }
   }
@@ -121,7 +124,6 @@ class RoomClientRepository {
 
   void _producerCallback(Producer producer) {
     if (producer.source == 'mic') {
-
       producer.on('transportclose', () {
         producersBloc.add(ProducerRemove(source: 'mic'));
       });
@@ -129,8 +131,7 @@ class RoomClientRepository {
       producer.on('trackended', () {
         disableMic().catchError((data) {});
       });
-    } else if (producer.source == 'webcam'){
-
+    } else if (producer.source == 'webcam') {
       producer.on('transportclose', () {
         producersBloc.add(ProducerRemove(source: 'webcam'));
       });
@@ -155,7 +156,8 @@ class RoomClientRepository {
     accept({});
 
     consumersBloc.add(ConsumerAdd(consumer: consumer));
-    peersBloc.add(PeerAddConsumer(peerId: consumer.peerId, consumerId: consumer.id));
+    peersBloc
+        .add(PeerAddConsumer(peerId: consumer.peerId, consumerId: consumer.id));
   }
 
   Future<MediaStream> createAudioStream() async {
@@ -163,13 +165,15 @@ class RoomClientRepository {
     Map<String, dynamic> mediaConstraints = {
       'audio': {
         'optional': [
-          {'sourceId': audioInputDeviceId, },
+          {
+            'sourceId': audioInputDeviceId,
+          },
         ],
       },
     };
 
     MediaStream stream =
-    await navigator.mediaDevices.getUserMedia(mediaConstraints);
+        await navigator.mediaDevices.getUserMedia(mediaConstraints);
 
     return stream;
   }
@@ -181,18 +185,20 @@ class RoomClientRepository {
       'video': {
         'mandatory': {
           'minWidth':
-          '1280', // Provide your own width, height and frame rate here
+              '1280', // Provide your own width, height and frame rate here
           'minHeight': '720',
           'minFrameRate': '30',
         },
         'optional': [
-          {'sourceId': videoInputDeviceId, },
+          {
+            'sourceId': videoInputDeviceId,
+          },
         ],
       },
     };
 
     MediaStream stream =
-    await navigator.mediaDevices.getUserMedia(mediaConstraints);
+        await navigator.mediaDevices.getUserMedia(mediaConstraints);
 
     return stream;
   }
@@ -207,10 +213,9 @@ class RoomClientRepository {
     try {
       RtpCodecCapability codec = _mediasoupDevice.rtpCapabilities.codecs
           .firstWhere(
-              (RtpCodecCapability c) =>
-          c.mimeType.toLowerCase() == 'video/vp9',
-          orElse: () =>
-          throw 'desired vp9 codec+configuration is not supported');
+              (RtpCodecCapability c) => c.mimeType.toLowerCase() == 'video/vp9',
+              orElse: () =>
+                  throw 'desired vp9 codec+configuration is not supported');
       videoStream = await createVideoStream();
       track = videoStream.getVideoTracks().first;
       meBloc.add(MeSetWebcamInProgress(progress: true));
@@ -219,9 +224,9 @@ class RoomClientRepository {
         codecOptions: ProducerCodecOptions(
           videoGoogleStartBitrate: 1000,
         ),
-        encodings: [
-          RtpEncodingParameters(scalabilityMode: 'S3T3_KEY'),
-        ],
+        encodings: kIsWeb ? [
+          RtpEncodingParameters(scalabilityMode: 'S3T3_KEY', scaleResolutionDownBy: 1.0),
+        ] : [],
         stream: videoStream,
         appData: {
           'source': 'webcam',
@@ -234,7 +239,6 @@ class RoomClientRepository {
         await videoStream.dispose();
       }
     }
-
   }
 
   void enableMic() async {
@@ -267,7 +271,8 @@ class RoomClientRepository {
     try {
       _mediasoupDevice = Device();
 
-      dynamic routerRtpCapabilities = await _webSocket.socket.request('getRouterRtpCapabilities', {});
+      dynamic routerRtpCapabilities =
+          await _webSocket.socket.request('getRouterRtpCapabilities', {});
 
       print(routerRtpCapabilities);
 
@@ -281,7 +286,7 @@ class RoomClientRepository {
 
       if (_produce) {
         Map transportInfo =
-        await _webSocket.socket.request('createWebRtcTransport', {
+            await _webSocket.socket.request('createWebRtcTransport', {
           'forceTcp': false,
           'producing': true,
           'consuming': false,
@@ -296,9 +301,10 @@ class RoomClientRepository {
         _sendTransport.on('connect', (Map data) {
           _webSocket.socket
               .request('connectWebRtcTransport', {
-            'transportId': _sendTransport.id,
-            'dtlsParameters': data['dtlsParameters'].toMap(),
-          }).then(data['callback'])
+                'transportId': _sendTransport.id,
+                'dtlsParameters': data['dtlsParameters'].toMap(),
+              })
+              .then(data['callback'])
               .catchError(data['errback']);
         });
 
@@ -311,7 +317,7 @@ class RoomClientRepository {
                 'kind': data['kind'],
                 'rtpParameters': data['rtpParameters'].toMap(),
                 if (data['appData'] != null)
-                'appData': Map<String, dynamic>.from(data['appData'])
+                  'appData': Map<String, dynamic>.from(data['appData'])
               },
             );
 
@@ -356,16 +362,15 @@ class RoomClientRepository {
 
         _recvTransport.on(
           'connect',
-              (data) {
+          (data) {
             _webSocket.socket
                 .request(
-              'connectWebRtcTransport',
-              {
-                'transportId': _recvTransport.id,
-                'dtlsParameters': data['dtlsParameters'].toMap(),
-              },
-            )
-                .then(data['callback'])
+                  'connectWebRtcTransport',
+                  {
+                    'transportId': _recvTransport.id,
+                    'dtlsParameters': data['dtlsParameters'].toMap(),
+                  },
+                ).then(data['callback'])
                 .catchError(data['errback']);
           },
         );
@@ -385,7 +390,6 @@ class RoomClientRepository {
       response['peers'].forEach((value) {
         peersBloc.add(PeerAdd(newPeer: value));
       });
-
 
       if (_produce) {
         enableMic();
@@ -446,7 +450,7 @@ class RoomClientRepository {
                 kind: RTCRtpMediaTypeExtension.fromString(
                     request['data']['kind']),
                 rtpParameters:
-                RtpParameters.fromMap(request['data']['rtpParameters']),
+                    RtpParameters.fromMap(request['data']['rtpParameters']),
                 appData: Map<String, dynamic>.from(request['data']['appData']),
                 peerId: request['data']['peerId'],
                 accept: accept,
@@ -464,43 +468,51 @@ class RoomClientRepository {
 
     _webSocket.onNotification = (notification) async {
       switch (notification['method']) {
-      //TODO: todo;
+        //TODO: todo;
         case 'producerScore':
           {
             break;
           }
-        case 'consumerClosed': {
-          String consumerId = notification['data']['consumerId'];
-          consumersBloc.add(ConsumerRemove(consumerId: consumerId));
-          peersBloc.add(PeerRemoveConsumer(peerId: notification['data']['peerId'], consumerId: consumerId));
+        case 'consumerClosed':
+          {
+            String consumerId = notification['data']['consumerId'];
+            consumersBloc.add(ConsumerRemove(consumerId: consumerId));
+            peersBloc.add(PeerRemoveConsumer(
+                peerId: notification['data']['peerId'],
+                consumerId: consumerId));
 
-          break;
-        }
-        case 'consumerPaused': {
-          String consumerId = notification['data']['consumerId'];
-          consumersBloc.add(ConsumerPaused(consumerId: consumerId));
-          break;
-        }
+            break;
+          }
+        case 'consumerPaused':
+          {
+            String consumerId = notification['data']['consumerId'];
+            consumersBloc.add(ConsumerPaused(consumerId: consumerId));
+            break;
+          }
 
-        case 'consumerResumed': {
-          String consumerId = notification['data']['consumerId'];
-          consumersBloc.add(ConsumerResumed(consumerId: consumerId));
-          break;
-        }
+        case 'consumerResumed':
+          {
+            String consumerId = notification['data']['consumerId'];
+            consumersBloc.add(ConsumerResumed(consumerId: consumerId));
+            break;
+          }
 
-        case 'newPeer': {
-          Map newPeer = Map<String, dynamic>.from(notification['data']);
-          peersBloc.add(PeerAdd(newPeer: newPeer));
-          break;
-        }
+        case 'newPeer':
+          {
+            Map newPeer = Map<String, dynamic>.from(notification['data']);
+            peersBloc.add(PeerAdd(newPeer: newPeer));
+            break;
+          }
 
-        case 'peerClosed': {
-          String peerId = notification['data']['peerId'];
-          peersBloc.add(PeerRemove(peerId: peerId));
-          break;
-        }
+        case 'peerClosed':
+          {
+            String peerId = notification['data']['peerId'];
+            peersBloc.add(PeerRemove(peerId: peerId));
+            break;
+          }
 
-        default: break;
+        default:
+          break;
       }
     };
   }

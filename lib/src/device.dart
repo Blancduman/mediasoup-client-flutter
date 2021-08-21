@@ -13,14 +13,14 @@ class Device {
   // Loaded flag.
   bool _loaded = false;
   // Extended RTP capabilities.
-  late ExtendedRtpCapabilities _extendedRtpCapabilities;
+  ExtendedRtpCapabilities? _extendedRtpCapabilities;
   // Local RTP capabilities for receiving media.
-  late RtpCapabilities _recvRtpCapabilities;
+  RtpCapabilities? _recvRtpCapabilities;
   // Whether we can produce audio/video based on computed extended RTP
   // capabilities.
-  late CanProduceByKind _canProduceByKind;
+  CanProduceByKind? _canProduceByKind;
   // Local SCTP capabilities.
-  late SctpCapabilities _sctpCapabilities;
+  SctpCapabilities? _sctpCapabilities;
   // Observer instance.
   EnhancedEventEmitter _observer = EnhancedEventEmitter();
 
@@ -35,7 +35,7 @@ class Device {
       throw ('not loaded');
     }
 
-    return _recvRtpCapabilities;
+    return _recvRtpCapabilities!;
   }
 
   /// SCTP capabilities of the Device.
@@ -45,7 +45,7 @@ class Device {
       throw ('not loaded');
     }
 
-    return _sctpCapabilities;
+    return _sctpCapabilities!;
   }
 
   /// Observer.
@@ -92,14 +92,14 @@ class Device {
       // Check wether we can produce audio/video.
       _canProduceByKind = CanProduceByKind(
         audio: Ortc.canSend(
-            RTCRtpMediaType.RTCRtpMediaTypeAudio, _extendedRtpCapabilities),
+            RTCRtpMediaType.RTCRtpMediaTypeAudio, _extendedRtpCapabilities!),
         video: Ortc.canSend(
-            RTCRtpMediaType.RTCRtpMediaTypeVideo, _extendedRtpCapabilities),
+            RTCRtpMediaType.RTCRtpMediaTypeVideo, _extendedRtpCapabilities!),
       );
 
       // Generate our receiving RTP capabilities for receiving media.
       _recvRtpCapabilities =
-          Ortc.getRecvRtpCapabilities(_extendedRtpCapabilities);
+          Ortc.getRecvRtpCapabilities(_extendedRtpCapabilities!);
 
       // This may throw.
       Ortc.validateRtpCapabilities(_recvRtpCapabilities);
@@ -150,7 +150,7 @@ class Device {
       throw ('invalid kind ${RTCRtpMediaTypeExtension.value(kind)}');
     }
 
-    return _canProduceByKind.canIt(kind);
+    return _canProduceByKind!.canIt(kind);
   }
 
   Transport _createTransport({
@@ -197,7 +197,7 @@ class Device {
       proprietaryConstraints: proprietaryConstraints,
       appData: appData,
       extendedRtpCapabilities: _extendedRtpCapabilities,
-      canProduceByKind: _canProduceByKind,
+      canProduceByKind: _canProduceByKind!,
       producerCallback: producerCallback,
       dataProducerCallback: dataProducerCallback,
       consumerCallback: consumerCallback,
@@ -265,6 +265,7 @@ class Device {
           ? SctpParameters.fromMap(data['sctpParameters'])
           : null,
       iceServers: [],
+      appData: data['appData'] ?? <String, dynamic>{},
       proprietaryConstraints: Map<String, dynamic>.from({
         'optional': [
           {

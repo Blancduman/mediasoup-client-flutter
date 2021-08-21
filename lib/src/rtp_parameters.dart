@@ -323,9 +323,9 @@ class RtxSsrc {
 
   RtxSsrc.fromMap(Map data) : ssrc = data['ssrc'];
 
-  Map<String, int> toMap() {
+  Map<String, dynamic> toMap() {
     return {
-      'ssrc': ssrc!,
+      'ssrc': ssrc,
     };
   }
 }
@@ -455,6 +455,27 @@ class RtpEncodingParameters extends RTCRtpEncoding {
       scaleResolutionDownBy: data['scaleResolutionDownBy'],
       ssrc: data['ssrc'],
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      if (rid != null) 'rid': rid,
+      'active': active,
+      if (maxBitrate != null) 'maxBitrate': maxBitrate,
+      if (maxFramerate != null) 'maxFramerate': maxFramerate,
+      if (minBitrate != null) 'minBitrate': minBitrate,
+      if (numTemporalLayers != null) 'numTemporalLayers': numTemporalLayers,
+      if (scaleResolutionDownBy != null)
+        'scaleResolutionDownBy': scaleResolutionDownBy,
+      if (ssrc != null) 'ssrc': ssrc,
+      if (codecPayloadType != null) 'codecPayloadType': codecPayloadType,
+      if (rtx != null) 'rtx': rtx?.toMap(),
+      if (dtx != null) 'dtx': dtx,
+      if (scalabilityMode != null) 'scalabilityMode': scalabilityMode,
+      if (adaptivePtime != null) 'adaptivePtime': adaptivePtime,
+      if (priority != null) 'priority': priority,
+      if (networkPriority != null) 'networkPriority': networkPriority,
+    };
   }
 
   static RtpEncodingParameters assign(
@@ -692,21 +713,20 @@ class RtpParameters {
     this.rtcp,
   });
 
-  RtpParameters.fromMap(Map data) :
-    mid = data['mid'],
-    codecs = List<RtpCodecParameters>.from(data['codecs']
-        .map((codec) => RtpCodecParameters.fromMap(codec))
-        .toList()),
-    headerExtensions = List<RtpHeaderExtensionParameters>.from(
-        data['headerExtensions']
-            .map((headerExtension) =>
-                RtpHeaderExtensionParameters.fromMap(headerExtension))
+  RtpParameters.fromMap(Map data)
+      : mid = data['mid'],
+        codecs = List<RtpCodecParameters>.from(data['codecs']
+            .map((codec) => RtpCodecParameters.fromMap(codec))
             .toList()),
-    encodings = List<RtpEncodingParameters>.from(data['encodings']
-        .map((encoding) => RtpEncodingParameters.fromMap(encoding))
-        .toList()),
-    rtcp = RtcpParameters.fromMap(data['rtcp']);
-
+        headerExtensions = List<RtpHeaderExtensionParameters>.from(
+            data['headerExtensions']
+                .map((headerExtension) =>
+                    RtpHeaderExtensionParameters.fromMap(headerExtension))
+                .toList()),
+        encodings = List<RtpEncodingParameters>.from(data['encodings']
+            .map((encoding) => RtpEncodingParameters.fromMap(encoding))
+            .toList()),
+        rtcp = RtcpParameters.fromMap(data['rtcp']);
 
   static RtpParameters copy(
     RtpParameters old, {
@@ -726,7 +746,11 @@ class RtpParameters {
           ? headerExtensions
           : List<RtpHeaderExtensionParameters>.from(old.headerExtensions),
       mid: mid ?? old.mid,
-      rtcp: rtcp != null ? rtcp : old.rtcp != null ? RtcpParameters.copy(old.rtcp!) : null,
+      rtcp: rtcp != null
+          ? rtcp
+          : old.rtcp != null
+              ? RtcpParameters.copy(old.rtcp!)
+              : null,
     );
   }
 

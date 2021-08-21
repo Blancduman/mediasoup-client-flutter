@@ -903,7 +903,7 @@ class Transport extends EnhancedEventEmitter {
 
         throw error;
       }
-    } catch (error) {
+    } catch (error, st) {
       // This catch is needed to stop the given track if the command above
       // failed due to closed Transport.
       if (arguments.stopTracks) {

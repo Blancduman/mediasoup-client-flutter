@@ -144,7 +144,7 @@ class PlanBUtils {
       }
     });
 
-    Ssrc? ssrcCnameLine = offerMediaObject.ssrcs!.firstWhere(
+    Ssrc? ssrcCnameLine = offerMediaObject.ssrcs?.firstWhere(
       (Ssrc line) => line.attribute == 'cname' && line.id == firstSsrc,
       orElse: () => null as Ssrc,
     );

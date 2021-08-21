@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:example/Presentation/room.dart';
@@ -15,7 +16,16 @@ import 'package:random_words/random_words.dart';
 
 import 'package:flutter/material.dart';
 
+class DevHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+  }
+}
+
 void main() {
+  HttpOverrides.global = new DevHttpOverrides();
   runApp(BlocProvider<MediaDevicesBloc>(
     create: (context) => MediaDevicesBloc()..add(MediaDeviceLoadDevices()),
     lazy: false,
