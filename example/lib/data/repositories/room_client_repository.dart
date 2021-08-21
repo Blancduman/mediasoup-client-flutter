@@ -7,6 +7,7 @@ import 'package:example/logic/blocs/peers/peers_bloc.dart';
 import 'package:example/logic/blocs/producers/producers_bloc.dart';
 import 'package:example/logic/blocs/room/room_bloc.dart';
 import 'package:example/web_socket.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mediasoup_client_flutter/mediasoup_client_flutter.dart';
 
@@ -223,9 +224,9 @@ class RoomClientRepository {
         codecOptions: ProducerCodecOptions(
           videoGoogleStartBitrate: 1000,
         ),
-        encodings: [
-          RtpEncodingParameters(scalabilityMode: 'S3T3_KEY'),
-        ],
+        encodings: kIsWeb ? [
+          RtpEncodingParameters(scalabilityMode: 'S3T3_KEY', scaleResolutionDownBy: 1.0),
+        ] : [],
         stream: videoStream,
         appData: {
           'source': 'webcam',
@@ -369,8 +370,7 @@ class RoomClientRepository {
                     'transportId': _recvTransport.id,
                     'dtlsParameters': data['dtlsParameters'].toMap(),
                   },
-                )
-                .then(data['callback'])
+                ).then(data['callback'])
                 .catchError(data['errback']);
           },
         );
@@ -391,9 +391,8 @@ class RoomClientRepository {
         peersBloc.add(PeerAdd(newPeer: value));
       });
 
-      // if (_produce) {
-      if (false) {
-        // enableMic();
+      if (_produce) {
+        enableMic();
         enableWebcam();
 
         _sendTransport.on('connectionstatechange', (connectionState) {

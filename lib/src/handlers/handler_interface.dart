@@ -229,11 +229,11 @@ abstract class HandlerInterface extends EnhancedEventEmitter {
   HandlerInterface() : super();
 
   static HandlerInterface handlerFactory() {
-    // if (kIsWeb) {
+    if (kIsWeb) {
       return Browser();
-    // } else {
-    //   return Native();
-    // }
+    } else {
+      return Native();
+    }
   }
 
   ///@emits @connect - (

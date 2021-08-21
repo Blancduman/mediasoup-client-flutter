@@ -108,55 +108,10 @@ class Browser extends HandlerInterface {
     });
 
     try {
-      bool audio = false;
-      bool video = false;
-      final List<MediaDeviceInfo> devices =
-          await navigator.mediaDevices.enumerateDevices();
+      await pc.addTransceiver(kind: RTCRtpMediaType.RTCRtpMediaTypeAudio);
+      await pc.addTransceiver(kind: RTCRtpMediaType.RTCRtpMediaTypeVideo);
 
-      devices.forEach((MediaDeviceInfo info) {
-        if (info.kind == 'audioinput') {
-          audio = true;
-        }
-        if (info.kind == 'videoinput') {
-          video = true;
-        }
-      });
-      MediaStream audioStream;
-      if (audio) {
-        final Map<String, dynamic> audioMediaConstraints = <String, dynamic>{
-          'audio': true,
-        };
-
-        audioStream =
-            await navigator.mediaDevices.getUserMedia(audioMediaConstraints);
-
-        pc.addTransceiver(
-            track: audioStream.getAudioTracks().first,
-            kind: RTCRtpMediaType.RTCRtpMediaTypeAudio);
-      }
-
-      MediaStream videoStream;
-      if (video) {
-        final Map<String, dynamic> videoMediaConstraints = <String, dynamic>{
-          'audio': false,
-          'video': {
-            'mandatory': {
-              'minWidth': '320',
-              'minHeight': '240',
-              'minFrameRate': '30',
-            },
-          },
-        };
-
-        videoStream =
-            await navigator.mediaDevices.getUserMedia(videoMediaConstraints);
-
-        pc.addTransceiver(
-            track: videoStream.getVideoTracks().first,
-            kind: RTCRtpMediaType.RTCRtpMediaTypeVideo);
-      }
-
-      RTCSessionDescription offer = await pc.createOffer();
+      RTCSessionDescription offer = await pc.createOffer({});
       final parsedOffer = parse(offer.sdp!);
       print('parsed: ' + parsedOffer.toString());
       SdpObject sdpObject = SdpObject.fromMap(parsedOffer);
@@ -247,6 +202,7 @@ class Browser extends HandlerInterface {
 
     await _pc!.setRemoteDescription(offer);
 
+    // RTCSessionDescription answer = await _pc!.createAnswer({});
     RTCSessionDescription answer = await _pc!.createAnswer({});
 
     SdpObject localSdpObject = SdpObject.fromMap(parse(answer.sdp!));
@@ -291,18 +247,19 @@ class Browser extends HandlerInterface {
     // Store in the map.
     _mapMidTransceiver[localId] = transceiver;
 
+    final MediaStream? stream = _pc!
+        .getRemoteStreams()
+        .firstWhereOrNull((e) => e?.id == options.rtpParameters.rtcp!.cname);
+
+    if (stream == null) {
+      throw ('Stream not found');
+    }
+
     return HandlerReceiveResult(
       localId: localId,
       track: transceiver.receiver.track!,
       rtpReceiver: transceiver.receiver,
-      stream: (_pc!.getRemoteStreams().where((s) => s != null).toList()
-              as List<MediaStream>)
-          .firstWhere(
-        (element) =>
-           (options.kind == RTCRtpMediaType.RTCRtpMediaTypeAudio ? element.getAudioTracks : element.getVideoTracks )().first.id == transceiver.receiver.track!.id,
-        orElse: () => null as MediaStream,
-      ),
-
+      stream: stream,
     );
   }
 
@@ -441,30 +398,52 @@ class Browser extends HandlerInterface {
 
     _sendingRtpParametersByKind = {
       RTCRtpMediaType.RTCRtpMediaTypeAudio: Ortc.getSendingRtpParameters(
-          RTCRtpMediaType.RTCRtpMediaTypeAudio,
-          options.extendedRtpCapabilities),
+        RTCRtpMediaType.RTCRtpMediaTypeAudio,
+        options.extendedRtpCapabilities,
+      ),
       RTCRtpMediaType.RTCRtpMediaTypeVideo: Ortc.getSendingRtpParameters(
-          RTCRtpMediaType.RTCRtpMediaTypeVideo,
-          options.extendedRtpCapabilities),
+        RTCRtpMediaType.RTCRtpMediaTypeVideo,
+        options.extendedRtpCapabilities,
+      ),
     };
 
     _sendingRemoteRtpParametersByKind = {
       RTCRtpMediaType.RTCRtpMediaTypeAudio: Ortc.getSendingRemoteRtpParameters(
-          RTCRtpMediaType.RTCRtpMediaTypeAudio,
-          options.extendedRtpCapabilities),
+        RTCRtpMediaType.RTCRtpMediaTypeAudio,
+        options.extendedRtpCapabilities,
+      ),
       RTCRtpMediaType.RTCRtpMediaTypeVideo: Ortc.getSendingRemoteRtpParameters(
-          RTCRtpMediaType.RTCRtpMediaTypeVideo,
-          options.extendedRtpCapabilities),
+        RTCRtpMediaType.RTCRtpMediaTypeVideo,
+        options.extendedRtpCapabilities,
+      ),
     };
 
-    _pc = await createPeerConnection({
-      'iceServers': options.iceServers.map((RTCIceServer i) => i.toMap()).toList(),
-      'iceTransportPolicy': options.iceTransportPolicy?.value ?? 'all',
-      'bundlePolicy': 'max-bundle',
-      'rtcpMuxPolicy': 'require',
-      'sdpSemantics': 'unified-plan',
-      ...options.additionalSettings,
-    }, options.proprietaryConstraints);
+    final _constrains = options.proprietaryConstraints.isEmpty
+        ? <String, dynamic>{
+            'mandatory': {},
+            'optional': [
+              {'DtlsSrtpKeyAgreement': true},
+            ],
+          }
+        : options.proprietaryConstraints;
+
+    _constrains['optional'] = [
+      ..._constrains['optional'],
+      {'DtlsSrtpKeyAgreement': true}
+    ];
+
+    _pc = await createPeerConnection(
+      {
+        'iceServers':
+            options.iceServers.map((RTCIceServer i) => i.toMap()).toList(),
+        'iceTransportPolicy': options.iceTransportPolicy?.value ?? 'all',
+        'bundlePolicy': 'max-bundle',
+        'rtcpMuxPolicy': 'require',
+        'sdpSemantics': 'unified-plan',
+        ...options.additionalSettings,
+      },
+      _constrains,
+    );
 
     // Handle RTCPeerConnection connection status.
     _pc!.onIceConnectionState = (RTCIceConnectionState state) {
@@ -543,6 +522,8 @@ class Browser extends HandlerInterface {
       ),
     );
 
+    await _pc!.addTrack(options.track, options.stream);
+
     RTCSessionDescription offer = await _pc!.createOffer({});
     SdpObject localSdpObject = SdpObject.fromMap(parse(offer.sdp!));
     MediaObject offerMediaObject;
@@ -574,7 +555,9 @@ class Browser extends HandlerInterface {
       offerMediaObject = localSdpObject.media[mediaSectionIdx.idx];
 
       UnifiedPlanUtils.addLegacySimulcast(
-          offerMediaObject, layers.spatialLayers);
+        offerMediaObject,
+        layers.spatialLayers,
+      );
 
       offer =
           RTCSessionDescription(write(localSdpObject.toMap(), null), 'offer');

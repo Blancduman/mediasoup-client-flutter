@@ -540,7 +540,7 @@ class MediaObject {
     this.rtcpMux,
     this.rtcpFb = const [],
     this.ssrcs = const [],
-    this.extmapAllowMixed = true,
+    this.extmapAllowMixed = false,
     this.rids = const [],
     this.simulcast,
     this.simulcast_03,
@@ -578,7 +578,7 @@ class MediaObject {
       endOfCandidates = data['endOfCandidates'];
     }
     if (data['iceOptions'] != null) {
-      iceOptions = data['iceOptions'].replaceFirst('renomination', '');
+      iceOptions = data['iceOptions'];
     }
     if (data['setup'] != null) {
       setup = data['setup'];
@@ -640,8 +640,8 @@ class MediaObject {
     if (data['rids'] != null) {
       rids = List<Rid>.from((data['rids'] ?? []).map((r) => Rid.fromMap(r)).toList());
     }
-    if (data['extmapAllowMixed'] != null) {
-      extmapAllowMixed = data['extmapAllowMixed'];
+    if (data['extmapAllowMixed'] != null || data['extmap-allow-mixed'] != null) {
+      extmapAllowMixed = true;
     }
     if (data['rtcpRsize'] != null) {
       rtcpRsize = data['rtcpRsize'];
@@ -777,7 +777,7 @@ class MediaObject {
       result['rids'] = rids!.map((Rid r) => r.toMap()).toList();
     }
     if (extmapAllowMixed != null) {
-      result['extmapAllowMixed'] = extmapAllowMixed;
+      result['extmapAllowMixed'] = 'extmap-allow-mixed';
     }
     if (rtcpRsize != null) {
       result['rtcpRsize'] = rtcpRsize;
@@ -933,7 +933,7 @@ class AnswerMediaSection extends MediaSection {
     RtpParameters? offerRtpParameters,
     RtpParameters? answerRtpParameters,
     ProducerCodecOptions? codecOptions,
-    bool? extmapAllowMixed,
+    bool extmapAllowMixed = false,
   }) : super(
           iceParameters: iceParameters,
           iceCandidates: iceCandidates,
