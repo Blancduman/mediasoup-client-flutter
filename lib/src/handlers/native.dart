@@ -15,7 +15,7 @@ import 'package:mediasoup_client_flutter/src/utils.dart';
 
 Logger _logger = Logger('Native');
 
-class Native extends HandlerInterface {
+class Handler extends HandlerInterface {
   // Handler direction.
   late Direction _direction;
   // Remote SDP handler.
@@ -45,7 +45,7 @@ class Native extends HandlerInterface {
   // Got transport local and remote parameters.
   bool _transportReady = false;
 
-  Native() : super();
+  Handler() : super();
 
   void _assertSendRirection() {
     if (_direction != Direction.send) {

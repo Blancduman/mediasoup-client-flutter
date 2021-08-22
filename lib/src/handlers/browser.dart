@@ -15,7 +15,7 @@ import 'package:mediasoup_client_flutter/src/handlers/sdp/unified_plan_utils.dar
 
 Logger _logger = Logger('Browser');
 
-class Browser extends HandlerInterface {
+class Handler extends HandlerInterface {
   // Handler direction.
   late Direction _direction;
   // Remote SDP handler.
@@ -36,7 +36,7 @@ class Browser extends HandlerInterface {
   // Got transport local and remote parameters.
   bool _transportReady = false;
 
-  Browser() : super();
+  Handler() : super();
 
   Future<void> _setupTransport({
     required DtlsRole localDtlsRole,

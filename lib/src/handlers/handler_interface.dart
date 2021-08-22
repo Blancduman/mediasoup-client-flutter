@@ -1,12 +1,11 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mediasoup_client_flutter/src/producer.dart';
 import 'package:mediasoup_client_flutter/src/sctp_parameters.dart';
 import 'package:mediasoup_client_flutter/src/transport.dart';
 import 'package:mediasoup_client_flutter/src/common/enhanced_event_emitter.dart';
 import 'package:mediasoup_client_flutter/src/rtp_parameters.dart';
-import 'package:mediasoup_client_flutter/src/handlers/browser.dart';
-import 'package:mediasoup_client_flutter/src/handlers/native.dart';
+import 'package:mediasoup_client_flutter/src/handlers/native.dart'
+  if (dart.library.html) 'package:mediasoup_client_flutter/src/handlers/browser.dart';
 
 class SCTP_NUM_STREAMS {
   static const int OS = 1024;
@@ -228,13 +227,7 @@ class SetRtpEncodingParametersOptions {
 abstract class HandlerInterface extends EnhancedEventEmitter {
   HandlerInterface() : super();
 
-  static HandlerInterface handlerFactory() {
-    if (kIsWeb) {
-      return Browser();
-    } else {
-      return Native();
-    }
-  }
+  static HandlerInterface handlerFactory() => Handler();
 
   ///@emits @connect - (
   ///    { dtlsParameters: DtlsParameters },
