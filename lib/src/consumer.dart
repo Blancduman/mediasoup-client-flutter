@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
 import 'package:mediasoup_client_flutter/src/rtp_parameters.dart';

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mediasoup_client_flutter/mediasoup_client_flutter.dart';
 
@@ -35,7 +36,7 @@ class ConsumersBloc extends Bloc<ConsumersEvent, ConsumersState> {
     final Map<String, Consumer> newConsumers = Map<String, Consumer>.of(state.consumers);
     final Map<String, RTCVideoRenderer> newRenderers = Map<String, RTCVideoRenderer>.of(state.renderers);
     newConsumers[event.consumer.id] = event.consumer;
-    if (event.consumer.kind == 'video') {
+    if (event.consumer.kind == 'video' || (kIsWeb && event.consumer.kind == 'audio')) {
       newRenderers[event.consumer.id] = RTCVideoRenderer();
       await newRenderers[event.consumer.id].initialize();
       newRenderers[event.consumer.id].srcObject = newConsumers[event.consumer.id].stream;
@@ -47,8 +48,17 @@ class ConsumersBloc extends Bloc<ConsumersEvent, ConsumersState> {
   Stream<ConsumersState> _mapConsumersRemoveToState(ConsumerRemove event) async* {
     final Map<String, Consumer> newConsumers = Map<String, Consumer>.of(state.consumers);
     final Map<String, RTCVideoRenderer> newRenderers = Map<String, RTCVideoRenderer>.of(state.renderers);
+    await newConsumers[event.consumerId]?.close();
+    final peerId = newConsumers[event.consumerId].peerId;
     newConsumers.remove(event.consumerId);
-    await newRenderers[event.consumerId]?.dispose();
+    if (kIsWeb) {
+      final Consumer audioConsumer = newConsumers.values.firstWhere((c) => c.peerId == peerId && c.kind == 'audio', orElse: () => null);
+      if (audioConsumer == null) {
+        await newRenderers[event.consumerId]?.dispose();
+      }
+    } else {
+      await newRenderers[event.consumerId]?.dispose();
+    }
     newRenderers.remove(event.consumerId);
 
 

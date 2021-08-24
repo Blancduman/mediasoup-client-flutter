@@ -8,5 +8,5 @@ class PeerDevice {
   PeerDevice.fromMap(Map data)
       : flag = data['flag'],
         name = data['name'],
-        version = data['version'];
+        version = '${data['version']}';
 }
