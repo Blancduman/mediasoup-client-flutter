@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mediasoup_client_flutter/src/rtp_parameters.dart';
 import 'package:mediasoup_client_flutter/src/sctp_parameters.dart';
@@ -572,12 +573,11 @@ class Ortc {
     List<RtcpFeedback> reducedRtcpFeedback = <RtcpFeedback>[];
 
     for (RtcpFeedback aFb in codecA.rtcpFeedback) {
-      RtcpFeedback? matchingBFb = codecB.rtcpFeedback.firstWhere(
+      RtcpFeedback? matchingBFb = codecB.rtcpFeedback.firstWhereOrNull(
         (RtcpFeedback bFb) =>
             bFb.type == aFb.type &&
             (bFb.parameter == aFb.parameter ||
                 (bFb.parameter == '' && aFb.parameter == '')),
-        orElse: () => null as RtcpFeedback,
       );
 
       if (matchingBFb != null) {
@@ -620,13 +620,12 @@ class Ortc {
       }
 
       final RtpCodecCapability? matchingLocalCodec =
-          localCaps.codecs.firstWhere(
+          localCaps.codecs.firstWhereOrNull(
         (RtpCodecCapability localCodec) => matchCodecs(
             aCodec: localCodec,
             bCodec: remoteCodec,
             strict: true,
             modify: true),
-            orElse: () => null as RtpCodecCapability,
       );
 
       if (matchingLocalCodec == null) {
@@ -652,18 +651,16 @@ class Ortc {
 
     // Match RTX codecs.
     for (ExtendedRtpCodec extendedCodec in extendedRtpCapabilities.codecs) {
-      RtpCodecCapability? matchingLocalRtxCodec = localCaps.codecs.firstWhere(
+      RtpCodecCapability? matchingLocalRtxCodec = localCaps.codecs.firstWhereOrNull(
         (RtpCodecCapability localCodec) =>
             isRtxCodec(localCodec) &&
             localCodec.parameters['apt'] == extendedCodec.localPayloadType,
-        orElse: () => null as RtpCodecCapability
       );
 
-      final RtpCodecCapability? matchingRemoteRtxCodec = remoteCaps.codecs.firstWhere(
+      final RtpCodecCapability? matchingRemoteRtxCodec = remoteCaps.codecs.firstWhereOrNull(
         (RtpCodecCapability remoteCodec) =>
             isRtxCodec(remoteCodec) &&
             remoteCodec.parameters['apt'] == extendedCodec.remotePayloadType,
-        orElse: () => null as RtpCodecCapability,
       );
 
       if (matchingLocalRtxCodec != null && matchingRemoteRtxCodec != null) {
@@ -677,10 +674,9 @@ class Ortc {
     // Match header extensions.
     for (RtpHeaderExtension remoteExt in remoteCaps.headerExtensions) {
       final RtpHeaderExtension? matchingLocalExt =
-          localCaps.headerExtensions.firstWhere(
+          localCaps.headerExtensions.firstWhereOrNull(
         (RtpHeaderExtension localExt) =>
             matchHeaderExtensions(localExt, remoteExt),
-            orElse: () => null as RtpHeaderExtension,
       );
 
       if (matchingLocalExt == null) {
