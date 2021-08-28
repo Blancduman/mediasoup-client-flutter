@@ -176,7 +176,7 @@ class RtcpFb {
   RtcpFb.fromMap(Map data) :
     payload = data['payload'],
     type = data['type'],
-    subtype = data['subtype'];
+    subtype = data['subtype'] ?? '';
 
 
   Map<String, dynamic> toMap() {
