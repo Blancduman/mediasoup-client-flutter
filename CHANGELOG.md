@@ -1,6 +1,13 @@
 # Changelog
 
 --------------------------------------------
+[0.4.2] - 28.08.2021
+
+* fix: RtcpFb
+* refactor: replace firstWhere to firstWhereOrNull
+
+Thanks [Macrow](https://github.com/Macrow)
+
 [0.4.1] - 22.08.2021
 
 * Remove `dart:io` dependency, so pub.dev will show web support
