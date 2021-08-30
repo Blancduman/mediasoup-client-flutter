@@ -1,6 +1,12 @@
 # Changelog
 
 --------------------------------------------
+[0.4.3] - 28.08.2021
+
+* fix: logger messages
+* fix: transport.produce now use `appData` from arguments
+* fix: iceCandidate's fields (raddr, rport) null savety 
+
 [0.4.2] - 28.08.2021
 
 * fix: RtcpFb

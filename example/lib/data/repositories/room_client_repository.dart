@@ -383,7 +383,7 @@ class RoomClientRepository {
         'device': {
           'name': "Flutter",
           'flag': 'flutter',
-          'version': 0.2,
+          'version': '0.4.3',
         },
         'rtpCapabilities': _mediasoupDevice.rtpCapabilities.toMap(),
         'sctpCapabilities': _mediasoupDevice.sctpCapabilities.toMap(),
