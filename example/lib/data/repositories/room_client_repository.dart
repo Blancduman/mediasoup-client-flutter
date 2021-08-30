@@ -211,9 +211,11 @@ class RoomClientRepository {
     MediaStream videoStream;
     MediaStreamTrack track;
     try {
+      // NOTE: prefer using h264
       RtpCodecCapability codec = _mediasoupDevice.rtpCapabilities.codecs
           .firstWhere(
               (RtpCodecCapability c) => c.mimeType.toLowerCase() == 'video/vp9',
+              // (RtpCodecCapability c) => c.mimeType.toLowerCase() == 'video/h264',
               orElse: () =>
                   throw 'desired vp9 codec+configuration is not supported');
       videoStream = await createVideoStream();

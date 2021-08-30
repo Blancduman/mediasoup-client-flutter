@@ -432,8 +432,7 @@ class Transport extends EnhancedEventEmitter {
   late Direction _direction;
 
   // Extended RTP capabilities.
-  // TODO: make class ExtendedRtpCapabilities;
-  var _extendedRtpCapabilities;
+  ExtendedRtpCapabilities? _extendedRtpCapabilities;
 
   // Whether we can produce audio/video based on computed extended RTP
   // capabilities.

@@ -1020,7 +1020,7 @@ class Ortc {
   /// capabilities.
   static bool canReceive(
     RtpParameters rtpParameters,
-    ExtendedRtpCapabilities extendedRtpCapabilities,
+    ExtendedRtpCapabilities? extendedRtpCapabilities,
   ) {
     // This may throw.
     validateRtpParameters(rtpParameters);
@@ -1031,8 +1031,8 @@ class Ortc {
 
     RtpCodecParameters firstMediaCodec = rtpParameters.codecs.first;
 
-    return extendedRtpCapabilities.codecs.any((ExtendedRtpCodec codec) =>
-        codec.remotePayloadType == firstMediaCodec.payloadType);
+    return extendedRtpCapabilities?.codecs.any((ExtendedRtpCodec codec) =>
+        codec.remotePayloadType == firstMediaCodec.payloadType) ?? false;
   }
 }
 
