@@ -178,9 +178,9 @@ class IceCandidate {
 
   String transport;
 
-  String raddr;
+  String? raddr;
 
-  int rport;
+  int? rport;
 
   var generation;
 
