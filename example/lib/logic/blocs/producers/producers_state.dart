@@ -33,7 +33,7 @@ class ProducersState extends Equatable {
 
   static ProducersState removeWebcam(ProducersState old) {
     return ProducersState(
-      mic: old.webcam,
+      mic: old.mic,
       webcam: null,
       screen: old.screen,
     );
@@ -41,7 +41,7 @@ class ProducersState extends Equatable {
 
   static ProducersState removeScreen(ProducersState old) {
     return ProducersState(
-      mic: old.webcam,
+      mic: old.mic,
       webcam: old.webcam,
       screen: null,
     );
