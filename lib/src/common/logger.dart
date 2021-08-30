@@ -17,7 +17,7 @@ class Logger {
       warn = (dynamic message) {
         print('$APP_NAME:WARN:$_prefix $message');
       };
-      warn = (dynamic message) {
+      error = (dynamic message) {
         print('$APP_NAME:ERROR:$_prefix $message');
       };
     } else {
@@ -27,7 +27,7 @@ class Logger {
       warn = (dynamic message) {
         print('$APP_NAME:WARN $message');
       };
-      warn = (dynamic message) {
+      error = (dynamic message) {
         print('$APP_NAME:ERROR $message');
       };
     }
