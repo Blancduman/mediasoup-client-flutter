@@ -10,6 +10,7 @@ part 'consumers_event.dart';
 part 'consumers_state.dart';
 
 class ConsumersBloc extends Bloc<ConsumersEvent, ConsumersState> {
+  Timer timer;
   StreamController<ConsumersEvent> subs;
   ConsumersBloc() : super(ConsumersState()) {
     subs = StreamController<ConsumersEvent>();
@@ -36,10 +37,28 @@ class ConsumersBloc extends Bloc<ConsumersEvent, ConsumersState> {
     final Map<String, Consumer> newConsumers = Map<String, Consumer>.of(state.consumers);
     final Map<String, RTCVideoRenderer> newRenderers = Map<String, RTCVideoRenderer>.of(state.renderers);
     newConsumers[event.consumer.id] = event.consumer;
-    if (event.consumer.kind == 'video' || (kIsWeb && event.consumer.kind == 'audio')) {
-      newRenderers[event.consumer.id] = RTCVideoRenderer();
-      await newRenderers[event.consumer.id].initialize();
-      newRenderers[event.consumer.id].srcObject = newConsumers[event.consumer.id].stream;
+    final String peerId = event.consumer.peerId;
+    if (kIsWeb) {
+      if (newRenderers[peerId] == null) {
+        newRenderers[peerId] = RTCVideoRenderer();
+        await newRenderers[peerId].initialize();
+      }
+      final Consumer existing = newConsumers.values.firstWhere(
+        (c) => c.peerId == peerId && c.id != event.consumer.id,
+        orElse: () => null,
+      );
+
+      if (existing != null) {
+        if (existing.kind == 'audio' && event.consumer.kind == 'video') {
+          newRenderers[peerId].srcObject = event.consumer.stream;
+        }
+      } else {
+        newRenderers[peerId].srcObject = event.consumer.stream;
+      }
+    } else if (event.consumer.kind == 'video') {
+      newRenderers[peerId] = RTCVideoRenderer();
+      await newRenderers[peerId].initialize();
+      newRenderers[peerId].srcObject = newConsumers[event.consumer.id].stream;
     }
 
     yield ConsumersState(consumers: newConsumers, renderers: newRenderers);
@@ -48,18 +67,26 @@ class ConsumersBloc extends Bloc<ConsumersEvent, ConsumersState> {
   Stream<ConsumersState> _mapConsumersRemoveToState(ConsumerRemove event) async* {
     final Map<String, Consumer> newConsumers = Map<String, Consumer>.of(state.consumers);
     final Map<String, RTCVideoRenderer> newRenderers = Map<String, RTCVideoRenderer>.of(state.renderers);
-    await newConsumers[event.consumerId]?.close();
     final peerId = newConsumers[event.consumerId].peerId;
+    await newConsumers[event.consumerId]?.close();
     newConsumers.remove(event.consumerId);
+    final renderer = newRenderers[peerId];
+
     if (kIsWeb) {
-      final Consumer audioConsumer = newConsumers.values.firstWhere((c) => c.peerId == peerId && c.kind == 'audio', orElse: () => null);
-      if (audioConsumer == null) {
-        await newRenderers[event.consumerId]?.dispose();
+      final Consumer existing = newConsumers.values.firstWhere(
+        (c) => c.peerId == peerId,
+        orElse: () => null,
+      );
+      if (existing == null) {
+        await renderer?.dispose();
+      } else {
+        renderer.srcObject = existing.stream;
       }
     } else {
-      await newRenderers[event.consumerId]?.dispose();
+      newRenderers.remove(peerId);
+      renderer.srcObject = null;
+      await renderer?.dispose();
     }
-    newRenderers.remove(event.consumerId);
 
 
     yield ConsumersState(consumers: newConsumers, renderers: newRenderers);

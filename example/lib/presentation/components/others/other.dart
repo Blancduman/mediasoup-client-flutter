@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:example/data/models/Peer.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'package:mediasoup_client_flutter/mediasoup_client_flutter.dart';
 
 class Other extends StatelessWidget {
   final Peer peer;
-  final Consumer video;
   final RTCVideoRenderer renderer;
 
-  const Other({Key key, this.peer, this.video, this.renderer})
+  const Other({Key key, this.peer, this.renderer})
       : super(key: key);
 
   @override
@@ -20,7 +18,7 @@ class Other extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          if (video != null && renderer != null)
+          if (renderer != null)
             RTCVideoView(renderer)
           else
             Container(
