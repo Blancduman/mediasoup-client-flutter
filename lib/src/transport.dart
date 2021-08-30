@@ -872,7 +872,7 @@ class Transport extends EnhancedEventEmitter {
         String id = await safeEmitAsFuture('produce', {
           'kind': arguments.track.kind,
           'rtpParameters': sendResult.rtpParameters,
-          'appData': appData,
+          'appData': arguments.appData,
         });
 
         Producer producer = Producer(
@@ -884,7 +884,7 @@ class Transport extends EnhancedEventEmitter {
           stopTracks: arguments.stopTracks,
           disableTrackOnPause: arguments.disableTrackOnPause,
           zeroRtpOnPause: arguments.zeroRtpOnPause,
-          appData: appData,
+          appData: arguments.appData,
           stream: arguments.stream,
           source: arguments.source,
         );
