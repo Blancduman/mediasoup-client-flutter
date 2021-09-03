@@ -873,6 +873,15 @@ class Ortc {
       }
     }
 
+    if (kind == RTCRtpMediaType.RTCRtpMediaTypeVideo) {
+      rtpParameters.headerExtensions.add(RtpHeaderExtensionParameters(
+        encrypt: false,
+        id: 4,
+        parameters: {},
+        uri: 'urn:3gpp:video-orientation',
+      ));
+    }
+
     return rtpParameters;
   }
 
