@@ -2,7 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mediasoup_client_flutter/src/rtp_parameters.dart';
 import 'package:mediasoup_client_flutter/src/sctp_parameters.dart';
-import 'package:mediasoup_client_flutter/src/h264/h264_utils.dart';
+import 'package:h264_profile_level_id/h264_profile_level_id.dart';
 
 String RTP_PROBATOR_MID = 'probator';
 int RTP_PROBATOR_SSRC = 1234;

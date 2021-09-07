@@ -136,7 +136,7 @@ packages:
       name: flutter_webrtc
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.6.5"
+    version: "0.6.6"
   glob:
     dependency: transitive
     description:
@@ -144,6 +144,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0"
+  h264_profile_level_id:
+    dependency: "direct main"
+    description:
+      name: h264_profile_level_id
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.0"
   http_multi_server:
     dependency: transitive
     description:

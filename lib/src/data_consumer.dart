@@ -27,19 +27,19 @@ Logger _logger = Logger('DataConsumer');
 
 class DataConsumer extends EnhancedEventEmitter {
   // Id.
-  late String _id;
+  final String id;
   // Associated DataProducer id.
-  late String _dataProducerId;
+  final String dataProducerId;
   // The underlying RCTDataChannel instance.
-  late RTCDataChannel _dataChannel;
+  final RTCDataChannel dataChannel;
   // Clsoed flag.
-  bool _closed = false;
+  bool closed;
   // SCTP stream parameters.
-  late SctpStreamParameters _sctpStreamParameters;
+  final SctpStreamParameters sctpStreamParameters;
   // App custom data.
-  final Map<String, dynamic> _appData;
+  final Map<String, dynamic> appData;
   // Observer instance.
-  final EnhancedEventEmitter _observer = EnhancedEventEmitter();
+  final EnhancedEventEmitter observer;
 
   /// @emits transportclose
   /// @emits open
@@ -48,37 +48,20 @@ class DataConsumer extends EnhancedEventEmitter {
   /// @emits message - (message: any)
   /// @emits @close
   DataConsumer({
-    required String id,
-    required String dataProducerId,
-    required RTCDataChannel dataChannel,
-    required SctpStreamParameters sctpStreamParameters,
-    required Map<String, dynamic> appData,
-  })  : _appData = appData,
+    required this.id,
+    required this.dataProducerId,
+    required this.dataChannel,
+    required this.sctpStreamParameters,
+    this.appData = const <String, dynamic>{},
+    this.closed = false,
+  })  : observer = EnhancedEventEmitter(),
         super() {
     _logger.debug('constructor()');
 
-    _id = id;
-    _dataProducerId = dataProducerId;
-    _dataChannel = dataChannel;
-    _sctpStreamParameters = sctpStreamParameters;
-
     _handleDataChannel();
   }
-
-  /// DataConsumer id.
-  String get id => _id;
-
-  /// Associated DataProducer id.
-  String get dataProducerId => _dataProducerId;
-
-  /// Whether the DataConsumer is closed.
-  bool get closed => _closed;
-
-  /// SCTP stream parameters.
-  SctpStreamParameters get sctpStreamParameters => _sctpStreamParameters;
-
   /// DataChannel readyState.
-  RTCDataChannelState? get readyState => _dataChannel.state;
+  RTCDataChannelState? get readyState => dataChannel.state;
 
   /*
     /// DataChannel label.
@@ -87,65 +70,59 @@ class DataConsumer extends EnhancedEventEmitter {
     String get protocol => _dataChannel.
   */
 
-  /// App custom data.
-  Map<String, dynamic> get appData => _appData;
-
-  /// Observer.
-  EnhancedEventEmitter get observer => _observer;
-
   /// Closes the DataConsumer.
   void close() {
-    if (_closed) return;
+    if (closed) return;
 
     _logger.debug('close()');
 
-    _closed = true;
+    closed = true;
 
-    _dataChannel.close();
+    dataChannel.close();
 
     emit('@close');
 
     // Emit observer event.
-    _observer.safeEmit('close');
+    observer.safeEmit('close');
   }
 
   /// Transport was closed.
   void transportClosed() {
-    if (_closed) return;
+    if (closed) return;
 
     _logger.debug('transportClosed()');
 
-    _closed = true;
+    closed = true;
 
-    _dataChannel.close();
+    dataChannel.close();
 
     safeEmit('transportclose');
 
     // Emit observer event.
-    _observer.safeEmit('close');
+    observer.safeEmit('close');
   }
 
   void _handleDataChannel() {
-    _dataChannel.onDataChannelState = (RTCDataChannelState state) {
+    dataChannel.onDataChannelState = (RTCDataChannelState state) {
       if (state == RTCDataChannelState.RTCDataChannelOpen) {
-        if (_closed) return;
+        if (closed) return;
 
         _logger.debug('DataChannel "open" event');
 
         safeEmit('open');
       } else if (state == RTCDataChannelState.RTCDataChannelClosed) {
-        if (_closed) return;
+        if (closed) return;
 
         _logger.warn('DataChannel "close" event');
 
-        _closed = true;
+        closed = true;
 
         emit('@close');
         safeEmit('close');
       }
     };
-    _dataChannel.onMessage = (RTCDataChannelMessage data) {
-      if (_closed) return;
+    dataChannel.onMessage = (RTCDataChannelMessage data) {
+      if (closed) return;
 
       safeEmit('message', {
         'data': data,
@@ -158,21 +135,21 @@ class DataConsumer extends EnhancedEventEmitter {
     if (identical(this, other)) return true;
 
     return other is DataConsumer &&
-        other._id == _id &&
-        other._dataProducerId == _dataProducerId &&
-        other._dataChannel == _dataChannel &&
-        other._closed == _closed &&
-        other._sctpStreamParameters == _sctpStreamParameters &&
-        mapEquals(other._appData, _appData);
+        other.id == id &&
+        other.dataProducerId == dataProducerId &&
+        other.dataChannel == dataChannel &&
+        other.closed == closed &&
+        other.sctpStreamParameters == sctpStreamParameters &&
+        mapEquals(other.appData, appData);
   }
 
   @override
   int get hashCode {
-    return _id.hashCode ^
-        _dataProducerId.hashCode ^
-        _dataChannel.hashCode ^
-        _closed.hashCode ^
-        _sctpStreamParameters.hashCode ^
-        _appData.hashCode;
+    return id.hashCode ^
+        dataProducerId.hashCode ^
+        dataChannel.hashCode ^
+        closed.hashCode ^
+        sctpStreamParameters.hashCode ^
+        appData.hashCode;
   }
 }
