@@ -112,7 +112,7 @@ class SctpStreamParameters {
 	 */
   final Priority? priority;
   /*
-	 * A label which can be used to distinguish this DataChannel from others.
+	 * A label which can be used to distinguish this DataChannel from remote_stream.
 	 */
   final String? label;
   /*

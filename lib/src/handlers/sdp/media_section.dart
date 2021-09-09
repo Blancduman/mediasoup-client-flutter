@@ -776,8 +776,8 @@ class MediaObject {
     if (rids != null) {
       result['rids'] = rids!.map((Rid r) => r.toMap()).toList();
     }
-    if (extmapAllowMixed != null) {
-      result['extmapAllowMixed'] = 'extmap-allow-mixed';
+    if (extmapAllowMixed != null && extmapAllowMixed == true) {
+      result['extmapAllowMixed'] = extmapAllowMixed;
     }
     if (rtcpRsize != null) {
       result['rtcpRsize'] = rtcpRsize;

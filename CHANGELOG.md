@@ -1,6 +1,11 @@
 # Changelog
 
 --------------------------------------------
+[0.4.4] - 09.09.2021
+
+* feat: Consumer, Producer now have copyWith and new methods `pauseCopy`, `resumeCopy` which return new instance;
+* fix: remote_sdp errors;
+
 [0.4.3] - 28.08.2021
 
 * fix: logger messages

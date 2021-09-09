@@ -119,7 +119,7 @@ class Device {
 
       _loaded = true;
 
-      handler.close();
+      await handler.close();
     } catch (error) {
       if (handler != null) {
         await handler.close();
