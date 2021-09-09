@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:sdp_transform/sdp_transform.dart';
 import 'package:mediasoup_client_flutter/src/producer.dart';
@@ -269,10 +270,7 @@ class RemoteSdp {
 
       // Let's try to recycle a closed media section (if any).
       // NOTE: Yes, we can recycle a closed m=audio section with a new m=video.
-      MediaSection? oldMediaSection = _mediaSections.firstWhere(
-        (MediaSection m) => m.closed,
-        orElse: () => null as MediaSection,
-      );
+      MediaSection? oldMediaSection = _mediaSections.firstWhereOrNull((MediaSection m) => m.closed);
 
       if (oldMediaSection != null) {
         _replaceMediaSection(mediaSection, oldMediaSection.mid);
