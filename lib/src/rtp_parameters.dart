@@ -446,7 +446,7 @@ class RtpEncodingParameters extends RTCRtpEncoding {
       networkPriority: data['networkPriority'] != null
           ? PriorityExtension.fromString(data['networkPriority'])
           : null,
-      active: data['active'],
+      active: data['active'] ?? true,
       maxBitrate: data['maxBitrate'],
       maxFramerate: data['maxFramerate'],
       minBitrate: data['minBitrate'],
