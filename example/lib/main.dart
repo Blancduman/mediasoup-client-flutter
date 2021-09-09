@@ -1,79 +1,59 @@
 import 'dart:io';
-import 'dart:math';
 
-import 'package:example/Presentation/room.dart';
-import 'package:example/data/repositories/room_client_repository.dart';
-import 'package:example/logic/blocs/consumers/consumers_bloc.dart';
-import 'package:example/logic/blocs/me/me_bloc.dart';
-import 'package:example/logic/blocs/media_devices/media_devices_bloc.dart';
-import 'package:example/logic/blocs/peers/peers_bloc.dart';
-import 'package:example/logic/blocs/producers/producers_bloc.dart';
-import 'package:example/logic/blocs/room/room_bloc.dart';
-import 'package:example/presentation/enter_page.dart';
+import 'package:example/constants.dart';
+import 'package:example/screens/room/room.dart';
+import 'package:example/screens/room/room_modules.dart';
+import 'package:example/screens/welcome/welcome.dart';
+import 'package:example/features/signaling/room_client_repository.dart';
+import 'package:example/features/me/bloc/me_bloc.dart';
+import 'package:example/features/media_devices/bloc/media_devices_bloc.dart';
+import 'package:example/features/peers/bloc/peers_bloc.dart';
+import 'package:example/features/producers/bloc/producers_bloc.dart';
+import 'package:example/features/room/bloc/room_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:random_string/random_string.dart';
-import 'package:random_words/random_words.dart';
 
 import 'package:flutter/material.dart';
 
+import 'app_modules/app_modules.dart';
+
 class DevHttpOverrides extends HttpOverrides {
   @override
-  HttpClient createHttpClient(SecurityContext context) {
+  HttpClient createHttpClient(SecurityContext? context) {
     return super.createHttpClient(context)
-      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
   }
 }
 
 void main() {
   HttpOverrides.global = new DevHttpOverrides();
-  runApp(BlocProvider<MediaDevicesBloc>(
-    create: (context) => MediaDevicesBloc()..add(MediaDeviceLoadDevices()),
-    lazy: false,
-    child: MyApp(),
-  ));
+  runApp(
+    MultiBlocProvider(
+      providers: getAppModules(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       initialRoute: '/',
+      theme: Constants.theme,
       // ignore: missing_return
       onGenerateRoute: (settings) {
-        if (settings.name == EnterPage.RoutePath) {
+        if (settings.name == Welcome.RoutePath) {
           return MaterialPageRoute(
-            builder: (context) => EnterPage(),
+            builder: (context) => Welcome(),
           );
         }
-        if (settings.name == '/room') {
+        if (settings.name == Room.RoutePath) {
           return MaterialPageRoute(
             builder: (context) => MultiBlocProvider(
-                providers: [
-                  BlocProvider<ProducersBloc>(
-                    lazy: false,
-                    create: (context) => ProducersBloc(),
-                  ),
-                  BlocProvider<ConsumersBloc>(
-                    lazy: false,
-                    create: (context) => ConsumersBloc(),
-                  ),
-                  BlocProvider<PeersBloc>(
-                    lazy: false,
-                    create: (context) => PeersBloc(
-                      consumersBloc: context.read<ConsumersBloc>(),
-                    ),
-                  ),
-                  BlocProvider<MeBloc>(
-                    lazy: false,
-                    create: (context) => MeBloc(
-                        displayName: nouns[Random.secure().nextInt(2500)],
-                        id: randomAlpha(8)),
-                  ),
-                  BlocProvider<RoomBloc>(
-                    lazy: false,
-                    create: (context) => RoomBloc(settings.arguments),
-                  ),
-                ],
+                providers: getRoomModules(settings: settings),
                 child: RepositoryProvider(
                   lazy: false,
                   create: (context) {
@@ -83,13 +63,12 @@ class MyApp extends StatelessWidget {
                     final roomState = context.read<RoomBloc>().state;
                     String url = roomState.url;
 
-                    Uri uri = Uri.parse(url);
+                    Uri? uri = Uri.parse(url);
 
                     return RoomClientRepository(
                       peerId: id,
-                      consumersBloc: context.read<ConsumersBloc>(),
                       displayName: displayName,
-                      url: url != null
+                      url: url.isEmpty
                           ? 'wss://${uri.host}:4443'
                           : 'wss://v3demo.mediasoup.org:4443',
                       roomId: uri.queryParameters['roomId'] ??

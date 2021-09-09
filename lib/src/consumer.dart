@@ -46,7 +46,7 @@ class Consumer extends EnhancedEventEmitter {
   final RtpParameters rtpParameters;
 
   /// Paused flag.
-  late final bool paused;
+  late bool paused;
 
   /// App custom data.
   final Map<String, dynamic> appData;

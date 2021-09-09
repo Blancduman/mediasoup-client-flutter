@@ -98,11 +98,11 @@ class Producer extends EnhancedEventEmitter {
   /// Local track.
   final MediaStreamTrack track;
   /// Producer kind.
-  late final String kind;
+  late String kind;
   /// RTP parameters.
   final RtpParameters rtpParameters;
   /// Paused flag.
-  late final bool paused;
+  late bool paused;
   /// Video max spatial layer.
   late final int? maxSpatialLayer;
   /// Whether the Producer should call stop() in given tracks.
@@ -149,6 +149,7 @@ class Producer extends EnhancedEventEmitter {
     _logger.debug('constructor()');
 
     kind = track.kind!;
+
     paused = disableTrackOnPause ? !track.enabled : false;
     maxSpatialLayer = null;
   }
