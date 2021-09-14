@@ -1,6 +1,6 @@
 name: mediasoup_client_flutter
 description: Mediasoup client side Flutter library. Work for Android, iOS, MacOS and browser.
-version: 0.4.4
+version: 0.4.5
 homepage: https://github.com/Blancduman/mediasoup-client-flutter
 repository: https://github.com/Blancduman/mediasoup-client-flutter
 

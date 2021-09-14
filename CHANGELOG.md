@@ -1,6 +1,11 @@
 # Changelog
 
 --------------------------------------------
+[0.4.5] - 14.09.2021
+
+* fix(example): dispose renderers after leaving room;
+* docs: update readme and changelog;
+
 [0.4.4] - 09.09.2021
 
 * feat: Consumer, Producer now have copyWith and new methods `pauseCopy`, `resumeCopy` which return new instance;
