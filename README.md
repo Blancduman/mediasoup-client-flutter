@@ -1,6 +1,4 @@
-# WIP: mediasoup_client_flutter
-
-Be carefull: WORK IN PROGRESS.
+# mediasoup_client_flutter
 
 | ``           | Android | iOS      | macOS    | Windows              | Linux    | Web |
 | ------------ | ------- | -------- | -------- | -------------------- | -------- | --- |

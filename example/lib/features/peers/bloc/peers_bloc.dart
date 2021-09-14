@@ -187,4 +187,12 @@ class PeersBloc extends Bloc<dynamic, PeersState> {
       yield PeersState(peers: newPeers);
     }
   }
+
+  @override
+  Future<void> close() {
+    state.peers.values.forEach((peer) {
+      peer.renderer?.dispose();
+    });
+    return super.close();
+  }
 }
