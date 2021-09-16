@@ -522,8 +522,6 @@ class Handler extends HandlerInterface {
       ),
     );
 
-    await _pc!.addTrack(options.track, options.stream);
-
     RTCSessionDescription offer = await _pc!.createOffer({});
     SdpObject localSdpObject = SdpObject.fromMap(parse(offer.sdp!));
     MediaObject offerMediaObject;

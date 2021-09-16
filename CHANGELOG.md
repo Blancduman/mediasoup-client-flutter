@@ -1,6 +1,11 @@
 # Changelog
 
 --------------------------------------------
+[0.4.6] - 16.09.2021
+
+* update(flutter_webrtc): switch to 0.6.7
+* fix(browser): no need addTrack anymore
+
 [0.4.5] - 14.09.2021
 
 * fix(example): dispose renderers after leaving room;
