@@ -5,14 +5,15 @@ import 'package:equatable/equatable.dart';
 import 'package:random_string/random_string.dart';
 
 part 'room_event.dart';
+
 part 'room_state.dart';
 
 class RoomBloc extends Bloc<RoomEvent, RoomState> {
-  RoomBloc(String? url)
+  RoomBloc(String? roomId)
       : super(
           RoomState(
-            url: url != null && url.isNotEmpty
-                ? url.replaceAll('roomid', 'roomId')
+            url: roomId != null && roomId.isNotEmpty
+                ? 'https://v3demo.mediasoup.org/?roomId=$roomId'
                 : 'https://v3demo.mediasoup.org/?roomId=${randomAlpha(8).toLowerCase()}',
           ),
         );

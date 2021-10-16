@@ -14,7 +14,6 @@ class Welcome extends StatefulWidget {
 
 class _WelcomeState extends State<Welcome> {
   final TextEditingController _textEditingController = TextEditingController();
-  String url = '';
 
   @override
   void initState() {
@@ -26,8 +25,10 @@ class _WelcomeState extends State<Welcome> {
     _textEditingController.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
+    final roomId = _textEditingController.text;
     return Scaffold(
       appBar: AppBar(
         title: Text('mediasoup-client-flutter'),
@@ -84,25 +85,19 @@ class _WelcomeState extends State<Welcome> {
                         style: BorderStyle.solid,
                       ),
                     ),
-                    suffixIcon: url.isNotEmpty
+                    suffixIcon: roomId.isNotEmpty
                         ? GestureDetector(
-                      child: Icon(
-                        Icons.close,
-                        color: Colors.black,
-                      ),
-                      onTap: () {
-                        _textEditingController.clear();
-                        setState(() { url = '';});
-                      },
-                    )
+                            child: Icon(
+                              Icons.close,
+                              color: Colors.black,
+                            ),
+                            onTap: () {
+                              _textEditingController.clear();
+                            },
+                          )
                         : null,
                   ),
                   maxLines: 1,
-                  onChanged: (value) {
-                    setState(() {
-                      url = value;
-                    });
-                  },
                   controller: _textEditingController,
                 ),
               ),
@@ -111,10 +106,10 @@ class _WelcomeState extends State<Welcome> {
                   Navigator.pushNamed(
                     context,
                     '/room',
-                    arguments: url,
+                    arguments: roomId,
                   );
                 },
-                child: Text(url.isNotEmpty ? 'Join' : 'Join to Random Room'),
+                child: Text(roomId.isNotEmpty ? 'Join' : 'Join to Random Room'),
                 style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(Colors.black)),
               ),
