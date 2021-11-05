@@ -35,6 +35,8 @@ class RoomClientRepository {
   String? audioOutputDeviceId;
   String? videoInputDeviceId;
 
+  MediaStream? _localStream;
+
   RoomClientRepository({
     required this.producersBloc,
     required this.peersBloc,
@@ -71,6 +73,7 @@ class RoomClientRepository {
     _sendTransport?.close();
     _recvTransport?.close();
     _mediaDevicesBlocSubscription?.cancel();
+    // _localStream?.dispose();
   }
 
   Future<void> disableMic() async {
@@ -95,7 +98,8 @@ class RoomClientRepository {
       await _webSocket!.socket.request('closeProducer', {
         'producerId': webcamId,
       });
-    } catch (error) {} finally {
+    } catch (error) {
+    } finally {
       meBloc.add(MeSetWebcamInProgress(progress: false));
     }
   }
@@ -153,36 +157,42 @@ class RoomClientRepository {
 
     accept({});
 
-    peersBloc
-        .add(PeerAddConsumer(peerId: consumer.peerId, consumer: consumer));
+    peersBloc.add(PeerAddConsumer(peerId: consumer.peerId, consumer: consumer));
   }
 
-  Future<MediaStream> createAudioStream() async {
+  // Future<MediaStream> createAudioStream() async {
+  //   audioInputDeviceId = mediaDevicesBloc.state.selectedAudioInput!.deviceId;
+  //   Map<String, dynamic> mediaConstraints = {
+  //     'audio': {
+  //       'optional': [
+  //         {
+  //           'sourceId': audioInputDeviceId,
+  //         },
+  //       ],
+  //     },
+  //   };
+  //
+  //   MediaStream stream =
+  //       await navigator.mediaDevices.getUserMedia(mediaConstraints);
+  //
+  //   return stream;
+  // }
+
+  Future<MediaStream> createStream() async {
     audioInputDeviceId = mediaDevicesBloc.state.selectedAudioInput!.deviceId;
-    Map<String, dynamic> mediaConstraints = {
-      'audio': {
-        'optional': [
-          {
-            'sourceId': audioInputDeviceId,
-          },
-        ],
-      },
-    };
-
-    MediaStream stream =
-        await navigator.mediaDevices.getUserMedia(mediaConstraints);
-
-    return stream;
-  }
-
-  Future<MediaStream> createVideoStream() async {
     videoInputDeviceId = mediaDevicesBloc.state.selectedVideoInput!.deviceId;
     Map<String, dynamic> mediaConstraints = <String, dynamic>{
-      'audio': false,
+      'audio': {
+          'optional': [
+            {
+              'sourceId': audioInputDeviceId,
+            },
+          ],
+        },
       'video': {
         'mandatory': {
           'minWidth':
-              '1280', // Provide your own width, height and frame rate here
+          '1280', // Provide your own width, height and frame rate here
           'minHeight': '720',
           'minFrameRate': '30',
         },
@@ -195,21 +205,46 @@ class RoomClientRepository {
     };
 
     MediaStream stream =
-        await navigator.mediaDevices.getUserMedia(mediaConstraints);
+    await navigator.mediaDevices.getUserMedia(mediaConstraints);
 
     return stream;
   }
+
+  // Future<MediaStream> createVideoStream() async {
+  //   videoInputDeviceId = mediaDevicesBloc.state.selectedVideoInput!.deviceId;
+  //   Map<String, dynamic> mediaConstraints = <String, dynamic>{
+  //     'audio': false,
+  //     'video': {
+  //       'mandatory': {
+  //         'minWidth':
+  //             '1280', // Provide your own width, height and frame rate here
+  //         'minHeight': '720',
+  //         'minFrameRate': '30',
+  //       },
+  //       'optional': [
+  //         {
+  //           'sourceId': videoInputDeviceId,
+  //         },
+  //       ],
+  //     },
+  //   };
+  //
+  //   MediaStream stream =
+  //       await navigator.mediaDevices.getUserMedia(mediaConstraints);
+  //
+  //   return stream;
+  // }
 
   void enableWebcam() async {
     if (meBloc.state.webcamInProgress) {
       return;
     }
     meBloc.add(MeSetWebcamInProgress(progress: true));
-    if (_mediasoupDevice!.canProduce(RTCRtpMediaType.RTCRtpMediaTypeVideo) == false) {
+    if (_mediasoupDevice!.canProduce(RTCRtpMediaType.RTCRtpMediaTypeVideo) ==
+        false) {
       return;
     }
-    MediaStream? videoStream;
-    MediaStreamTrack? track;
+
     try {
       // NOTE: prefer using h264
       RtpCodecCapability? codec = _mediasoupDevice!.rtpCapabilities.codecs
@@ -218,18 +253,20 @@ class RoomClientRepository {
               // (RtpCodecCapability c) => c.mimeType.toLowerCase() == 'video/h264',
               orElse: () =>
                   throw 'desired vp9 codec+configuration is not supported');
-      videoStream = await createVideoStream();
-      track = videoStream.getVideoTracks().first;
+      final track = _localStream!.getVideoTracks().first;
       meBloc.add(MeSetWebcamInProgress(progress: true));
       _sendTransport!.produce(
         track: track,
         codecOptions: ProducerCodecOptions(
           videoGoogleStartBitrate: 1000,
         ),
-        encodings: kIsWeb ? [
-          RtpEncodingParameters(scalabilityMode: 'S3T3_KEY', scaleResolutionDownBy: 1.0),
-        ] : [],
-        stream: videoStream,
+        encodings: kIsWeb
+            ? [
+                RtpEncodingParameters(
+                    scalabilityMode: 'S3T3_KEY', scaleResolutionDownBy: 1.0),
+              ]
+            : [],
+        stream: _localStream!,
         appData: {
           'source': 'webcam',
         },
@@ -237,35 +274,33 @@ class RoomClientRepository {
         codec: codec,
       );
     } catch (error) {
-      if (videoStream != null) {
-        await videoStream.dispose();
-      }
+      // if (videoStream != null) {
+      //   await videoStream.dispose();
+      // }
     }
   }
 
   void enableMic() async {
-    if (_mediasoupDevice!.canProduce(RTCRtpMediaType.RTCRtpMediaTypeAudio) == false) {
+    if (_mediasoupDevice!.canProduce(RTCRtpMediaType.RTCRtpMediaTypeAudio) ==
+        false) {
       return;
     }
 
-    MediaStream? audioStream;
-    MediaStreamTrack? track;
     try {
-      audioStream = await createAudioStream();
-      track = audioStream.getAudioTracks().first;
+      final MediaStreamTrack track = _localStream!.getAudioTracks().first;
       _sendTransport!.produce(
         track: track,
         codecOptions: ProducerCodecOptions(opusStereo: 1, opusDtx: 1),
-        stream: audioStream,
+        stream: _localStream!,
         appData: {
           'source': 'mic',
         },
         source: 'mic',
       );
     } catch (error) {
-      if (audioStream != null) {
-        await audioStream.dispose();
-      }
+      // if (audioStream != null) {
+      //   await audioStream.dispose();
+      // }
     }
   }
 
@@ -279,11 +314,14 @@ class RoomClientRepository {
       print(routerRtpCapabilities);
 
       final rtpCapabilities = RtpCapabilities.fromMap(routerRtpCapabilities);
-      rtpCapabilities.headerExtensions.removeWhere((he) => he.uri == 'urn:3gpp:video-orientation');
+      rtpCapabilities.headerExtensions
+          .removeWhere((he) => he.uri == 'urn:3gpp:video-orientation');
       await _mediasoupDevice!.load(routerRtpCapabilities: rtpCapabilities);
 
-      if (_mediasoupDevice!.canProduce(RTCRtpMediaType.RTCRtpMediaTypeAudio) == true ||
-          _mediasoupDevice!.canProduce(RTCRtpMediaType.RTCRtpMediaTypeVideo) == true) {
+      if (_mediasoupDevice!.canProduce(RTCRtpMediaType.RTCRtpMediaTypeAudio) ==
+              true ||
+          _mediasoupDevice!.canProduce(RTCRtpMediaType.RTCRtpMediaTypeVideo) ==
+              true) {
         _produce = true;
       }
 
@@ -373,7 +411,8 @@ class RoomClientRepository {
                     'transportId': _recvTransport!.id,
                     'dtlsParameters': data['dtlsParameters'].toMap(),
                   },
-                ).then(data['callback'])
+                )
+                .then(data['callback'])
                 .catchError(data['errback']);
           },
         );
@@ -395,6 +434,7 @@ class RoomClientRepository {
       });
 
       if (_produce) {
+        _localStream = await createStream();
         enableMic();
         enableWebcam();
 
@@ -499,7 +539,8 @@ class RoomClientRepository {
 
         case 'newPeer':
           {
-            final Map<String, dynamic> newPeer = Map<String, dynamic>.from(notification['data']);
+            final Map<String, dynamic> newPeer =
+                Map<String, dynamic>.from(notification['data']);
             peersBloc.add(PeerAdd(newPeer: newPeer));
             break;
           }
