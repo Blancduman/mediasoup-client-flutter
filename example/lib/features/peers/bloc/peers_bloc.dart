@@ -153,6 +153,7 @@ class PeersBloc extends Bloc<dynamic, PeersState> {
           final consumer = peer.video;
           final renderer = peer.renderer;
           newPeers[peer.id] = newPeers[peer.id]!.removeVideoAndRenderer();
+          yield PeersState(peers: newPeers);
           await consumer?.close();
           await renderer?.dispose();
         }

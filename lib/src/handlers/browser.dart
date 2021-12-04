@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:sdp_transform/sdp_transform.dart';
 import 'package:mediasoup_client_flutter/src/ortc.dart';
@@ -512,6 +513,7 @@ class Handler extends HandlerInterface {
         Ortc.reduceCodecs(sendingRemoteRtpParameters.codecs, options.codec);
 
     MediaSectionIdx mediaSectionIdx = _remoteSdp.getNextMediaSectionIdx();
+
     RTCRtpTransceiver transceiver = await _pc!.addTransceiver(
       track: options.track,
       kind: RTCRtpMediaTypeExtension.fromString(options.track.kind!),
@@ -565,6 +567,16 @@ class Handler extends HandlerInterface {
         'send() | calling pc.setLocalDescription() [offer:${offer.toMap()}');
 
     await _pc!.setLocalDescription(offer);
+
+    if (!kIsWeb) {
+      final transceivers = await _pc!.getTransceivers();
+      transceiver = transceivers.firstWhere(
+            (_transceiver) =>
+        _transceiver.sender.track?.id == options.track.id &&
+            _transceiver.sender.track?.kind == options.track.kind,
+        orElse: () => throw 'No transceiver found',
+      );
+    }
 
     // We can now get the transceiver.mid.
     String localId = transceiver.mid;

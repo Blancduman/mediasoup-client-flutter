@@ -30,7 +30,11 @@ class _WelcomeState extends State<Welcome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('mediasoup-client-flutter'),
+        title: Text(
+          'mediasoup-client-flutter',
+          style: TextStyle(color: Colors.black),
+        ),
+        backgroundColor: Colors.white,
         shadowColor: Colors.grey,
         elevation: 5,
       ),

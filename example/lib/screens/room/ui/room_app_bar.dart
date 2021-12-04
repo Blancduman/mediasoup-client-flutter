@@ -22,6 +22,7 @@ class RoomAppBar extends StatelessWidget implements PreferredSizeWidget {
           opacity: display ? 1.0 : 0.0,
           child: AppBar(
             elevation: 5,
+            backgroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.vertical(
                 bottom: Radius.circular(30),
