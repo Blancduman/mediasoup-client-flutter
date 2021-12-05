@@ -1,9 +1,8 @@
 # mediasoup_client_flutter
 
-| ``           | Android | iOS      | macOS    | Windows              | Linux    | Web |
-| ------------ | ------- | -------- | -------- | -------------------- | -------- | --- |
-| Plan-B       | ✔       | ✔ | ✔ | consumers✔/producer✗ | untested | ✗   |
-| Unified-Plan | ✗       | ✗        | ✗        | ✗                    | ✗        | ✔   |
+|              | Android | iOS | macOS | Windows | Linux | Web |
+| :----------: | :-----: | :-: | :---: | :-----: | :---: | :-: |
+| Unified-Plan |    ✔   |  ✔  |   ✔  |    ✔    |   ✗   |  ✔ |
 
 No datachannels yet;
 
