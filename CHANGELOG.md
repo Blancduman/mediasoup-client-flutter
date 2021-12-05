@@ -1,6 +1,13 @@
 # Changelog
 
 --------------------------------------------
+[0.8.0] - 05.12.2021
+
+* update(flutter_webrtc): switch to 0.8.0
+* feat: add unified plan to android, ios, macos, windows
+* refactor: peerId in consumer now is nullable
+* refactor: change name handlers to PlanB and Unified plan
+
 [0.4.6] - 16.09.2021
 
 * update(flutter_webrtc): switch to 0.6.7

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:sdp_transform/sdp_transform.dart';
 import 'package:mediasoup_client_flutter/src/ortc.dart';
@@ -13,9 +14,9 @@ import 'package:mediasoup_client_flutter/src/handlers/sdp/media_section.dart';
 import 'package:mediasoup_client_flutter/src/handlers/sdp/remote_sdp.dart';
 import 'package:mediasoup_client_flutter/src/handlers/sdp/unified_plan_utils.dart';
 
-Logger _logger = Logger('Browser');
+Logger _logger = Logger('Unified plan handler');
 
-class Handler extends HandlerInterface {
+class UnifiedPlan extends HandlerInterface {
   // Handler direction.
   late Direction _direction;
   // Remote SDP handler.
@@ -36,7 +37,7 @@ class Handler extends HandlerInterface {
   // Got transport local and remote parameters.
   bool _transportReady = false;
 
-  Handler() : super();
+  UnifiedPlan() : super();
 
   Future<void> _setupTransport({
     required DtlsRole localDtlsRole,
@@ -172,7 +173,7 @@ class Handler extends HandlerInterface {
   }
 
   @override
-  String get name => 'Browser';
+  String get name => 'Unified plan handler';
 
   @override
   Future<HandlerReceiveResult> receive(HandlerReceiveOptions options) async {
@@ -336,6 +337,7 @@ class Handler extends HandlerInterface {
     }
 
     await transceiver.sender.replaceTrack(options.track);
+    _mapMidTransceiver.remove(options.localId);
   }
 
   @override
@@ -512,6 +514,7 @@ class Handler extends HandlerInterface {
         Ortc.reduceCodecs(sendingRemoteRtpParameters.codecs, options.codec);
 
     MediaSectionIdx mediaSectionIdx = _remoteSdp.getNextMediaSectionIdx();
+
     RTCRtpTransceiver transceiver = await _pc!.addTransceiver(
       track: options.track,
       kind: RTCRtpMediaTypeExtension.fromString(options.track.kind!),
@@ -565,6 +568,16 @@ class Handler extends HandlerInterface {
         'send() | calling pc.setLocalDescription() [offer:${offer.toMap()}');
 
     await _pc!.setLocalDescription(offer);
+
+    if (!kIsWeb) {
+      final transceivers = await _pc!.getTransceivers();
+      transceiver = transceivers.firstWhere(
+            (_transceiver) =>
+        _transceiver.sender.track?.id == options.track.id &&
+            _transceiver.sender.track?.kind == options.track.kind,
+        orElse: () => throw 'No transceiver found',
+      );
+    }
 
     // We can now get the transceiver.mid.
     String localId = transceiver.mid;
@@ -841,6 +854,7 @@ class Handler extends HandlerInterface {
         'stopSending() | calling pc.setRemoteDescription() [answer:${answer.toMap()}');
 
     await _pc!.setRemoteDescription(answer);
+    _mapMidTransceiver.remove(localId);
   }
 
   @override

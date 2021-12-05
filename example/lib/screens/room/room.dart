@@ -1,5 +1,4 @@
 import 'package:example/features/media_devices/ui/AudioInputSelector.dart';
-import 'package:example/features/media_devices/ui/AudioOutputSelector.dart';
 import 'package:example/features/media_devices/ui/VideoInputSelector.dart';
 import 'package:example/features/peers/ui/list_remote_streams.dart';
 import 'package:example/features/producers/ui/controls/audio_output.dart';

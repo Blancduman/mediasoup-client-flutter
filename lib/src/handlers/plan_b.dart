@@ -13,9 +13,9 @@ import 'package:mediasoup_client_flutter/src/handlers/sdp/plan_b_utils.dart';
 import 'package:mediasoup_client_flutter/src/handlers/sdp/remote_sdp.dart';
 import 'package:mediasoup_client_flutter/src/utils.dart';
 
-Logger _logger = Logger('Native');
+Logger _logger = Logger('Plan B handler');
 
-class Handler extends HandlerInterface {
+class PlanB extends HandlerInterface {
   // Handler direction.
   late Direction _direction;
   // Remote SDP handler.
@@ -45,7 +45,7 @@ class Handler extends HandlerInterface {
   // Got transport local and remote parameters.
   bool _transportReady = false;
 
-  Handler() : super();
+  PlanB() : super();
 
   void _assertSendRirection() {
     if (_direction != Direction.send) {
@@ -177,7 +177,7 @@ class Handler extends HandlerInterface {
   }
 
   @override
-  String get name => 'Native';
+  String get name => 'Plan B handler';
 
   @override
   Future<HandlerReceiveResult> receive(HandlerReceiveOptions options) async {

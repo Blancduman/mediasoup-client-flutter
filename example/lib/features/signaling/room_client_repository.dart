@@ -6,7 +6,7 @@ import 'package:example/features/peers/bloc/peers_bloc.dart';
 import 'package:example/features/producers/bloc/producers_bloc.dart';
 import 'package:example/features/room/bloc/room_bloc.dart';
 import 'package:example/features/signaling/web_socket.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mediasoup_client_flutter/mediasoup_client_flutter.dart';
 
@@ -153,8 +153,7 @@ class RoomClientRepository {
 
     accept({});
 
-    peersBloc
-        .add(PeerAddConsumer(peerId: consumer.peerId, consumer: consumer));
+    peersBloc.add(PeerAddConsumer(peerId: consumer.peerId, consumer: consumer));
   }
 
   Future<MediaStream> createAudioStream() async {
@@ -212,12 +211,12 @@ class RoomClientRepository {
     MediaStreamTrack? track;
     try {
       // NOTE: prefer using h264
+      final videoVPVersion = kIsWeb ? 9 : 8;
       RtpCodecCapability? codec = _mediasoupDevice!.rtpCapabilities.codecs
           .firstWhere(
-              (RtpCodecCapability c) => c.mimeType.toLowerCase() == 'video/vp9',
-              // (RtpCodecCapability c) => c.mimeType.toLowerCase() == 'video/h264',
+              (RtpCodecCapability c) => c.mimeType.toLowerCase() == 'video/vp$videoVPVersion',
               orElse: () =>
-                  throw 'desired vp9 codec+configuration is not supported');
+                  throw 'desired vp$videoVPVersion codec+configuration is not supported');
       videoStream = await createVideoStream();
       track = videoStream.getVideoTracks().first;
       meBloc.add(MeSetWebcamInProgress(progress: true));
@@ -384,7 +383,7 @@ class RoomClientRepository {
         'device': {
           'name': "Flutter",
           'flag': 'flutter',
-          'version': '0.4.3',
+          'version': '0.8.0',
         },
         'rtpCapabilities': _mediasoupDevice!.rtpCapabilities.toMap(),
         'sctpCapabilities': _mediasoupDevice!.sctpCapabilities.toMap(),
