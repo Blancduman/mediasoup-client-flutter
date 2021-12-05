@@ -70,19 +70,19 @@ class PeersBloc extends Bloc<dynamic, PeersState> {
 
     if (kIsWeb) {
       if (newPeers[event.peerId]!.renderer == null) {
-        newPeers[event.peerId] = newPeers[event.peerId]!.copyWith(renderer: RTCVideoRenderer());
+        newPeers[event.peerId!] = newPeers[event.peerId]!.copyWith(renderer: RTCVideoRenderer());
         await newPeers[event.peerId]!.renderer!.initialize();
         // newPeers[event.peerId]!.renderer!.audioOutput = selectedOutputId;
       }
 
       if (event.consumer.kind == 'video') {
-        newPeers[event.peerId] = newPeers[event.peerId]!.copyWith(video: event.consumer);
+        newPeers[event.peerId!] = newPeers[event.peerId]!.copyWith(video: event.consumer);
         newPeers[event.peerId]!.renderer!.srcObject =
             newPeers[event.peerId]!.video!.stream;
       }
 
       if (event.consumer.kind == 'audio') {
-        newPeers[event.peerId] = newPeers[event.peerId]!.copyWith(audio: event.consumer);
+        newPeers[event.peerId!] = newPeers[event.peerId]!.copyWith(audio: event.consumer);
         if (newPeers[event.peerId]!.video == null) {
           newPeers[event.peerId]!.renderer!.srcObject =
               newPeers[event.peerId]!.audio!.stream;
@@ -90,7 +90,7 @@ class PeersBloc extends Bloc<dynamic, PeersState> {
       }
     } else {
       if (event.consumer.kind == 'video') {
-        newPeers[event.peerId] = newPeers[event.peerId]!.copyWith(
+        newPeers[event.peerId!] = newPeers[event.peerId]!.copyWith(
           renderer: RTCVideoRenderer(),
           video: event.consumer,
         );
@@ -99,7 +99,7 @@ class PeersBloc extends Bloc<dynamic, PeersState> {
         newPeers[event.peerId]!.renderer!.srcObject =
             newPeers[event.peerId]!.video!.stream;
       } else {
-        newPeers[event.peerId] = newPeers[event.peerId]!.copyWith(
+        newPeers[event.peerId!] = newPeers[event.peerId]!.copyWith(
           audio: event.consumer,
         );
       }
@@ -167,9 +167,11 @@ class PeersBloc extends Bloc<dynamic, PeersState> {
         .firstWhereOrNull((p) => p.consumers.contains(event.consumerId));
 
     if (peer != null) {
-      newPeers[peer.id] = newPeers[peer.id]!.copyWith(
-        audio: peer.audio!.pauseCopy(),
-      );
+      // newPeers[peer.id] = newPeers[peer.id]!.copyWith(
+      //   audio: peer.audio!.pauseCopy(),
+      // );
+
+      newPeers[peer.id]?.audio?.pause();
 
       yield PeersState(peers: newPeers);
     }
