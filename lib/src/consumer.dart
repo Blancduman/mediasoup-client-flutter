@@ -63,7 +63,7 @@ class Consumer extends EnhancedEventEmitter {
   final EnhancedEventEmitter observer;
 
   /// Peer id.
-  final String peerId;
+  String? peerId;
 
   String? get kind => track.kind;
 
@@ -80,7 +80,7 @@ class Consumer extends EnhancedEventEmitter {
     required this.rtpParameters,
     required this.appData,
     required this.stream,
-    required this.peerId,
+    this.peerId,
     this.closed = false,
   }) : observer = EnhancedEventEmitter(), super() {
     _logger.debug('constructor()');
@@ -286,7 +286,7 @@ class Consumer extends EnhancedEventEmitter {
     bool? paused,
     Map<String, dynamic>? appData,
     MediaStream? stream,
-     EnhancedEventEmitter? observer,
+    EnhancedEventEmitter? observer,
     String? peerId,
   }) {
     return Consumer._copy(
