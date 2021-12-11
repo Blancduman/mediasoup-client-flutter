@@ -203,7 +203,6 @@ class UnifiedPlan extends HandlerInterface {
 
     await _pc!.setRemoteDescription(offer);
 
-    // RTCSessionDescription answer = await _pc!.createAnswer({});
     RTCSessionDescription answer = await _pc!.createAnswer({});
 
     SdpObject localSdpObject = SdpObject.fromMap(parse(answer.sdp!));
@@ -487,8 +486,7 @@ class UnifiedPlan extends HandlerInterface {
   Future<HandlerSendResult> send(HandlerSendOptions options) async {
     _assertSendRirection();
 
-    _logger.debug(
-        'send() [kind:${options.track.kind}, tack.id:${options.track.id}');
+    _logger.debug('send() [kind:${options.track.kind}, track.id:${options.track.id}');
 
     if (options.encodings.length > 1) {
       int idx = 0;
@@ -572,8 +570,8 @@ class UnifiedPlan extends HandlerInterface {
     if (!kIsWeb) {
       final transceivers = await _pc!.getTransceivers();
       transceiver = transceivers.firstWhere(
-            (_transceiver) =>
-        _transceiver.sender.track?.id == options.track.id &&
+        (_transceiver) =>
+            _transceiver.sender.track?.id == options.track.id &&
             _transceiver.sender.track?.kind == options.track.kind,
         orElse: () => throw 'No transceiver found',
       );
@@ -822,6 +820,7 @@ class UnifiedPlan extends HandlerInterface {
         'stopReceiving() | calling pc.setLocalDescription() [answer:${answer.toMap()}');
 
     await _pc!.setLocalDescription(answer);
+    _mapMidTransceiver.remove(localId);
   }
 
   @override

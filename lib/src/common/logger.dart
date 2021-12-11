@@ -3,14 +3,14 @@ const String APP_NAME = 'mediasoup-client';
 typedef void LoggerDebug(dynamic message);
 
 class Logger {
-  final String _prefix;
+  final String? _prefix;
 
   late LoggerDebug debug;
   late LoggerDebug warn;
   late LoggerDebug error;
 
   Logger(this._prefix) {
-    if (_prefix is String) {
+    if (_prefix != null) {
       debug = (dynamic message) {
         print('$APP_NAME:$_prefix $message');
       };

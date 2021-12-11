@@ -82,7 +82,8 @@ class Consumer extends EnhancedEventEmitter {
     required this.stream,
     this.peerId,
     this.closed = false,
-  }) : observer = EnhancedEventEmitter(), super() {
+  })  : observer = EnhancedEventEmitter(),
+        super() {
     _logger.debug('constructor()');
 
     paused = !track.enabled;

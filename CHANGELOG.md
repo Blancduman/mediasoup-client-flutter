@@ -1,6 +1,10 @@
 # Changelog
 
 --------------------------------------------
+[0.8.1] - 11.12.2021
+
+* fix: `on` callbacks (getStates, replaceTrack and etc.)
+
 [0.8.0] - 05.12.2021
 
 * update(flutter_webrtc): switch to 0.8.0

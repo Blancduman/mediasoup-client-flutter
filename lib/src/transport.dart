@@ -722,8 +722,10 @@ class Transport extends EnhancedEventEmitter {
       ));
     });
 
-    producer.on('@replacetrack',
-        (MediaStreamTrack track, Function callback, Function errback) {
+    producer.on('@replacetrack', (data) {
+      final MediaStreamTrack track = data['track'];
+      final callback = data['callback'];
+      final errback = data['errback'];
       _flexQueue.addTask(FlexTaskAdd(
         id: '',
         argument: ReplaceTrackOptions(localId: producer.localId, track: track),
@@ -734,7 +736,10 @@ class Transport extends EnhancedEventEmitter {
       ));
     });
 
-    producer.on('@setmaxspatiallayer', (spatialLayer, callback, errback) {
+    producer.on('@setmaxspatiallayer', (data) {
+      final spatialLayer = data['spatialLayer'];
+      final callback = data['callback'];
+      final errback = data['errback'];
       _flexQueue.addTask(FlexTaskAdd(
         id: '',
         argument: SetMaxSpatialLayerOptions(
@@ -746,7 +751,10 @@ class Transport extends EnhancedEventEmitter {
       ));
     });
 
-    producer.on('@setrtpencodingparameters', (params, callback, errback) {
+    producer.on('@setrtpencodingparameters', (data) {
+      final params = data['params'];
+      final callback = data['callback'];
+      final errback = data['errback'];
       _flexQueue.addTask(FlexTaskAdd(
         id: '',
         argument: SetRtpEncodingParametersOptions(
@@ -758,7 +766,9 @@ class Transport extends EnhancedEventEmitter {
       ));
     });
 
-    producer.on('@getstats', (callback, errback) {
+    producer.on('@getstats', (data) {
+      final callback = data['callback'];
+      final errback = data['errback'];
       if (_closed) {
         return errback(Error.safeToString('close'));
       }
@@ -786,7 +796,9 @@ class Transport extends EnhancedEventEmitter {
       ));
     });
 
-    consumer.on('@getstats', (callback, errback) {
+    consumer.on('@getstats', (data) {
+      final callback = data['callback'];
+      final errback = data['errback'];
       if (_closed) {
         return errback(Error.safeToString('closed'));
       }
@@ -902,7 +914,7 @@ class Transport extends EnhancedEventEmitter {
 
         throw error;
       }
-    } catch (error, st) {
+    } catch (error) {
       // This catch is needed to stop the given track if the command above
       // failed due to closed Transport.
       if (arguments.stopTracks) {
