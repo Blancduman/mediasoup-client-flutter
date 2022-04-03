@@ -12,6 +12,7 @@ class DataConsumerOptions {
   final String label;
   final String protocol;
   final Map<String, dynamic> appData;
+  final String? peerId;
 
   DataConsumerOptions({
     required this.id,
@@ -20,26 +21,29 @@ class DataConsumerOptions {
     required this.label,
     required this.protocol,
     required this.appData,
+    this.peerId,
   });
 }
 
 Logger _logger = Logger('DataConsumer');
 
 class DataConsumer extends EnhancedEventEmitter {
-  // Id.
+  /// Id.
   final String id;
-  // Associated DataProducer id.
+  /// Associated DataProducer id.
   final String dataProducerId;
-  // The underlying RCTDataChannel instance.
+  /// The underlying RCTDataChannel instance.
   final RTCDataChannel dataChannel;
-  // Clsoed flag.
+  /// Clsoed flag.
   bool closed;
-  // SCTP stream parameters.
+  /// SCTP stream parameters.
   final SctpStreamParameters sctpStreamParameters;
-  // App custom data.
+  /// App custom data.
   final Map<String, dynamic> appData;
-  // Observer instance.
+  /// Observer instance.
   final EnhancedEventEmitter observer;
+  /// Peer id.
+  final String? peerId;
 
   /// @emits transportclose
   /// @emits open
@@ -54,7 +58,8 @@ class DataConsumer extends EnhancedEventEmitter {
     required this.sctpStreamParameters,
     this.appData = const <String, dynamic>{},
     this.closed = false,
-  })  : observer = EnhancedEventEmitter(),
+    this.peerId
+  }) : observer = EnhancedEventEmitter(),
         super() {
     _logger.debug('constructor()');
 
@@ -123,6 +128,9 @@ class DataConsumer extends EnhancedEventEmitter {
     };
     dataChannel.onMessage = (RTCDataChannelMessage data) {
       if (closed) return;
+
+      print('aaaaaaaaaaaaaaaaaaaaaaa');
+      print(data);
 
       safeEmit('message', {
         'data': data,
