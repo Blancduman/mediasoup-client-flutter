@@ -301,9 +301,15 @@ class UnifiedPlan extends HandlerInterface {
 
       await _pc!.setRemoteDescription(offer);
 
-      RTCSessionDescription answer = await _pc!.createAnswer({});
+      RTCSessionDescription answer = await _pc!.createAnswer({
+        'mandatory': {
+          'OfferToReceiveAudio': false,
+          'OfferToReceiveVideo': false,
+        },
+        'optional': [],
+      });
 
-      if (_transportReady) {
+      if (!_transportReady) {
         SdpObject localSdpObject = SdpObject.fromMap(parse(answer.sdp!));
 
         await _setupTransport(
@@ -497,7 +503,8 @@ class UnifiedPlan extends HandlerInterface {
   Future<HandlerSendResult> send(HandlerSendOptions options) async {
     _assertSendRirection();
 
-    _logger.debug('send() [kind:${options.track.kind}, track.id:${options.track.id}');
+    _logger.debug(
+        'send() [kind:${options.track.kind}, track.id:${options.track.id}');
 
     if (options.encodings.length > 1) {
       int idx = 0;
