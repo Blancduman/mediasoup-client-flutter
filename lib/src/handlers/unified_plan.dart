@@ -117,7 +117,6 @@ class UnifiedPlan extends HandlerInterface {
 
       RTCSessionDescription offer = await pc.createOffer({});
       final parsedOffer = parse(offer.sdp!);
-      print('parsed: ' + parsedOffer.toString());
       SdpObject sdpObject = SdpObject.fromMap(parsedOffer);
 
       RtpCapabilities nativeRtpCapabilities =
