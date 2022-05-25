@@ -9,3 +9,4 @@ export 'package:mediasoup_client_flutter/src/transport.dart';
 export 'package:mediasoup_client_flutter/src/rtp_parameters.dart';
 export 'package:mediasoup_client_flutter/src/sctp_parameters.dart';
 export 'package:mediasoup_client_flutter/src/scalability_modes.dart';
+export 'package:mediasoup_client_flutter/src/common/index.dart';

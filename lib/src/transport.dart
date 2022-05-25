@@ -1084,7 +1084,7 @@ class Transport extends EnhancedEventEmitter {
   /// use dataProducerCallback to receive a new ProducerData.
   void produceData({
     bool ordered = true,
-    required int maxPacketLife,
+    int maxPacketLife = 0,
     required int maxRetransmits,
     Priority priority = Priority.Low,
     String label = '',
@@ -1162,6 +1162,8 @@ class Transport extends EnhancedEventEmitter {
     String label = '',
     String protocol = '',
     Map<String, dynamic> appData = const <String, dynamic>{},
+    String? peerId,
+    Function? accept,
   }) {
     _logger.debug('consumeData()');
 
@@ -1194,11 +1196,13 @@ class Transport extends EnhancedEventEmitter {
         ));
 
         DataConsumer dataConsumer = DataConsumer(
-            id: id,
-            dataProducerId: dataProducerId,
-            dataChannel: receiveDataChannelResult.dataChannel,
-            sctpStreamParameters: sctpStreamParameters,
-            appData: appData);
+          id: id,
+          dataProducerId: dataProducerId,
+          dataChannel: receiveDataChannelResult.dataChannel,
+          sctpStreamParameters: sctpStreamParameters,
+          appData: appData,
+          peerId: peerId,
+        );
 
         _dataConsumers[dataConsumer.id] = dataConsumer;
         _handleDataConsumer(dataConsumer);
@@ -1208,7 +1212,7 @@ class Transport extends EnhancedEventEmitter {
           'dataConsumer': dataConsumer,
         });
 
-        dataConsumerCallback?.call(dataConsumer);
+        dataConsumerCallback?.call(dataConsumer, accept);
       },
     ));
   }

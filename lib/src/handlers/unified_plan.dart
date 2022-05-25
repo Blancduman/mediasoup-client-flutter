@@ -26,6 +26,9 @@ class UnifiedPlan extends HandlerInterface {
   // Generic sending RTP parameters for audio and video suitable for the SDP
   // remote answer.
   late Map<RTCRtpMediaType, RtpParameters> _sendingRemoteRtpParametersByKind;
+  // Initial server side DTLS role. If not 'auto', it will force the opposite
+  // value in client side.
+  DtlsRole? _forcedLocalDtlsRole;
   // RTCPeerConnection instance.
   RTCPeerConnection? _pc;
   // Map of RTCTransceivers indexed by MID.
@@ -114,7 +117,6 @@ class UnifiedPlan extends HandlerInterface {
 
       RTCSessionDescription offer = await pc.createOffer({});
       final parsedOffer = parse(offer.sdp!);
-      print('parsed: ' + parsedOffer.toString());
       SdpObject sdpObject = SdpObject.fromMap(parsedOffer);
 
       RtpCapabilities nativeRtpCapabilities =
@@ -298,13 +300,21 @@ class UnifiedPlan extends HandlerInterface {
 
       await _pc!.setRemoteDescription(offer);
 
-      RTCSessionDescription answer = await _pc!.createAnswer({});
+      RTCSessionDescription answer = await _pc!.createAnswer({
+        'mandatory': {
+          'OfferToReceiveAudio': false,
+          'OfferToReceiveVideo': false,
+        },
+        'optional': [],
+      });
 
-      if (_transportReady) {
+      if (!_transportReady) {
         SdpObject localSdpObject = SdpObject.fromMap(parse(answer.sdp!));
 
         await _setupTransport(
-            localDtlsRole: DtlsRole.client, localSdpObject: localSdpObject);
+          localDtlsRole: _forcedLocalDtlsRole ?? DtlsRole.client,
+          localSdpObject: localSdpObject,
+        );
       }
 
       _logger.debug(
@@ -419,6 +429,12 @@ class UnifiedPlan extends HandlerInterface {
       ),
     };
 
+    if (options.dtlsParameters.role != DtlsRole.auto) {
+      this._forcedLocalDtlsRole = options.dtlsParameters.role == DtlsRole.server
+          ? DtlsRole.client
+          : DtlsRole.server;
+    }
+
     final _constrains = options.proprietaryConstraints.isEmpty
         ? <String, dynamic>{
             'mandatory': {},
@@ -486,7 +502,8 @@ class UnifiedPlan extends HandlerInterface {
   Future<HandlerSendResult> send(HandlerSendOptions options) async {
     _assertSendRirection();
 
-    _logger.debug('send() [kind:${options.track.kind}, track.id:${options.track.id}');
+    _logger.debug(
+        'send() [kind:${options.track.kind}, track.id:${options.track.id}');
 
     if (options.encodings.length > 1) {
       int idx = 0;
@@ -683,14 +700,13 @@ class UnifiedPlan extends HandlerInterface {
     if (!_hasDataChannelMediaSection) {
       RTCSessionDescription offer = await _pc!.createOffer({});
       SdpObject localSdpObject = SdpObject.fromMap(parse(offer.sdp!));
-      MediaObject? offerMediaObject = localSdpObject.media.firstWhere(
+      MediaObject? offerMediaObject = localSdpObject.media.firstWhereOrNull(
         (MediaObject m) => m.type == 'application',
-        orElse: () => null as MediaObject,
       );
 
       if (!_transportReady) {
         await _setupTransport(
-          localDtlsRole: DtlsRole.server,
+          localDtlsRole: _forcedLocalDtlsRole ?? DtlsRole.client,
           localSdpObject: localSdpObject,
         );
       }
@@ -700,7 +716,7 @@ class UnifiedPlan extends HandlerInterface {
 
       await _pc!.setLocalDescription(offer);
 
-      _remoteSdp.sendSctpAssociation(offerMediaObject);
+      _remoteSdp.sendSctpAssociation(offerMediaObject!);
 
       RTCSessionDescription answer =
           RTCSessionDescription(_remoteSdp.getSdp(), 'answer');
