@@ -1183,7 +1183,6 @@ class Transport extends EnhancedEventEmitter {
     Ortc.validateSctpStreamParameters(sctpStreamParameters);
 
     // Enqueue command.
-
     _flexQueue.addTask(FlexTaskAdd(
       id: id,
       message: 'transport.consumeData()',

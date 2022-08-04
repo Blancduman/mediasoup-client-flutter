@@ -11,10 +11,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_webrtc: ^0.8.7
+  flutter_webrtc: ^0.9.1
   events2: ^1.0.0
   sdp_transform: ^0.3.2
-  collection: ^1.15.0
+  collection: ^1.16.0
   h264_profile_level_id: ^0.2.0
 
 dev_dependencies:
