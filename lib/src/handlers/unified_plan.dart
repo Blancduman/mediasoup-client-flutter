@@ -300,13 +300,7 @@ class UnifiedPlan extends HandlerInterface {
 
       await _pc!.setRemoteDescription(offer);
 
-      RTCSessionDescription answer = await _pc!.createAnswer({
-        'mandatory': {
-          'OfferToReceiveAudio': false,
-          'OfferToReceiveVideo': false,
-        },
-        'optional': [],
-      });
+      RTCSessionDescription answer = await _pc!.createAnswer({});
 
       if (!_transportReady) {
         SdpObject localSdpObject = SdpObject.fromMap(parse(answer.sdp!));
