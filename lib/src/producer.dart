@@ -354,7 +354,7 @@ class Producer extends EnhancedEventEmitter {
     // else if (track != null && track.readyState == 'ended'))
 
     // Do nothing if this is the same track as the current handled one.
-    if (track == track) {
+    if (track == this.track) {
       _logger.debug('replaceTrack() | same track, ignored.');
 
       return;
