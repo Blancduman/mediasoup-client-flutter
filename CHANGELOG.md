@@ -1,6 +1,10 @@
 # Changelog
 
 --------------------------------------------
+[0.8.5] - 11.12.2021
+
+* bump version of flutter_webrtc
+
 [0.8.1] - 11.12.2021
 
 * fix: `on` callbacks (getStates, replaceTrack and etc.)

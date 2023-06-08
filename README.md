@@ -10,7 +10,6 @@ No datachannels yet;
 
 ```dart
 import 'package:mediasoup_client_flutter/mediasoup_client_flutter.dart';
-import 'package:flutter_webrtc/flutter_webrtc';
 import 'package:my_project/my_signaling.dart';
 
 // Create a device.
