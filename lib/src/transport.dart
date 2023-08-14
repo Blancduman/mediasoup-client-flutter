@@ -466,7 +466,7 @@ class Transport extends EnhancedEventEmitter {
   bool _probatorConsumerCreated = false;
 
   // FlexQueue instance to make async tasks happen sequentially.
-  FlexQueue _flexQueue = FlexQueue();
+  FlexQueueStream _flexQueue = FlexQueueStream();
 
   // Observer instance.
   EnhancedEventEmitter _observer = EnhancedEventEmitter();
